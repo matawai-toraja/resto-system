@@ -120,18 +120,23 @@ function loadPesanan() {
 function aktifkanSuara() {
     const audio = document.getElementById('notif-sound');
     
-    // Memainkan audio untuk "membuka kunci" (unlock) kebijakan browser
+    // 1. Mute, load, lalu play untuk memancing izin
+    audio.muted = true;
+    audio.load(); // <--- TAMBAHKAN INI agar file dipastikan termuat
     audio.play().then(() => {
-        audio.pause(); // Langsung hentikan setelah play sedikit
-        audio.currentTime = 0; // Reset ke awal
+        audio.pause(); 
+        audio.muted = false; // Aktifkan kembali suaranya
+        audio.currentTime = 0;
         
-        console.log("Suara diaktifkan!");
+        const btn = document.getElementById('btn-aktifkan');
         btn.innerText = "Suara Sudah Aktif";
         btn.disabled = true;
+        
         localStorage.setItem('suaraSudahAktif', 'true');
-    }).catch(err => {
-        alert("Gagal mengaktifkan suara. Pastikan file notif.wav ada.");
-        console.error(err);
+        console.log("Izin audio berhasil diberikan!");
+    }).catch(e => {
+        console.error("Gagal memancing izin audio:", e);
+        alert("Klik tombol ini sekali lagi saat halaman baru terbuka.");
     });
 }
 function putarNotif() {
