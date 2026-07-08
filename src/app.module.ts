@@ -15,6 +15,7 @@ import { Pesanan } from './pesanan.entity';
 import { Riwayat } from './riwayat.entity';
 import { Transaksi } from './transaksi.entity';
 import { Resto } from './resto.entity';
+import { Karyawan } from './karyawan.entity';
 
 @Module({
   imports: [
@@ -36,12 +37,12 @@ import { Resto } from './resto.entity';
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities: [Menu, Pesanan, Riwayat, Transaksi, Resto],
+        entities: [Menu, Pesanan, Riwayat, Transaksi, Resto, Karyawan],
         synchronize: true,
       }),
     }),
 
-    TypeOrmModule.forFeature([Menu, Pesanan, Riwayat, Transaksi, Resto]),
+    TypeOrmModule.forFeature([Menu, Pesanan, Riwayat, Transaksi, Resto, Karyawan]),
   ],
   controllers: [AppController, AuthController, MenuController],
   providers: [AuthService, MenuService],
