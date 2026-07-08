@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+    // Cek role dan pastikan restoId tersedia
+    if (localStorage.getItem('userRole') !== 'pemilik') {
+        alert('Akses Ditolak! Halaman khusus pemilik.');
+        window.location.href = 'dashboard.html';
+    }
+</script>
+    <h1>Pengaturan Sistem</h1>
+    <button onclick="konfirmasiReset()" style="background: red; color: white;">
+        Bersihkan Semua Data Riwayat
+    </button>
+    <a href="dashboard.html">Kembali</a>
+
+    <script>
+        function konfirmasiReset() {
+            // Ambil restoId dari localStorage
+            const restoId = localStorage.getItem('restoId');
+            
+            if (confirm("Yakin hapus SEMUA data resto ini? Tidak bisa dibatalkan!")) {
+                fetch('/resto/kasir/reset-data', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // Kirim restoId agar server tahu data siapa yang harus dihapus
+                    body: JSON.stringify({ restoId: restoId }) 
+                })
+                .then(res => res.json())
+                .then(data => { 
+                    alert(data.pesan); 
+                    location.reload(); 
+                });
+            }
+        }
+    </script>
+</body>
+</html>

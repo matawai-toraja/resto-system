@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<script>
+    // PASANG DISINI PALING ATAS
+    (function() {
+        if (sessionStorage.getItem('aksesDiberikan') !== 'true') {
+            alert("Akses ditolak! Silakan verifikasi password.");
+            window.location.href = '/resto/page/dashboard';
+        }
+    })();
+</script>
+<head>
+    <meta charset="UTF-8">
+    <title>Riwayat Penjualan</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            padding: 40px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .glass-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            max-width: 900px;
+            margin: auto;
+        }
+        h1 { text-align: center; margin-bottom: 25px; }
+        .total-box { 
+            font-size: 24px; font-weight: bold; margin: 25px 0; 
+            padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: 15px; 
+            text-align: center; color: #ffffff;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: rgba(255, 255, 255, 0.1); padding: 15px; text-align: left; border-bottom: 2px solid rgba(255, 255, 255, 0.2); }
+        td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        tr:hover { background: rgba(255, 255, 255, 0.05); }
+        
+        .btn-container { text-align: center; margin-top: 30px; }
+        a, button { 
+            padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer;
+            background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; 
+            font-weight: bold; transition: 0.3s; margin: 5px; display: inline-block;
+        }
+        a:hover, button:hover { background: rgba(255, 255, 255, 0.4); }
+        .btn-reset { background: #e74c3c; }
+        .btn-reset:hover { background: #c0392b; }
+    </style>
+</head>
+<body>
+
+
+<div class="glass-container">
+    <h1>Riwayat Penjualan</h1>
+    
+    <table>
+        <thead>
+            <tr><th>Pelanggan</th><th>Meja</th><th>Waktu</th><th>Total Bayar</th></tr>
+        </thead>
+        <tbody id="daftar-riwayat"></tbody>
+    </table>
+
+    <div class="total-box" id="total-pendapatan">Memuat...</div>
+    
+    <div class="btn-container">
+        <a href="kasir-monitor.html">Kembali ke Monitor</a>
+        <button class="btn-reset" onclick="konfirmasiReset()">Bersihkan Semua Data Riwayat</button>
+    </div>
+</div>
+
+<script>
+async function cekAksesKaryawan() {
+    if (sessionStorage.getItem('aksesDiberikanRiwayat') === 'true') {
+        updateRiwayat(); // Sudah login, langsung load data
+        return;
+    }
+
+    const password = prompt("Masukkan Password Khusus Karyawan:");
+    if (!password) {
+        window.location.href = '/resto/page/dashboard';
+        return;
+    }
+
+    try {
+        const res = await fetch('/resto/verifikasi-karyawan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                password: password, 
+                restoId: localStorage.getItem('restoId') 
+            })
+        });
+
+        if (res.ok) {
+            sessionStorage.setItem('aksesDiberikanRiwayat', 'true');
+            updateRiwayat();
+        } else {
+            alert("Password Salah! Akses ditolak.");
+            window.location.href = '/resto/page/dashboard';
+        }
+    } catch (err) {
+        alert("Kesalahan koneksi.");
+        window.location.href = '/resto/page/dashboard';
+    }
+}
+    const token = localStorage.getItem('token');
+    const restoId = localStorage.getItem('restoId'); // Ambil restoId dari localStorage
+
+    function konfirmasiReset() {
+        if (confirm("PERINGATAN: Apakah Anda yakin ingin menghapus SEMUA data transaksi resto ini? Tindakan ini tidak bisa dibatalkan!")) {
+            fetch('/resto/kasir/reset-data', { 
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token 
+                },
+                body: JSON.stringify({ restoId: restoId }) // Tambahkan restoId ke body
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.pesan);
+                location.reload();
+            });
+        }
+    }
+
+    function updateRiwayat() {
+        // Tambahkan query parameter restoId
+        fetch(`/resto/kasir/riwayat?restoId=${restoId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('daftar-riwayat');
+            let total = 0;
+            tbody.innerHTML = data.map(p => {
+                const subtotal = Number(p.totalBayar || 0);
+                total += subtotal;
+                return `
+                    <tr>
+                        <td><strong>${p.nama || 'Pelanggan'}</strong></td>
+                        <td>${p.meja || '-'}</td>
+                        <td>${p.waktuSelesai ? new Date(p.waktuSelesai).toLocaleString('id-ID') : '-'}</td>
+                        <td>Rp ${subtotal.toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            }).join('');
+            document.getElementById('total-pendapatan').innerText = 'Total Pendapatan: Rp ' + total.toLocaleString('id-ID');
+        });
+    }
+
+    cekAksesKaryawan();
+</script>
+</body>
+</html>

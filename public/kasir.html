@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #daftar-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; max-height: 70vh; overflow-y: auto; padding: 10px; }
+        .menu-card { display: flex; align-items: center; gap: 20px; padding: 20px; border-bottom: 1px solid #eee; background: #fdfdfd; border-radius: 8px; }
+        .menu-card img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; }
+        .menu-info { flex-grow: 1; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #2c3e50; padding: 20px; }
+        .container { width: 95%; max-width: 1200px; margin: auto; background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin: 5px 0; }
+        .btn-hapus { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+    </style>
+    <title>Input Menu Admin</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Tambah Menu Baru</h1>
+        <input type="text" id="nama" placeholder="Nama Menu">
+        <input type="number" id="harga" placeholder="Harga">
+        <label>Status Stok:</label>
+        <select id="stok">
+            <option value="1">Ada</option>
+            <option value="0">Habis</option>
+        </select>
+        <label>Kategori:</label>
+        <select id="kategori">
+            <option value="Makanan">Makanan</option>
+            <option value="Minuman">Minuman</option>
+        </select>
+        <input type="file" id="gambar" accept="image/*">
+        <button onclick="simpan()">Simpan Menu</button>
+
+        <h2>Daftar Menu Saat Ini</h2>
+        <select id="filter-kasir" onchange="loadMenu()">
+            <option value="Semua">Semua</option>
+            <option value="Makanan">Makanan</option>
+            <option value="Minuman">Minuman</option>
+        </select>
+        <div id="daftar-menu"></div>
+    </div>
+
+<script>
+    // Validasi Login
+    if (!localStorage.getItem('userRole')) {
+        alert('Akses Ditolak!');
+        window.location.href = 'login.html';
+    }
+
+    // Fungsi Load Menu
+    async function loadMenu() {
+        const filter = document.getElementById('filter-kasir').value;
+        const restoId = localStorage.getItem('restoId');
+        try {
+            const res = await fetch(`/resto/menu?restoId=${restoId}`);
+            const data = await res.json();
+            if (!Array.isArray(data)) return;
+            const filtered = (filter === "Semua") ? data : data.filter(m => m.kategori === filter);
+            document.getElementById('daftar-menu').innerHTML = filtered.map(m => `
+                <div class="menu-card">
+                    <img src="${m.gambar}">
+                    <div class="menu-info">
+                        <strong>${m.nama}</strong><br>
+                        <span>Rp ${m.harga}</span> | <span>${m.stok == 1 ? 'Ada' : 'Habis'}</span>
+                    </div>
+                    <button onclick="toggleStatus(${m.id}, ${m.stok})">Status</button>
+                    <button class="btn-hapus" onclick="hapusMenu(${m.id})">Hapus</button>
+                </div>
+            `).join('');
+        } catch (e) { console.error(e); }
+    }
+
+    // Fungsi Simpan
+    async function simpan() {
+        const formData = new FormData();
+        formData.append('nama', document.getElementById('nama').value);
+        formData.append('harga', document.getElementById('harga').value);
+        formData.append('stok', document.getElementById('stok').value);
+        formData.append('kategori', document.getElementById('kategori').value);
+        formData.append('restoId', localStorage.getItem('restoId'));
+        formData.append('gambar', document.getElementById('gambar').files[0]);
+
+        const res = await fetch('/resto/tambah-menu', { method: 'POST', body: formData });
+        if (res.ok) { alert("Berhasil!"); location.reload(); } else { alert("Gagal!"); }
+    }
+
+    // Fungsi Hapus
+    async function hapusMenu(id) {
+        if (!confirm("Hapus?")) return;
+        await fetch('/resto/hapus-menu', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({id, restoId: localStorage.getItem('restoId')}) });
+        loadMenu();
+    }
+
+    // Fungsi Status
+    async function toggleStatus(id, stokLama) {
+        await fetch('/resto/edit-status', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({id, stok: stokLama == 1 ? 0 : 1, restoId: localStorage.getItem('restoId')}) });
+        loadMenu();
+    }
+
+    loadMenu();
+</script>
+</body>
+</html>

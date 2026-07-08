@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Resto</title>
+    <style>
+        .login-box { margin: 50px auto; width: 300px; text-align: center; font-family: sans-serif; }
+        input { padding: 10px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+        button { padding: 10px 20px; cursor: pointer; width: 100%; background: #764ba2; color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>Login Akses</h2>
+        <!-- Tambahkan input username -->
+        <input type="text" id="username" placeholder="Username Resto">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Masuk</button>
+    </div>
+
+    <script>
+  async function login() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+
+    try {
+        const response = await fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        });
+
+        // Membaca hasil dari server
+        const data = await response.json();
+
+        if (response.ok) {
+            // Simpan data jika berhasil
+            localStorage.setItem('authKey', data.token || "");
+            localStorage.setItem('token', data.token || "");
+            localStorage.setItem('userRole', data.role || 'admin');
+
+            // Menyimpan restoId yang baru saja kita perbaiki di backend
+            if (data.restoId) {
+                localStorage.setItem('restoId', data.restoId);
+            }
+            
+            // Redirect ke dashboard
+            window.location.href = '/resto/page/dashboard';
+        } else {
+            // Tampilkan error dari server jika login gagal
+            alert(data.message || "Login Gagal");
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Terjadi kesalahan koneksi. Pastikan server aktif.');
+    }
+}
+   </script>
+</body>
+</html>

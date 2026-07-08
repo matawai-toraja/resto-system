@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<button id="btn-aktifkan" onclick="aktifkanSuara()">Aktifkan Suara</button>
+<audio id="notif-sound" src="notif.wav" preload="auto"></audio>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Monitor Kasir</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        h1 { text-align: center; color: #333; }
+        #search-box { width: 100%; max-width: 400px; display: block; margin: 20px auto; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 1.1em; outline: none; }
+        #search-box:focus { border-color: #3498db; }
+        #container-monitor { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .card { background: #3498db; color: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: 0.3s; }
+        .card.selesai { background: #ffffff; color: #333; }
+        .card.selesai h3, .card.selesai label, .card.selesai p, .card.selesai ul { color: #333; }
+        .btn-container { display: flex; justify-content: center; gap: 8px; margin-top: 15px; }
+        button { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; }
+        #modal-bayar { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999999; color: #333; }
+        .rincian-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Daftar Pesanan Masuk</h1>
+    <input type="text" id="search-box" autofocus onkeyup="filterPesanan()" placeholder="🔍 Cari nama pelanggan atau meja...">
+    <div id="container-monitor">Memuat data...</div>
+
+    <div id="modal-bayar">
+        <h3 style="color:#333; margin-top:0;">Form Pembayaran</h3>
+        <div id="list-items" style="margin: 15px 0; border-bottom: 1px dashed #ccc; padding-bottom: 10px;"></div>
+        <p style="font-size: 1.2em; font-weight:bold; color:#333;">Total: Rp <span id="total-tagihan-modal">0</span></p>
+        <input type="text" id="input-uang" oninput="formatRupiahInput(this)" placeholder="Input Uang Pelanggan" style="width:100%; padding:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:8px;">
+        <div id="info-kembalian" style="margin: 15px 0; font-size: 1.4em; font-weight:bold; color:#27ae60; display:none;">
+            Kembali: Rp <span id="nominal-kembalian">0</span>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button onclick="konfirmasiBayar()" style="flex:2; background:#27ae60;">Selesai Pembayaran & Cetak</button>
+            <button onclick="tutupModal()" style="flex:1; background:#7f8c8d;">Kembali</button>
+        </div>
+    </div>
+
+<script>
+
+    const token = localStorage.getItem('authKey');
+    const restoId = localStorage.getItem('restoId');
+    if (!token) { window.location.href = 'login.html'; }
+
+    let idBayarSekarang = null;
+    let dataPesananSekarang = null;
+    let jumlahPesananTerakhir = 0;
+    
+    // Pastikan ID audio ini sama dengan yang ada di HTML Anda
+    const audioNotif = document.getElementById('notif-sound'); 
+
+    function loadPesanan() {
+        fetch(`/resto/kasir/daftar-pesanan?restoId=${restoId}`, { 
+            headers: { 'Authorization': 'Bearer ' + token } 
+        })
+        .then(res => res.json())
+        .then(data => {
+            // Notif Suara: Cek apakah ada pesanan baru
+            if (data.length > jumlahPesananTerakhir && jumlahPesananTerakhir !== 0) {
+                putarNotif();
+            }
+            jumlahPesananTerakhir = data.length;
+            
+            renderPesanan(data.reverse());
+            
+            // PERBAIKAN PENCARIAN: Filter dipanggil setelah render agar tetap aktif
+            filterPesanan();
+        });
+    }
+
+    function renderPesanan(data) {
+        const container = document.getElementById('container-monitor');
+        container.innerHTML = data.map(p => {
+            let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
+            let total = items.reduce((sum, i) => sum + (Number(i.harga) * Number(i.jumlah)), 0);
+            let isPaid = p.status === 'dibayar';
+            let isChecked = localStorage.getItem('siap-'+p.id) === 'true';
+            let pEncoded = encodeURIComponent(JSON.stringify(p));
+            return `
+                <div class="card ${isChecked ? 'selesai' : ''}" data-nama="${p.nama.toLowerCase()}" data-meja="${p.meja}">
+                    <h3>Meja: ${p.meja} | ${p.nama}</h3>
+                    <label><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="tandaiSiap('${p.id}', this.checked)"> Siap diantar</label>
+                    <ul>${items.map(i => `<li>${i.nama} x ${i.jumlah}</li>`).join('')}</ul>
+                    <p><strong>Total: Rp ${total.toLocaleString()}</strong></p>
+                    <div class="btn-container">
+                        ${!isPaid ? `
+                            <button onclick="bukaModal('${p.id}', ${total}, '${pEncoded}')" style="background:#27ae60;">Bayar</button>
+                            <button onclick="prosesAksi('${p.id}', 'batal')" style="background:#e67e22;">Batal</button>
+                            <button onclick="cetakDapur('${pEncoded}')" style="background:#8e44ad;">Dapur</button>
+                        ` : `<button onclick="selesaiPesanan(${p.id})" style="background:#2c3e50;">Selesai</button>`}
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    function filterPesanan() {
+        let filter = document.getElementById('search-box').value.toLowerCase();
+        document.querySelectorAll('.card').forEach(card => {
+            card.style.display = (card.dataset.nama.includes(filter) || card.dataset.meja.includes(filter)) ? "" : "none";
+        });
+    }
+
+    // FUNGSI SUARA "ANTI GAGAL"
+ const btn = document.getElementById('btn-aktifkan');
+
+  // 1. Saat halaman dimuat, cek apakah sudah pernah diklik sebelumnya
+  if (localStorage.getItem('suaraSudahAktif') === 'true') {
+      btn.innerText = "Suara Sudah Aktif";
+      btn.disabled = true; // Tombol dikunci (tidak bisa diklik lagi)
+  }
+
+
+  function aktifkanSuara() {
+      // 2. Jalankan logika suara Anda di sini
+      console.log("Suara diaktifkan!"); 
+      
+      // 3. Ubah tampilan tombol
+      btn.innerText = "Suara Sudah Aktif";
+      btn.disabled = true; // Kunci tombol
+      
+      // 4. Simpan status ke localStorage agar ingat terus
+      localStorage.setItem('suaraSudahAktif', 'true');
+  }
+    // Fungsi Pembantu
+    function tandaiSiap(id, checked) { localStorage.setItem('siap-'+id, checked); loadPesanan(); }
+    function bukaModal(id, total, pEncoded) { 
+        idBayarSekarang = id; 
+        dataPesananSekarang = JSON.parse(decodeURIComponent(pEncoded));
+        let items = typeof dataPesananSekarang.pesanan === 'string' ? JSON.parse(dataPesananSekarang.pesanan) : dataPesananSekarang.pesanan;
+        document.getElementById('list-items').innerHTML = items.map(i => `<div class="rincian-item">${i.nama} x${i.jumlah} <span>Rp ${(i.harga * i.jumlah).toLocaleString()}</span></div>`).join(''); 
+        document.getElementById('total-tagihan-modal').innerText = total.toLocaleString(); 
+        document.getElementById('modal-bayar').style.display = 'block'; 
+        document.getElementById('input-uang').value = '';
+        setTimeout(() => document.getElementById('input-uang').focus(), 100);
+    }
+    function tutupModal() { document.getElementById('modal-bayar').style.display = 'none'; }
+    function hitungKembalian() {
+        let total = Number(document.getElementById('total-tagihan-modal').innerText.replace(/\D/g, ''));
+        let uang = Number(document.getElementById('input-uang').value.replace(/\D/g, ''));
+        let info = document.getElementById('info-kembalian');
+        if (uang >= total) {
+            document.getElementById('nominal-kembalian').innerText = (uang - total).toLocaleString();
+            info.style.display = 'block';
+        } else { info.style.display = 'none'; }
+    }
+    function cetakDapur(pEncoded) { 
+        let p = JSON.parse(decodeURIComponent(pEncoded)); 
+        let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
+        let win = window.open('', '_blank', 'width=300,height=400'); 
+        win.document.write(`<html><head><style>body{font-family:monospace; padding:10px; width:200px;}</style></head><body><h3>SLIP DAPUR<br>Meja: ${p.meja}</h3><ul>${items.map(i => `<li>${i.nama} x${i.jumlah}</li>`).join('')}</ul><script>window.print(); setTimeout(window.close, 500);<\/script></body></html>`); 
+        win.document.close(); 
+    }
+    function konfirmasiBayar() { 
+        fetch('/resto/kasir/bayar', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}, body: JSON.stringify({id: idBayarSekarang, restoId: restoId}) }).then(() => { 
+            let uangInput = document.getElementById('input-uang').value.replace(/\D/g, '') || 0;
+            cetakStrukKasir(dataPesananSekarang, uangInput);
+            tutupModal(); loadPesanan(); 
+        }); 
+    }
+    function cetakStrukKasir(p, uangMasuk) {
+        let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
+        let total = items.reduce((sum, i) => sum + (Number(i.harga) * Number(i.jumlah)), 0);
+        let win = window.open('', '_blank', 'width=300,height=500');
+        win.document.write(`<html><head><style>body{font-family:monospace; font-size:12px; width:220px;}</style></head><body><h3>STRUK RESTO</h3><p>Meja: ${p.meja} | ${p.nama}</p><hr>${items.map(i => `<div>${i.nama} x${i.jumlah}: Rp ${(i.harga * i.jumlah).toLocaleString()}</div>`).join('')}<hr><div>TOTAL: Rp ${total.toLocaleString()}</div><div>BAYAR: Rp ${Number(uangMasuk).toLocaleString()}</div><div>KEMBALI: Rp ${(Number(uangMasuk) - total).toLocaleString()}</div><script>window.onload=function(){window.print(); setTimeout(window.close, 500);}<\/script></body></html>`);
+        win.document.close();
+    }
+    function selesaiPesanan(id) { fetch('/resto/kasir/selesai', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}, body: JSON.stringify({id, restoId: restoId}) }).then(loadPesanan); }
+    function prosesAksi(id, aksi) { if(aksi === 'batal' && confirm("Yakin batal?")) fetch('/resto/kasir/batal', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}, body: JSON.stringify({id, restoId: restoId}) }).then(loadPesanan); }
+    function formatRupiahInput(i) { i.value = new Intl.NumberFormat('id-ID').format(i.value.replace(/\D/g, '')); hitungKembalian(); }
+
+    // Inisialisasi
+    setInterval(loadPesanan, 3000);
+    loadPesanan();
+</script>
+</body>
+</html>

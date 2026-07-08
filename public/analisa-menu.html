@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Analisa Menu</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #fff; }
+        .glass-container { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; max-width: 900px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: rgba(255,255,255,0.05); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .btn-reset { background: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="glass-container">
+    <h1>Analisa Menu Terlaris</h1>
+    <table>
+        <thead>
+            <tr><th>Nama Menu</th><th>Terjual (Porsi)</th><th>Total Pendapatan</th></tr>
+        </thead>
+        <tbody id="tabel-analisa">
+            <tr><td colspan="3">Memverifikasi akses...</td></tr>
+        </tbody>
+    </table>
+    <br>
+    <button class="btn-reset" onclick="resetAnalisa()">Reset Data Analisa</button>
+</div>
+
+<script>
+    // 1. Fungsi Utama Verifikasi
+    async function cekAksesKaryawan() {
+        // Jika sudah pernah login di sesi ini, tidak perlu minta password lagi
+        if (sessionStorage.getItem('aksesDiberikan') === 'true') {
+            loadAnalisa();
+            return;
+        }
+
+        const password = prompt("Masukkan Password Khusus Karyawan:");
+        
+        // Jika user klik 'Batal' atau kosong, tendang balik ke dashboard
+        if (!password) {
+            window.location.href = '/resto/page/dashboard';
+            return;
+        }
+
+        // Cek ke Database (Backend)
+        try {
+            const res = await fetch('/resto/verifikasi-karyawan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password, restoId: localStorage.getItem('restoId') })
+            });
+
+            if (res.ok) {
+                // Password benar
+                sessionStorage.setItem('aksesDiberikan', 'true');
+                loadAnalisa();
+            } else {
+                // Password salah
+                alert("Password Salah! Akses ditolak.");
+                window.location.href = '/resto/page/dashboard';
+            }
+        } catch (err) {
+            alert("Terjadi kesalahan koneksi.");
+            window.location.href = '/resto/page/dashboard';
+        }
+    }
+
+    // 2. Fungsi untuk load data (yang sudah Anda miliki)
+    function loadAnalisa() {
+        const restoId = localStorage.getItem('restoId');
+        const token = localStorage.getItem('authKey');
+
+        fetch(`/resto/kasir/analisa-menu?restoId=${restoId}`, {
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('tabel-analisa');
+            if (data && typeof data === 'object' && !data.error) {
+               tbody.innerHTML = Object.keys(data).map(menu => `
+    <tr>
+        <td>${menu}</td>
+        <td>${data[menu].jumlah || 0}</td>
+        <td>Rp ${(data[menu].totalPendapatan || 0).toLocaleString('id-ID')}</td>
+    </tr>
+`).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3">Data tidak ditemukan.</td></tr>';
+            }
+        });
+    }
+
+    // PENTING: Panggil fungsi cekAksesKaryawan() saat halaman pertama kali dibuka
+    cekAksesKaryawan();
+
+</script>
+</body>
+</html>

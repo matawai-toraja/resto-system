@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Digital Resto</title>
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif;
+            padding: 20px;
+            margin: 0;
+            background-image: url('latarku.jpg');
+            background-size: cover;          
+            background-position: center;     
+            background-attachment: fixed;    
+            background-repeat: no-repeat;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.5); 
+            z-index: -1;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            max-width: 600px; 
+            margin: auto;
+        }
+        h1, h2, label { color: #2d3436; font-weight: 700; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 20px;
+            padding: 10px 0;
+        }
+        
+        @media (min-width: 600px) {
+            .menu-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        .menu-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .menu-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+        button { background-color: #27ae60; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #area-keranjang { background: #fff; padding: 20px; border-radius: 12px; margin-top: 20px; border: 2px solid #27ae60; display: none; }
+        .btn-kirim { background: #2980b9; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container" id="container-utama">
+        <h1>Pilih Menu Anda</h1>
+        <div id="input-area">
+            <input type="text" id="nama" placeholder="Nama Anda">
+            <input type="number" id="meja" placeholder="Nomor Meja">
+            <label>Filter Kategori:</label>
+            <select id="filter" onchange="tampilkanMenu()">
+                <option value="Semua">Semua</option>
+                <option value="Makanan">Makanan</option>
+                <option value="Minuman">Minuman</option>
+            </select>
+        </div>
+<input type="text" id="searchInput" placeholder="Cari menu di sini..." 
+       onkeyup="cariMenu()" 
+       style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px;">
+
+        <div id="area-toko">
+            <div class="menu-grid" id="menu-list">Memuat menu...</div>
+            <div id="area-keranjang">
+                <h3>Daftar Pesanan Anda</h3>
+                <div id="keranjang-container"></div>
+                <button class="btn-kirim" onclick="prosesKirimPesanan()">Kirim Semua Pesanan</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Inisialisasi restoId dari URL
+  const urlParams = new URLSearchParams(window.location.search);
+let restoId = urlParams.get('restoId') || localStorage.getItem('restoId');
+
+// Jika masih RESTO_DEFAULT atau null, arahkan ke angka 1 (atau ID resto Anda)
+if (!restoId || restoId === 'RESTO_DEFAULT') {
+    restoId = 1; 
+    localStorage.setItem('restoId', restoId);
+}
+
+    let menuData = [];
+    let keranjang = [];
+
+    // Mengambil data menu dengan restoId
+    fetch(`/resto/menu?restoId=${restoId}`)
+        .then(res => res.json())
+        .then(data => { menuData = Array.isArray(data) ? data : []; tampilkanMenu(); });
+
+    setInterval(() => {
+        fetch(`/resto/menu?restoId=${restoId}`)
+            .then(res => res.json())
+            .then(data => {
+                const newData = Array.isArray(data) ? data : [];
+                if (JSON.stringify(menuData) !== JSON.stringify(newData)) {
+                    menuData = newData;
+                    tampilkanMenu();
+                }
+            });
+    }, 3000);
+
+    function tampilkanMenu() {
+        const filter = document.getElementById('filter').value;
+        const filtered = menuData.filter(m => filter === "Semua" || m.kategori === filter);
+        
+        document.getElementById('menu-list').innerHTML = filtered.map(m => `
+            <div class="menu-card">
+                <img src="${m.gambar}" onerror="this.src='https://via.placeholder.com/200'">
+                <h3>${m.nama}</h3>
+                <p>Rp ${Number(m.harga).toLocaleString()} | ${m.stok > 0 ? 'Ada' : 'Habis'}</p>
+                <button onclick="tambahKeKeranjang(${m.id})" ${m.stok <= 0 ? 'disabled style="background:#95a5a6"' : ''}>
+                    ${m.stok > 0 ? 'Tambah ke Keranjang' : 'Habis'}
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function tambahKeKeranjang(id) {
+        const menu = menuData.find(m => m.id === id);
+        if (!menu) return;
+        const existing = keranjang.find(item => item.id === id);
+        if (existing) { existing.jumlah += 1; } 
+        else { keranjang.push({ ...menu, jumlah: 1 }); }
+        updateDaftarKeranjang();
+        simpanKeranjang();
+    }
+
+    function updateDaftarKeranjang() {
+        const container = document.getElementById('keranjang-container');
+        container.innerHTML = '';
+        keranjang.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;';
+            div.innerHTML = `
+                <span>${item.nama}</span>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button onclick="ubahJumlah(${index}, -1)" style="width:30px;">-</button>
+                    <span>${item.jumlah}</span>
+                    <button onclick="ubahJumlah(${index}, 1)" style="width:30px;">+</button>
+                    <button onclick="hapusItem(${index})" style="background: red; width:auto;">Hapus</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        document.getElementById('area-keranjang').style.display = keranjang.length > 0 ? 'block' : 'none';
+    }
+
+    function ubahJumlah(index, perubahan) {
+        keranjang[index].jumlah += perubahan;
+        if (keranjang[index].jumlah <= 0) keranjang.splice(index, 1);
+        updateDaftarKeranjang();
+        simpanKeranjang();
+    }
+
+    function hapusItem(index) { keranjang.splice(index, 1); updateDaftarKeranjang(); simpanKeranjang(); }
+    function simpanKeranjang() { localStorage.setItem('keranjangResto', JSON.stringify(keranjang)); }
+
+    function prosesKirimPesanan() {
+        const nama = document.getElementById('nama').value;
+        const meja = document.getElementById('meja').value;
+        if (!nama || !meja) { alert("Isi Nama & Meja!"); return; }
+
+        fetch('/resto/kasir/pesan-semua', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nama, meja, pesanan: keranjang, restoId: restoId }) 
+        }).then(() => {
+            const rincianPesanan = keranjang.map(item => `<li>${item.nama} x${item.jumlah}</li>`).join('');
+            const dataSukses = { nama, meja, rincianPesanan };
+            localStorage.setItem('pesananSelesai', JSON.stringify(dataSukses));
+            tampilkanSukses(dataSukses);
+            keranjang = [];
+            localStorage.removeItem('keranjangResto');
+        });
+    }
+
+    function tampilkanSukses(data) {
+        document.getElementById('area-toko').style.display = 'none';
+        document.getElementById('input-area').style.display = 'none';
+        const container = document.getElementById('container-utama');
+        container.innerHTML = `
+            <div style="text-align:center; padding:20px;">
+                <h2>Terima Kasih!</h2>
+                <p>Pesanan atas nama <strong>${data.nama}</strong> di meja <strong>${data.meja}</strong> sedang disiapkan.</p>
+                <ul>${data.rincianPesanan}</ul>
+                <button onclick="pesanKembali()" style="background:#27ae60; padding:12px; width:100%;">Pesan Kembali</button>
+            </div>
+        `;
+    }
+function cariMenu() {
+    // Ambil nilai dari input pencarian
+    let input = document.getElementById('searchInput').value.toLowerCase();
+    
+    // Ambil semua elemen kartu menu (pastikan class kartu Anda sama)
+    // Asumsi kartu menu Anda berada dalam elemen dengan class "menu-card"
+    let menuCards = document.getElementsByClassName('menu-card'); 
+
+    for (let i = 0; i < menuCards.length; i++) {
+        let title = menuCards[i].querySelector('h3, h2, b').innerText.toLowerCase();
+        
+        // Jika judul menu mengandung teks yang diketik, tampilkan; jika tidak, sembunyikan
+        if (title.includes(input)) {
+            menuCards[i].style.display = "";
+        } else {
+            menuCards[i].style.display = "none";
+        }
+    }
+}
+
+    function pesanKembali() { localStorage.removeItem('pesananSelesai'); location.reload(); }
+
+    window.onload = function() {
+        const saved = localStorage.getItem('keranjangResto');
+        if (saved) { keranjang = JSON.parse(saved); updateDaftarKeranjang(); }
+        const pesananBerjalan = localStorage.getItem('pesananSelesai');
+        if (pesananBerjalan) { tampilkanSukses(JSON.parse(pesananBerjalan)); }
+    };
+</script>
+</body>
+</html>

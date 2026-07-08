@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Dashboard Resto</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; padding: 20px; flex-wrap: wrap; gap: 20px; }
+        .glass-container { background: rgba(255, 255, 255, 0.2); padding: 40px; border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); backdrop-filter: blur(10px); text-align: center; color: white; width: 300px; }
+        h1 { margin-bottom: 20px; font-weight: 300; }
+        button { display: block; width: 100%; color: white; padding: 12px; margin: 8px 0; background: rgba(255, 255, 255, 0.1); border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: rgba(255, 255, 255, 0.3); }
+        .logout-btn { background: rgba(255, 0, 0, 0.3); margin-top: 20px; }
+        .form-container { background: rgba(255, 255, 255, 0.2); padding: 20px; border-radius: 20px; backdrop-filter: blur(10px); color: white; width: 300px; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <div class="glass-container">
+        <h1>Resto Admin</h1>
+        <div id="menu-admin">
+            <button onclick="verifikasiLaluBuka('/resto/page/kasir')">Buka Kasir</button>
+            <button onclick="verifikasiLaluBuka('/resto/page/kasir-monitor')">Monitor Kasir</button>
+            <button onclick="verifikasiLaluBuka('/resto/page/laporan-harian')">Laporan Harian</button>
+            <button onclick="verifikasiLaluBuka('/resto/page/analisa-menu')">Analisa Menu</button>
+            <button onclick="verifikasiLaluBuka('/resto/page/riwayat')">Riwayat Pembelian</button>
+        </div>
+        <button class="logout-btn" onclick="logout()">Keluar (Logout)</button>
+    </div>
+
+    <div class="form-container">
+        <h3>Ganti Password Akses</h3>
+        <input type="password" id="passLama" placeholder="Password Lama">
+        <input type="password" id="passBaru" placeholder="Password Baru">
+        <button onclick="prosesGantiPassword()" style="background:#27ae60;">Simpan Password Baru</button>
+    </div>
+
+    <script>
+        // Fungsi Ganti Password (MENGUNCI KEMBALI)
+        async function prosesGantiPassword() {
+            const pLama = document.getElementById('passLama').value;
+            const pBaru = document.getElementById('passBaru').value;
+            const res = await fetch('/resto/kasir/ganti-password-karyawan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ passwordLama: pLama, passwordBaru: pBaru, restoId: localStorage.getItem('restoId') })
+            });
+            if (res.ok) {
+                alert("Password berhasil diganti! Semua akses terkunci.");
+                sessionStorage.removeItem('aksesDiberikan'); // Kunci dicabut
+                document.getElementById('passLama').value = '';
+                document.getElementById('passBaru').value = '';
+            } else {
+                alert("Gagal mengganti password");
+            }
+        }
+
+        // Fungsi Verifikasi (MEMBUKA KUNCI)
+        async function verifikasiLaluBuka(url) {
+            const password = prompt("Masukkan Password Karyawan:");
+            if (!password) return;
+            const res = await fetch('/resto/verifikasi-karyawan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password, restoId: localStorage.getItem('restoId') })
+            });
+            if (res.ok) {
+                sessionStorage.setItem('aksesDiberikan', 'true'); // Kunci diberikan
+                window.location.href = url;
+            } else {
+                alert("Password Salah!");
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/resto/page/login';
+        }
+    </script>
+</body>
+</html>

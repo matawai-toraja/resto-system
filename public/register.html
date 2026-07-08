@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrasi Resto</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding-top: 50px; }
+        .box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 350px; }
+        h2 { text-align: center; color: #333; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #6c63ff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #5750d8; }
+        .link { text-align: center; margin-top: 15px; font-size: 14px; }
+        a { color: #6c63ff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Daftar Resto Baru</h2>
+        <input type="text" id="namaResto" placeholder="Nama Restoran">
+        <input type="text" id="username" placeholder="Username Admin">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="register()">Daftar</button>
+        <div class="link">
+            Sudah punya akun? <a href="/resto/page/login">Login di sini</a>
+        </div>
+    </div>
+
+    <script>
+        async function register() {
+            const data = {
+                namaResto: document.getElementById('namaResto').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert("Pendaftaran berhasil! Silakan login.");
+                window.location.href = '/resto/page/login';
+            } else {
+                const err = await response.json();
+                alert("Gagal: " + (err.message || "Terjadi kesalahan"));
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,721 @@
+{
+  "tabelMenu": [
+    {
+      "id": 1783056038799,
+      "nama": "nasi uduk",
+      "harga": 20000,
+      "stok": 1,
+      "kategori": "Makanan",
+      "gambar": "/uploads/1783056038789.jpg"
+    },
+    {
+      "id": 1783056054026,
+      "nama": "kopi ",
+      "harga": 10000,
+      "stok": 1,
+      "kategori": "Minuman",
+      "gambar": "/uploads/1783056054022.png"
+    },
+    {
+      "id": 1783056068354,
+      "nama": "bakso",
+      "harga": 250000,
+      "stok": 0,
+      "kategori": "Makanan",
+      "gambar": "/uploads/1783056068353.jpg"
+    },
+    {
+      "id": 1783056086713,
+      "nama": "teh",
+      "harga": 10000,
+      "stok": 1,
+      "kategori": "Minuman",
+      "gambar": "/uploads/1783056086708.png"
+    },
+    {
+      "id": 1783241393108,
+      "nama": "gorengan",
+      "harga": 200000,
+      "stok": 1,
+      "kategori": "Makanan",
+      "gambar": "/uploads/1783241393100.jpg"
+    }
+  ],
+  "tabelTransaksi": [
+    {
+      "idTransaksi": "TRX-1783068249521",
+      "idPelanggan": null,
+      "namaPelanggan": "allink",
+      "meja": "2",
+      "item": "kopi , bakso",
+      "totalBayar": 260000
+    },
+    {
+      "idTransaksi": "TRX-1783068720638",
+      "idPelanggan": null,
+      "namaPelanggan": "allink",
+      "meja": "2",
+      "item": "kopi , bakso",
+      "totalBayar": 260000
+    },
+    {
+      "idTransaksi": "TRX-1783073949397",
+      "idPelanggan": 1783073871091,
+      "namaPelanggan": "allink",
+      "meja": "2",
+      "item": "nasi uduk",
+      "totalBayar": 20000
+    },
+    {
+      "idTransaksi": "TRX-1783074503719",
+      "idPelanggan": 1783073885961,
+      "namaPelanggan": "surams",
+      "meja": "2",
+      "item": "kopi , bakso",
+      "totalBayar": 260000
+    },
+    {
+      "idTransaksi": "TRX-1783074732790",
+      "idPelanggan": 1783074004397,
+      "namaPelanggan": "arki",
+      "meja": "3",
+      "item": "nasi uduk, kopi , bakso",
+      "totalBayar": 550000
+    },
+    {
+      "idTransaksi": "TRX-1783075452775",
+      "idPelanggan": 1783075409895,
+      "namaPelanggan": "hengki",
+      "meja": "3",
+      "item": "nasi uduk, kopi ",
+      "totalBayar": 60000
+    },
+    {
+      "idTransaksi": "TRX-1783075705815",
+      "idPelanggan": 1783074128078,
+      "namaPelanggan": "budi",
+      "meja": "2",
+      "item": "nasi uduk, kopi , bakso",
+      "totalBayar": 280000
+    }
+  ],
+  "pesananMasuk": [
+    {
+      "id": 1783091634553,
+      "nama": "fdil",
+      "meja": "2",
+      "pesanan": [
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056068354,
+          "nama": "bakso",
+          "harga": 250000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056068353.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "dibayar"
+    },
+    {
+      "id": 1783092340087,
+      "nama": "andi",
+      "meja": "6",
+      "pesanan": [
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056068354,
+          "nama": "bakso",
+          "harga": 250000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056068353.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "dibayar"
+    },
+    {
+      "id": 1783093283191,
+      "nama": "sulo",
+      "meja": "4",
+      "pesanan": [
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056068354,
+          "nama": "bakso",
+          "harga": 250000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056068353.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "dibayar"
+    },
+    {
+      "id": 1783094515306,
+      "nama": "in",
+      "meja": "5",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 4
+        },
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 2
+        },
+        {
+          "id": 1783056068354,
+          "nama": "bakso",
+          "harga": 250000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056068353.jpg",
+          "jumlah": 2
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783095004292,
+      "nama": "tyo",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783095058147,
+      "nama": "suara",
+      "meja": "2",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783095131033,
+      "nama": "budi",
+      "meja": "2",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783095283372,
+      "nama": "allink",
+      "meja": "1",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783095349446,
+      "nama": "a2",
+      "meja": "2",
+      "pesanan": [
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783095373990,
+      "nama": "trt",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783098525961,
+      "nama": "sulo",
+      "meja": "4",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056086713,
+          "nama": "teh",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056086708.png",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783145761123,
+      "nama": "suramas",
+      "meja": "4",
+      "pesanan": [
+        {
+          "id": 1783056068354,
+          "nama": "bakso",
+          "harga": 250000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056068353.jpg",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783145857681,
+      "nama": "tes",
+      "meja": "5",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056054026,
+          "nama": "kopi ",
+          "harga": 10000,
+          "stok": 1,
+          "kategori": "Minuman",
+          "gambar": "/uploads/1783056054022.png",
+          "jumlah": 1
+        },
+        {
+          "id": 1783056068354,
+          "nama": "bakso",
+          "harga": 250000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056068353.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146877225,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146878208,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146878738,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146879144,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146880154,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146880331,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146880509,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146880682,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146880860,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146881031,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146881230,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146881443,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783146882290,
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 1783241527323,
+      "nama": "bos",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056086713,
+          "nama": "teh",
+          "harga": 10000,
+          "jumlah": 1
+        },
+        {
+          "id": 1783241393108,
+          "nama": "gorengan",
+          "harga": 200000,
+          "jumlah": 1
+        }
+      ],
+      "status": "pending"
+    }
+  ],
+  "tabelRiwayat": [
+    {
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "waktuSelesai": "20.21.42",
+      "tanggalTransaksi": "4/7/2026",
+      "totalBayar": 20000
+    },
+    {
+      "nama": "arki",
+      "meja": "3",
+      "pesanan": [
+        {
+          "id": 1783056038799,
+          "nama": "nasi uduk",
+          "harga": 20000,
+          "stok": 1,
+          "kategori": "Makanan",
+          "gambar": "/uploads/1783056038789.jpg",
+          "jumlah": 1
+        }
+      ],
+      "waktuSelesai": "16.51.46",
+      "tanggalTransaksi": "5/7/2026",
+      "totalBayar": 20000
+    }
+  ]
+}
