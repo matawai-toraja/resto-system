@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <button id="btn-aktifkan" onclick="aktifkanSuara()">Aktifkan Suara</button>
-<audio id="notif-sound" src="notif.wav" preload="auto"></audio>
+<audio id="notif-sound" src="/notif.mp3" preload="auto"></audio>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -120,23 +120,22 @@ function loadPesanan() {
 function aktifkanSuara() {
     const audio = document.getElementById('notif-sound');
     
-    // 1. Mute, load, lalu play untuk memancing izin
+    // Pastikan source sudah di-set ke .mp3
+    audio.src = "/notif.mp3"; 
+    audio.load();
+
     audio.muted = true;
-    audio.load(); // <--- TAMBAHKAN INI agar file dipastikan termuat
     audio.play().then(() => {
-        audio.pause(); 
-        audio.muted = false; // Aktifkan kembali suaranya
+        audio.pause();
+        audio.muted = false;
         audio.currentTime = 0;
         
         const btn = document.getElementById('btn-aktifkan');
         btn.innerText = "Suara Sudah Aktif";
         btn.disabled = true;
-        
         localStorage.setItem('suaraSudahAktif', 'true');
-        console.log("Izin audio berhasil diberikan!");
     }).catch(e => {
-        console.error("Gagal memancing izin audio:", e);
-        alert("Klik tombol ini sekali lagi saat halaman baru terbuka.");
+        console.error("Gagal memutar audio:", e);
     });
 }
 function putarNotif() {
