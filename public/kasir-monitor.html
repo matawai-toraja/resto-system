@@ -44,37 +44,39 @@
 
 <script>
 
+
     const token = localStorage.getItem('authKey');
     const restoId = localStorage.getItem('restoId');
     if (!token) { window.location.href = 'login.html'; }
 
-    let idBayarSekarang = null;
-    let dataPesananSekarang = null;
-    let jumlahPesananTerakhir = 0;
-    
-    // Pastikan ID audio ini sama dengan yang ada di HTML Anda
-    const audioNotif = document.getElementById('notif-sound'); 
+   let isFirstLoad = true;
+let idBayarSekarang = null;
+let dataPesananSekarang = null;
+let jumlahPesananTerakhir = 0;
 
-    function loadPesanan() {
-        fetch(`/resto/kasir/daftar-pesanan?restoId=${restoId}`, { 
-            headers: { 'Authorization': 'Bearer ' + token } 
-        })
-        .then(res => res.json())
-        .then(data => {
-            // Notif Suara: Cek apakah ada pesanan baru
-            if (data.length > jumlahPesananTerakhir && jumlahPesananTerakhir !== 0) {
-                putarNotif();
-            }
-            jumlahPesananTerakhir = data.length;
-            
-            renderPesanan(data.reverse());
-            
-            // PERBAIKAN PENCARIAN: Filter dipanggil setelah render agar tetap aktif
-            filterPesanan();
-        });
-    }
+const audioNotif = document.getElementById('notif-sound'); 
 
-    function renderPesanan(data) {
+function loadPesanan() {
+    // Tambahkan cache: 'no-cache' agar selalu ambil data terbaru dari server
+    fetch(`/resto/kasir/daftar-pesanan?restoId=${restoId}`, { 
+        headers: { 'Authorization': 'Bearer ' + token },
+        cache: 'no-cache' 
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Logika Notif: Hanya bunyi jika BUKAN load pertama kali DAN data bertambah
+        if (!isFirstLoad && data.length > jumlahPesananTerakhir) {
+            putarNotif();
+        }
+        
+        jumlahPesananTerakhir = data.length;
+        isFirstLoad = false; // Tandai bahwa load pertama selesai
+        
+        renderPesanan(data.reverse());
+        filterPesanan();
+    })
+    .catch(err => console.error("Gagal ambil data:", err));
+}    function renderPesanan(data) {
         const container = document.getElementById('container-monitor');
         container.innerHTML = data.map(p => {
             let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
@@ -115,18 +117,30 @@
       btn.disabled = true; // Tombol dikunci (tidak bisa diklik lagi)
   }
 
-
-  function aktifkanSuara() {
-      // 2. Jalankan logika suara Anda di sini
-      console.log("Suara diaktifkan!"); 
-      
-      // 3. Ubah tampilan tombol
-      btn.innerText = "Suara Sudah Aktif";
-      btn.disabled = true; // Kunci tombol
-      
-      // 4. Simpan status ke localStorage agar ingat terus
-      localStorage.setItem('suaraSudahAktif', 'true');
-  }
+function aktifkanSuara() {
+    const audio = document.getElementById('notif-sound');
+    
+    // Memainkan audio untuk "membuka kunci" (unlock) kebijakan browser
+    audio.play().then(() => {
+        audio.pause(); // Langsung hentikan setelah play sedikit
+        audio.currentTime = 0; // Reset ke awal
+        
+        console.log("Suara diaktifkan!");
+        btn.innerText = "Suara Sudah Aktif";
+        btn.disabled = true;
+        localStorage.setItem('suaraSudahAktif', 'true');
+    }).catch(err => {
+        alert("Gagal mengaktifkan suara. Pastikan file notif.wav ada.");
+        console.error(err);
+    });
+}
+function putarNotif() {
+    const audio = document.getElementById('notif-sound');
+    if (audio) {
+        audio.currentTime = 0; // Reset ke 0 agar bisa bunyi berulang kali
+        audio.play().catch(e => console.log("Audio diblokir browser"));
+    }
+}
     // Fungsi Pembantu
     function tandaiSiap(id, checked) { localStorage.setItem('siap-'+id, checked); loadPesanan(); }
     function bukaModal(id, total, pEncoded) { 
