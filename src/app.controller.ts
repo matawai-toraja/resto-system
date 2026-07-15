@@ -58,7 +58,18 @@ export class AppController {
     if (!file) throw new BadRequestException("Gambar harus diunggah!");
     return await this.menuRepo.save({ ...data, harga: parseInt(data.harga), stok: parseInt(data.stok), gambar: '/uploads/' + file.filename, restoId: this.validateRestoId(data.restoId) });
   }
-
+@Post('menu/resto/wa/update')
+async updateWa(@Body() body: { restoId: number, nomor: string }) {
+    // Kita gunakan nama kolom yang benar: nomorWa
+    await this.restoRepo.update(this.validateRestoId(body.restoId), { nomorWa: body.nomor });
+    return { success: true };
+}
+@Get('menu/resto/wa')
+async getWaResto(@Query('restoId') restoId: string) {
+    const resto = await this.restoRepo.findOne({ where: { id: this.validateRestoId(restoId) } });
+    // Ubah resto.whatsapp menjadi resto.nomorWa
+    return resto ? resto.nomorWa : ""; 
+}
   @Post('hapus-menu')
   async hapusMenu(@Body() data: { id: number }) { await this.menuRepo.delete(data.id); return { status: "Menu Dihapus" }; }
 

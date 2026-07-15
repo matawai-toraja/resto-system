@@ -128,7 +128,7 @@
         if (!restoId) return;
         const nomorBaru = document.getElementById('inputNomorWa').value;
         try {
-            const response = await fetch('/menu/resto/wa/update', {
+            const response = await fetch('/resto/menu/resto/wa/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ restoId: restoId, nomor: nomorBaru })
@@ -150,7 +150,7 @@
             if (isNaN(lat) || isNaN(lng)) return alert("Gagal mendapatkan koordinat.");
 
             try {
-                const response = await fetch('/menu/update-location', {
+                const response = await fetch('/resto/menu/update-location', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ restoId: restoId, lat: lat, lon: lng })
@@ -167,7 +167,7 @@
         const restoId = getRestoId();
         if (!restoId) return;
         const radius = document.getElementById('inputRadius').value;
-        const res = await fetch('/menu/resto/radius/update', {
+        const res = await fetch('/resto/menu/resto/radius/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ restoId, radius })
