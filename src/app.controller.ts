@@ -60,8 +60,8 @@ export class AppController {
   }
 @Post('menu/resto/wa/update')
   async updateWa(@Body() body: { restoId: number, nomor: string }) {
-    await this.restoRepo.update(this.validateRestoId(body.restoId), { nomorWa: body.nomor });
-    return { success: true };
+      await this.restoRepo.update(this.validateRestoId(body.restoId), { nomorWa: body.nomor }); 
+      return { success: true };
   }
 @Get('menu/resto/wa')
 async getWaResto(@Query('restoId') restoId: string) {
