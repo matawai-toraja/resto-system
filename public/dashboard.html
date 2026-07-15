@@ -138,32 +138,7 @@
         }
     }
 
-   async function simpanLokasiResto() {
-    if (!navigator.geolocation) return alert("Browser tidak mendukung GPS.");
-    
-    // Gunakan struktur yang benar tanpa error syntax
-    navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        const restoId = getRestoId();
-        if (!restoId) return;
-
-        try {
-            const response = await fetch('/resto/menu/update-location', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ restoId: restoId, lat: lat, lon: lng })
-            });
-            if (response.ok) alert("Lokasi Resto berhasil disimpan!");
-            else alert("Gagal menyimpan lokasi.");
-        } catch (error) {
-            alert("Terjadi kesalahan koneksi.");
-        }
-    }, (error) => {
-        alert("Harap izinkan akses lokasi!");
-    });
-}
-    async function simpanRadius() {
+       async function simpanRadius() {
         const restoId = getRestoId();
         if (!restoId) return;
         const radius = document.getElementById('inputRadius').value;
