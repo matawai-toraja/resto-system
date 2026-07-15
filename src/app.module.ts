@@ -42,7 +42,7 @@ import { PrinterSettings } from './printer/printer-settings.entity';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
 entities: [Menu, Pesanan, Riwayat, Transaksi, Resto, Karyawan, PrinterSettings],
-       synchronize: false,
+       synchronize: true,
       }),
     }),
 
