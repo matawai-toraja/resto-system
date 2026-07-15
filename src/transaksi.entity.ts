@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('transaksi')
 export class Transaksi {
   @PrimaryGeneratedColumn()
-  id: number; // Menggunakan ID internal sebagai Primary Key
+  id: number;
 
   @Column()
   idTransaksi: string;
@@ -17,9 +17,13 @@ export class Transaksi {
   @Column()
   meja: number;
 
-  @Column()
+  @Column('text')
   item: string;
 
-  @Column('decimal')
+  @Column('decimal', { precision: 10, scale: 2 })
   totalBayar: number;
+
+  // TAMBAHKAN BARIS INI:
+  @Column({ nullable: true })
+  restoId: number; 
 }

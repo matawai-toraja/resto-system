@@ -22,28 +22,23 @@
             <tr><td colspan="3">Memverifikasi akses...</td></tr>
         </tbody>
     </table>
-    <br>
-    <button class="btn-reset" onclick="resetAnalisa()">Reset Data Analisa</button>
+  
 </div>
 
 <script>
     // 1. Fungsi Utama Verifikasi
     async function cekAksesKaryawan() {
-        // Jika sudah pernah login di sesi ini, tidak perlu minta password lagi
         if (sessionStorage.getItem('aksesDiberikan') === 'true') {
             loadAnalisa();
             return;
         }
 
         const password = prompt("Masukkan Password Khusus Karyawan:");
-        
-        // Jika user klik 'Batal' atau kosong, tendang balik ke dashboard
         if (!password) {
             window.location.href = '/resto/page/dashboard';
             return;
         }
 
-        // Cek ke Database (Backend)
         try {
             const res = await fetch('/resto/verifikasi-karyawan', {
                 method: 'POST',
@@ -52,11 +47,9 @@
             });
 
             if (res.ok) {
-                // Password benar
                 sessionStorage.setItem('aksesDiberikan', 'true');
                 loadAnalisa();
             } else {
-                // Password salah
                 alert("Password Salah! Akses ditolak.");
                 window.location.href = '/resto/page/dashboard';
             }
@@ -66,35 +59,41 @@
         }
     }
 
-    // 2. Fungsi untuk load data (yang sudah Anda miliki)
-    function loadAnalisa() {
+    // 2. Fungsi Load Data dengan Rute yang Benar
+    async function loadAnalisa() {
         const restoId = localStorage.getItem('restoId');
-        const token = localStorage.getItem('authKey');
-
-        fetch(`/resto/kasir/analisa-menu?restoId=${restoId}`, {
-            method: 'GET',
-            headers: { 'Authorization': 'Bearer ' + token }
-        })
-        .then(res => res.json())
-        .then(data => {
-            const tbody = document.getElementById('tabel-analisa');
-            if (data && typeof data === 'object' && !data.error) {
-               tbody.innerHTML = Object.keys(data).map(menu => `
-    <tr>
-        <td>${menu}</td>
-        <td>${data[menu].jumlah || 0}</td>
-        <td>Rp ${(data[menu].totalPendapatan || 0).toLocaleString('id-ID')}</td>
-    </tr>
-`).join('');
+        const tbody = document.getElementById('tabel-analisa');
+        
+        try {
+            // Kita gunakan rute yang sudah terdaftar di MenuController Anda
+            const res = await fetch(`/menu/kasir/analisa-menu?restoId=${restoId}`);
+            
+            if (!res.ok) throw new Error("Gagal mengambil data");
+            
+            const data = await res.json();
+            
+            tbody.innerHTML = ''; 
+            
+            // Cek apakah data ada dan bukan error object
+            if (data && Object.keys(data).length > 0) {
+                tbody.innerHTML = Object.keys(data).map(menu => `
+                    <tr>
+                        <td>${menu}</td>
+                        <td>${data[menu].jumlah || 0}</td>
+                        <td>Rp ${(data[menu].totalPendapatan || 0).toLocaleString('id-ID')}</td>
+                    </tr>
+                `).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="3">Data tidak ditemukan.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3">Belum ada data transaksi.</td></tr>';
             }
-        });
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = '<tr><td colspan="3">Data tidak ditemukan.</td></tr>';
+        }
     }
 
-    // PENTING: Panggil fungsi cekAksesKaryawan() saat halaman pertama kali dibuka
+    // Jalankan
     cekAksesKaryawan();
-
 </script>
 </body>
 </html>

@@ -6,9 +6,10 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding-top: 50px; }
         .box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 350px; }
-        h2 { text-align: center; color: #333; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #6c63ff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        h4 { color: #666; margin: 15px 0 5px 0; font-size: 14px; }
+        input { width: 100%; padding: 12px; margin: 5px 0 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #6c63ff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
         button:hover { background: #5750d8; }
         .link { text-align: center; margin-top: 15px; font-size: 14px; }
         a { color: #6c63ff; text-decoration: none; }
@@ -20,7 +21,14 @@
         <input type="text" id="namaResto" placeholder="Nama Restoran">
         <input type="text" id="username" placeholder="Username Admin">
         <input type="password" id="password" placeholder="Password">
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+        <h4>Akun Kasir (Karyawan)</h4>
+        <input type="text" id="usernameKasir" placeholder="Username Kasir">
+        <input type="password" id="passwordKasir" placeholder="Password Kasir">
+
         <button onclick="register()">Daftar</button>
+        
         <div class="link">
             Sudah punya akun? <a href="/resto/page/login">Login di sini</a>
         </div>
@@ -31,7 +39,9 @@
             const data = {
                 namaResto: document.getElementById('namaResto').value,
                 username: document.getElementById('username').value,
-                password: document.getElementById('password').value
+                password: document.getElementById('password').value,
+                usernameKasir: document.getElementById('usernameKasir').value,
+                passwordKasir: document.getElementById('passwordKasir').value
             };
 
             const response = await fetch('/auth/register', {

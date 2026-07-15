@@ -1,153 +1,95 @@
 <!DOCTYPE html>
 <html lang="id">
-<script>
-    // PASANG DISINI PALING ATAS
-    (function() {
-        if (sessionStorage.getItem('aksesDiberikan') !== 'true') {
-            alert("Akses ditolak! Silakan verifikasi password.");
-            window.location.href = '/resto/page/dashboard';
-        }
-    })();
-</script>
 <head>
     <meta charset="UTF-8">
     <title>Laporan Harian</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            padding: 40px; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #fff;
-        }
-        .glass-container {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-        .total-box { 
-            font-size: 24px; font-weight: bold; margin-bottom: 25px; 
-            padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: 15px; 
-            text-align: center; color: #ffffff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
+        body { font-family: 'Segoe UI', sans-serif; padding: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #fff; }
+        .glass-container { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+        .stats-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 15px; text-align: center; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: rgba(255, 255, 255, 0.1); padding: 15px; text-align: left; border-bottom: 2px solid rgba(255, 255, 255, 0.2); }
+        th { background: rgba(255, 255, 255, 0.1); padding: 15px; text-align: left; }
         td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        button, a { 
-            padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer;
-            background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; 
-            font-weight: bold; transition: 0.3s; display: inline-block;
-        }
+        button, a { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; font-weight: bold; transition: 0.3s; }
         button:hover, a:hover { background: rgba(255, 255, 255, 0.4); }
-        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
-
-
 <div class="glass-container">
     <h1>Laporan Penjualan</h1>
-    <div class="total-box" id="display-omzet">Memuat...</div>
     
+    <div class="stats-box">
+        <div class="stat-card"><h3>Omset</h3><p id="total-omset">Rp 0</p></div>
+        <div class="stat-card"><h3>Transaksi</h3><p id="jml-transaksi">0</p></div>
+        <div class="stat-card"><h3>Menu Terlaris</h3><p id="menu-terlaris">-</p></div>
+    </div>
+
     <table>
         <thead>
-            <tr><th>Pelanggan</th><th>Waktu</th><th>Total</th></tr>
+            <tr>
+                <th>Pelanggan</th>
+                <th>Detail Pesanan</th>
+                <th>Waktu</th>
+                <th>Total Bayar</th>
+            </tr>
         </thead>
         <tbody id="tabel-laporan"></tbody>
     </table>
-
     <br><br>
-    <button class="no-print" onclick="window.print()">Cetak Laporan</button>
+    <button onclick="window.print()">Cetak Laporan</button>
     <a href="kasir-monitor.html">Kembali</a>
 </div>
 
 <script>
-async function cekAksesKaryawan() {
-        // Cek sesi agar tidak perlu input password berkali-kali
-        if (sessionStorage.getItem('aksesDiberikanLaporan') === 'true') {
-            loadLaporan(); // Panggil fungsi utama untuk load data
-            return;
-        }
-
-        const password = prompt("Masukkan Password Khusus Karyawan:");
-        if (!password) {
-            window.location.href = '/resto/page/dashboard';
-            return;
-        }
+    async function loadLaporan() {
+        const restoId = localStorage.getItem('restoId');
+        if (!restoId) { alert("Silakan login kembali."); return; }
 
         try {
-            const res = await fetch('/resto/verifikasi-karyawan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    password: password, 
-                    restoId: localStorage.getItem('restoId') 
-                })
-            });
+            // Logika inti: Tetap mengambil data riwayat harian yang sudah benar
+            const res = await fetch(`/menu/laporan/harian?restoId=${restoId}`);
+            const data = await res.json();
+            
+            const tbody = document.getElementById('tabel-laporan');
+            tbody.innerHTML = '';
+            
+            let totalOmset = 0;
+            const menuCount = {};
 
-            if (res.ok) {
-                sessionStorage.setItem('aksesDiberikanLaporan', 'true');
-                loadLaporan();
-            } else {
-                alert("Password Salah!");
-                window.location.href = '/resto/page/dashboard';
+            if (Array.isArray(data)) {
+                data.forEach(item => {
+                    totalOmset += Number(item.totalBayar || 0);
+                    
+                    // Logika Menu Terlaris
+                    if (item.pesanan) {
+                        item.pesanan.split(', ').forEach(p => {
+                            const [nama, jml] = p.split(' x');
+                            menuCount[nama] = (menuCount[nama] || 0) + (parseInt(jml) || 1);
+                        });
+                    }
+                    
+                    // Render Tabel
+                    tbody.innerHTML += `<tr>
+                        <td>${item.nama || '-'}</td>
+                        <td>${item.pesanan || '-'}</td>
+                        <td>${item.waktuSelesai ? new Date(item.waktuSelesai).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
+                        <td>Rp ${Number(item.totalBayar || 0).toLocaleString()}</td>
+                    </tr>`;
+                });
+
+                // Update Statistik
+                let menuTerlaris = Object.keys(menuCount).reduce((a, b) => (menuCount[a] > menuCount[b] ? a : b), 'Belum ada');
+                document.getElementById('total-omset').innerText = 'Rp ' + totalOmset.toLocaleString();
+                document.getElementById('jml-transaksi').innerText = data.length;
+                document.getElementById('menu-terlaris').innerText = menuTerlaris;
             }
         } catch (err) {
-            window.location.href = '/resto/page/dashboard';
+            console.error("Gagal memuat:", err);
         }
     }
 
-    // Jalankan verifikasi saat halaman dimuat
-    cekAksesKaryawan();
-    function updateLaporan() {
-        const token = localStorage.getItem('token'); 
-        const restoId = localStorage.getItem('restoId'); // Ambil restoId untuk identitas resto
-
-        // Tambahkan query parameter restoId agar backend tahu data resto mana yang diambil
-        fetch(`/resto/kasir/laporan-harian?restoId=${restoId}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            }
-        }) 
-        .then(res => {
-            if (res.status === 403 || res.status === 401) {
-                document.getElementById('display-omzet').innerText = "Akses tidak diizinkan!";
-                return;
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (!data) return;
-            const omzet = data.totalOmzet || 0;
-            document.getElementById('display-omzet').innerText = 'Total Omzet Hari Ini: Rp ' + Number(omzet).toLocaleString('id-ID');
-            
-            const tbody = document.getElementById('tabel-laporan');
-            tbody.innerHTML = ''; 
-            
-            if (data.data && Array.isArray(data.data)) {
-                data.data.forEach(item => {
-                    const waktu = item.waktuSelesai ? new Date(item.waktuSelesai).toLocaleString() : '-';
-                    const row = `<tr>
-                        <td>${item.nama || 'Pelanggan'}</td>
-                        <td>${waktu}</td>
-                        <td>Rp ${Number(item.totalBayar || 0).toLocaleString('id-ID')}</td>
-                    </tr>`;
-                    tbody.innerHTML += row;
-                });
-            }
-        })
-        .catch(err => console.error('Gagal mengambil data:', err));
-    }
-
-    updateLaporan();
-    setInterval(updateLaporan, 5000);
+    loadLaporan();
 </script>
-
 </body>
 </html>

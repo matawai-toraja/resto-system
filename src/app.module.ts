@@ -16,7 +16,11 @@ import { Riwayat } from './riwayat.entity';
 import { Transaksi } from './transaksi.entity';
 import { Resto } from './resto.entity';
 import { Karyawan } from './karyawan.entity';
-
+import { AppGateway } from './app.gateway';
+import { KaryawanController } from './karyawan.controller'; // Tambahkan ini
+import { KaryawanService } from './karyawan.service';
+import { PrinterModule } from './printer/printer.module';
+import { PrinterSettings } from './printer/printer-settings.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), 
@@ -37,14 +41,15 @@ import { Karyawan } from './karyawan.entity';
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities: [Menu, Pesanan, Riwayat, Transaksi, Resto, Karyawan],
-        synchronize: true,
+entities: [Menu, Pesanan, Riwayat, Transaksi, Resto, Karyawan, PrinterSettings],
+       synchronize: false,
       }),
     }),
 
-    TypeOrmModule.forFeature([Menu, Pesanan, Riwayat, Transaksi, Resto, Karyawan]),
+    TypeOrmModule.forFeature([Menu, Pesanan, Riwayat, Transaksi, Resto, Karyawan, PrinterSettings]),
+    PrinterModule,
   ],
-  controllers: [AppController, AuthController, MenuController],
-  providers: [AuthService, MenuService],
+  controllers: [AppController, AuthController, MenuController, KaryawanController],
+ providers: [AuthService, MenuService, KaryawanService, AppGateway],
 })
 export class AppModule {}

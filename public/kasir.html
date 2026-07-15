@@ -53,7 +53,7 @@
         const filter = document.getElementById('filter-kasir').value;
         const restoId = localStorage.getItem('restoId');
         try {
-            const res = await fetch(`/resto/menu?restoId=${restoId}`);
+            const res = await fetch(`/menu/${restoId}`);
             const data = await res.json();
             if (!Array.isArray(data)) return;
             const filtered = (filter === "Semua") ? data : data.filter(m => m.kategori === filter);

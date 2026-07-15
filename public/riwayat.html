@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<script>
-    // PASANG DISINI PALING ATAS
-    (function() {
-        if (sessionStorage.getItem('aksesDiberikan') !== 'true') {
-            alert("Akses ditolak! Silakan verifikasi password.");
-            window.location.href = '/resto/page/dashboard';
-        }
-    })();
-</script>
+
 <head>
     <meta charset="UTF-8">
     <title>Riwayat Penjualan</title>
@@ -75,63 +67,46 @@
 </div>
 
 <script>
-async function cekAksesKaryawan() {
-    if (sessionStorage.getItem('aksesDiberikanRiwayat') === 'true') {
-        updateRiwayat(); // Sudah login, langsung load data
-        return;
-    }
-
-    const password = prompt("Masukkan Password Khusus Karyawan:");
-    if (!password) {
-        window.location.href = '/resto/page/dashboard';
-        return;
-    }
-
-    try {
-        const res = await fetch('/resto/verifikasi-karyawan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                password: password, 
-                restoId: localStorage.getItem('restoId') 
-            })
-        });
-
-        if (res.ok) {
-            sessionStorage.setItem('aksesDiberikanRiwayat', 'true');
-            updateRiwayat();
-        } else {
-            alert("Password Salah! Akses ditolak.");
-            window.location.href = '/resto/page/dashboard';
-        }
-    } catch (err) {
-        alert("Kesalahan koneksi.");
-        window.location.href = '/resto/page/dashboard';
-    }
-}
     const token = localStorage.getItem('token');
-    const restoId = localStorage.getItem('restoId'); // Ambil restoId dari localStorage
+    const restoId = localStorage.getItem('restoId');
 
-    function konfirmasiReset() {
-        if (confirm("PERINGATAN: Apakah Anda yakin ingin menghapus SEMUA data transaksi resto ini? Tindakan ini tidak bisa dibatalkan!")) {
-            fetch('/resto/kasir/reset-data', { 
+    // FUNGSI UTAMA PENGECEKAN
+    async function initRiwayat() {
+        // Cek sesi
+        if (sessionStorage.getItem('aksesRiwayatOK') === 'true') {
+            updateRiwayat(); 
+            return;
+        }
+
+        // Minta password jika belum ada sesi
+        const password = prompt("Masukkan Password Khusus Karyawan:");
+        if (!password) {
+            window.location.href = '/resto/page/dashboard';
+            return;
+        }
+
+        // Verifikasi ke server
+        try {
+            const res = await fetch('/resto/verifikasi-karyawan', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token 
-                },
-                body: JSON.stringify({ restoId: restoId }) // Tambahkan restoId ke body
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.pesan);
-                location.reload();
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password, restoId: restoId })
             });
+
+            if (res.ok) {
+                sessionStorage.setItem('aksesRiwayatOK', 'true'); // Key konsisten
+                updateRiwayat();
+            } else {
+                alert("Password Salah!");
+                window.location.href = '/resto/page/dashboard';
+            }
+        } catch (err) {
+            alert("Gagal terhubung ke server.");
+            window.location.href = '/resto/page/dashboard';
         }
     }
 
     function updateRiwayat() {
-        // Tambahkan query parameter restoId
         fetch(`/resto/kasir/riwayat?restoId=${restoId}`, {
             headers: { 'Authorization': 'Bearer ' + token }
         })
@@ -142,20 +117,24 @@ async function cekAksesKaryawan() {
             tbody.innerHTML = data.map(p => {
                 const subtotal = Number(p.totalBayar || 0);
                 total += subtotal;
-                return `
-                    <tr>
-                        <td><strong>${p.nama || 'Pelanggan'}</strong></td>
-                        <td>${p.meja || '-'}</td>
-                        <td>${p.waktuSelesai ? new Date(p.waktuSelesai).toLocaleString('id-ID') : '-'}</td>
-                        <td>Rp ${subtotal.toLocaleString('id-ID')}</td>
-                    </tr>
-                `;
+                return `<tr><td><strong>${p.nama || 'Pelanggan'}</strong></td><td>${p.meja || '-'}</td><td>${p.waktuSelesai ? new Date(p.waktuSelesai).toLocaleString('id-ID') : '-'}</td><td>Rp ${subtotal.toLocaleString('id-ID')}</td></tr>`;
             }).join('');
             document.getElementById('total-pendapatan').innerText = 'Total Pendapatan: Rp ' + total.toLocaleString('id-ID');
         });
     }
 
-    cekAksesKaryawan();
+    function konfirmasiReset() {
+        if (confirm("Yakin hapus SEMUA data?")) {
+            fetch('/resto/kasir/reset-data', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ restoId: restoId })
+            }).then(() => location.reload());
+        }
+    }
+
+    // Panggil fungsi utama saat halaman dimuat
+    initRiwayat();
 </script>
 </body>
 </html>
