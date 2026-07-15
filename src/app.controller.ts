@@ -59,14 +59,16 @@ export class AppController {
     return await this.menuRepo.save({ ...data, harga: parseInt(data.harga), stok: parseInt(data.stok), gambar: '/uploads/' + file.filename, restoId: this.validateRestoId(data.restoId) });
   }
 @Post('menu/resto/wa/update')
-  async updateWa(@Body() body: { restoId: number, nomor: string }) {
-      await this.restoRepo.update(this.validateRestoId(body.restoId), { nomorWa: body.nomor }); 
-      return { success: true };
-  }
+async updateWa(@Body() body: { restoId: number, nomor: string }) {
+    // Kita gunakan nama kolom yang benar: nomorWa
+    await this.restoRepo.update(this.validateRestoId(body.restoId), { nomorWa: body.nomor });
+    return { success: true };
+}
 @Get('menu/resto/wa')
 async getWaResto(@Query('restoId') restoId: string) {
     const resto = await this.restoRepo.findOne({ where: { id: this.validateRestoId(restoId) } });
-    return resto ? resto.nomorWa : ""; // Pastikan panggil nomorWa
+    // Ubah resto.whatsapp menjadi resto.nomorWa
+    return resto ? resto.nomorWa : ""; 
 }
   @Post('hapus-menu')
   async hapusMenu(@Body() data: { id: number }) { await this.menuRepo.delete(data.id); return { status: "Menu Dihapus" }; }
@@ -146,15 +148,11 @@ async getWaResto(@Query('restoId') restoId: string) {
     throw new HttpException('Akses Ditolak', HttpStatus.UNAUTHORIZED);
   }
 
- @Post('menu/update-location')
-async updateLocation(@Body() body: { restoId: number, lat: number, lon: number }) {
-    // Pastikan nama kolom 'latitude' dan 'longitude' sama dengan di resto.entity.ts
-    await this.restoRepo.update(this.validateRestoId(body.restoId), { 
-        latitude: body.lat, 
-        longitude: body.lon 
-    });
+  @Post('menu/update-location')
+  async updateLocation(@Body() body: { restoId: number, lat: number, lon: number }) {
+    await this.restoRepo.update(this.validateRestoId(body.restoId), { latitude: body.lat, longitude: body.lon });
     return { status: "Sukses" };
-}
+  }
 
   @Post('kasir/ganti-password-karyawan')
   async gantiPasswordKaryawan(@Body() body: { passwordLama: string, passwordBaru: string, restoId: string }) {
