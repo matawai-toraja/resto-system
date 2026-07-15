@@ -123,16 +123,14 @@
         window.location.href = '/resto/page/login';
     }
 
-    async function saveNomorWa() {
-        const restoId = getRestoId();
-        if (!restoId) return;
-        const nomorBaru = document.getElementById('inputNomorWa').value;
-        try {
-            const response = await fetch('/resto/menu/resto/wa/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ restoId: restoId, nomor: nomorBaru })
-            });
+   async function saveNomorWa() {
+    const restoId = getRestoId();
+    const nomorBaru = document.getElementById('inputNomorWa').value;
+    const response = await fetch('/resto/menu/resto/wa/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restoId: restoId, nomor: nomorBaru }) // 'nomor' harus sama dengan di body AppController
+    });
             if (response.ok) alert("Nomor WhatsApp berhasil disimpan!");
             else alert("Gagal menyimpan.");
         } catch (error) {
