@@ -161,7 +161,19 @@ body {
 
 <script>
     let menuData = [], keranjang = [], waNumber = "";
-    const restoId = new URLSearchParams(window.location.search).get('restoId') || 1;
+    const urlParams = new URLSearchParams(window.location.search);
+const restoId = urlParams.get('restoId');
+
+// 2. Validasi: Jika tidak ada restoId, jangan jalankan aplikasi
+if (!restoId) {
+    document.body.innerHTML = `
+        <div style="text-align:center; padding: 50px; font-family: sans-serif;">
+            <h1>Link Tidak Valid</h1>
+            <p>Mohon akses menu melalui link resmi restoran Anda.</p>
+        </div>
+    `;
+    throw new Error("RestoId tidak ditemukan di URL");
+}
 
     function refreshData() {
         // Jangan refresh data jika halaman sedang dalam status sukses

@@ -4,29 +4,8 @@
     <meta charset="UTF-8">
     <title>Dashboard Resto</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            min-height: 100vh; 
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            flex-wrap: wrap; 
-            gap: 20px; 
-        }
-
-        .container { 
-            background: rgba(255, 255, 255, 0.2); 
-            padding: 30px; 
-            border-radius: 20px; 
-            backdrop-filter: blur(10px); 
-            text-align: center; 
-            color: white; 
-            width: 300px; 
-        }
-
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; flex-wrap: wrap; gap: 20px; }
+        .container { background: rgba(255, 255, 255, 0.2); padding: 30px; border-radius: 20px; backdrop-filter: blur(10px); text-align: center; color: white; width: 300px; }
         button { display: block; width: 100%; color: white; padding: 12px; margin: 8px 0; background: rgba(255, 255, 255, 0.1); border: none; border-radius: 10px; cursor: pointer; }
         input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; box-sizing: border-box; }
         .logout-btn { background: rgba(255, 0, 0, 0.3); margin-top: 10px; }
@@ -38,57 +17,63 @@
     <h3>Link Menu Pelanggan</h3>
     <input type="text" id="linkMenuSaya" readonly style="color: black; font-weight: bold;">
     <button onclick="copyLink()" style="background: #e67e22; margin-bottom: 20px;">Salin Link</button>
-<button onclick="simpanLokasiResto()" style="background: #3498db; margin-top: 10px;">
-    Update Titik GPS Resto
-</button>
-<div class="pengaturan-radius">
-    <h3>Atur Jarak Maksimal (KM)</h3>
-    <input type="number" id="inputRadius" placeholder="Contoh: 5" value="5">
-    <button onclick="simpanRadius()">Simpan Radius Jarak</button>
-</div>
-
+    <button onclick="simpanLokasiResto()" style="background: #3498db; margin-top: 10px;">Update Titik GPS Resto</button>
+    <div class="pengaturan-radius">
+        <h3>Atur Jarak Maksimal (KM)</h3>
+        <input type="number" id="inputRadius" placeholder="Contoh: 5" value="5">
+        <button onclick="simpanRadius()">Simpan Radius Jarak</button>
+    </div>
     <h3>Pengaturan Kontak</h3>
     <input type="text" id="inputNomorWa" placeholder="Masukkan Nomor WA">
     <button onclick="saveNomorWa()" style="background: #27ae60;">Simpan Nomor WhatsApp</button>
-
 </div>
 
-    <div class="container">
-        <h1>Resto Admin</h1>
-        <button onclick="verifikasiLaluBuka('/resto/page/kasir')">Buka Kasir</button>
-        <button onclick="verifikasiLaluBuka('/resto/page/kasir-monitor')">Monitor Kasir</button>
-        <button onclick="verifikasiLaluBuka('/resto/page/laporan-harian')">Laporan Harian</button>
-        <button onclick="verifikasiLaluBuka('/resto/page/analisa-menu')">Analisa Menu</button>
-        <button onclick="verifikasiLaluBuka('/resto/page/riwayat')">Riwayat Pembelian</button>
-        <button class="logout-btn" onclick="logout()">Keluar (Logout)</button>
-    </div>
+<div class="container">
+    <h1>Resto Admin</h1>
+    <button onclick="verifikasiLaluBuka('/resto/page/kasir')">Buka Kasir</button>
+    <button onclick="verifikasiLaluBuka('/resto/page/kasir-monitor')">Monitor Kasir</button>
+    <button onclick="verifikasiLaluBuka('/resto/page/laporan-harian')">Laporan Harian</button>
+    <button onclick="verifikasiLaluBuka('/resto/page/analisa-menu')">Analisa Menu</button>
+    <button onclick="verifikasiLaluBuka('/resto/page/riwayat')">Riwayat Pembelian</button>
+    <button class="logout-btn" onclick="logout()">Keluar (Logout)</button>
+</div>
 
-    <div class="container">
-        <h3>Ganti Password Akses</h3>
-        <input type="password" id="passLama" placeholder="Password Lama">
-        <input type="password" id="passBaru" placeholder="Password Baru">
-        <button onclick="prosesGantiPassword()" style="background:#27ae60;">Simpan Password Baru</button>
-    </div>
+<div class="container">
+    <h3>Ganti Password Akses</h3>
+    <input type="password" id="passLama" placeholder="Password Lama">
+    <input type="password" id="passBaru" placeholder="Password Baru">
+    <button onclick="prosesGantiPassword()" style="background:#27ae60;">Simpan Password Baru</button>
+</div>
+
 <div class="card p-4">
     <h3>Konfigurasi Dapur</h3>
     <div class="settings-panel">
         <label class="d-flex align-items-center">
-        <input type="checkbox" id="toggle-auto-print"> 
-<button class="btn btn-primary mt-3" onclick="savePrinterSettings()">Simpan Pengaturan</button>
+        <input type="checkbox" id="toggle-auto-print"> Auto Print Order</label>
+        <button class="btn btn-primary mt-3" onclick="savePrinterSettings()">Simpan Pengaturan</button>
     </div>
 </div>
 
-   <script>
-    // 1. Inisialisasi Link
-    window.onload = function() {
+<script>
+    // Helper untuk mengambil ID secara aman
+    function getRestoId() {
         const restoId = localStorage.getItem('restoId');
+        if (!restoId) {
+            alert("Sesi tidak ditemukan! Silakan login kembali.");
+            window.location.href = '/resto/page/login';
+            return null;
+        }
+        return restoId;
+    }
+
+    window.onload = function() {
+        const restoId = getRestoId();
         if (restoId) {
             const link = `${window.location.origin}/resto?restoId=${restoId}`;
             document.getElementById('linkMenuSaya').value = link;
         }
     };
 
-    // 2. Fungsi Copy
     function copyLink() {
         const copyText = document.getElementById("linkMenuSaya");
         copyText.select();
@@ -96,14 +81,15 @@
         alert("Link berhasil disalin!");
     }
 
-    // 3. Fungsi Ganti Password
     async function prosesGantiPassword() {
+        const restoId = getRestoId();
+        if (!restoId) return;
         const pLama = document.getElementById('passLama').value;
         const pBaru = document.getElementById('passBaru').value;
         const res = await fetch('/resto/kasir/ganti-password-karyawan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ passwordLama: pLama, passwordBaru: pBaru, restoId: localStorage.getItem('restoId') })
+            body: JSON.stringify({ passwordLama: pLama, passwordBaru: pBaru, restoId: restoId })
         });
         if (res.ok) {
             alert("Password berhasil diganti!");
@@ -113,14 +99,15 @@
         }
     }
 
-    // 4. Fungsi Verifikasi
     async function verifikasiLaluBuka(url) {
+        const restoId = getRestoId();
+        if (!restoId) return;
         const password = prompt("Masukkan Password Karyawan:");
         if (!password) return;
         const res = await fetch('/resto/verifikasi-karyawan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: password, restoId: localStorage.getItem('restoId') })
+            body: JSON.stringify({ password: password, restoId: restoId })
         });
         if (res.ok) {
             sessionStorage.setItem('aksesDiberikan', 'true');
@@ -130,16 +117,15 @@
         }
     }
 
-    // 5. Fungsi Logout
     function logout() {
         localStorage.clear();
         sessionStorage.clear();
         window.location.href = '/resto/page/login';
     }
 
-    // 6. Fungsi WA (Dinamis)
     async function saveNomorWa() {
-        const restoId = localStorage.getItem('restoId');
+        const restoId = getRestoId();
+        if (!restoId) return;
         const nomorBaru = document.getElementById('inputNomorWa').value;
         try {
             const response = await fetch('/menu/resto/wa/update', {
@@ -154,48 +140,33 @@
         }
     }
 
-    // 7. Fungsi GPS (Dinamis)
-   async function simpanLokasiResto() {
-    if (!navigator.geolocation) return alert("Browser tidak mendukung GPS.");
-    
-    navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        const restoId = localStorage.getItem('restoId');
+    async function simpanLokasiResto() {
+        if (!navigator.geolocation) return alert("Browser tidak mendukung GPS.");
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const restoId = getRestoId();
+            if (!restoId) return;
+            if (isNaN(lat) || isNaN(lng)) return alert("Gagal mendapatkan koordinat.");
 
-        // --- TAMBAHKAN VALIDASI INI ---
-        if (isNaN(lat) || isNaN(lng)) {
-            alert("Gagal mendapatkan koordinat GPS. Coba lagi.");
-            return;
-        }
-        // ------------------------------
-
-        try {
-            const response = await fetch('/menu/update-location', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    restoId: restoId, 
-                    lat: lat, 
-                    lon: lng 
-                })
-            });
-
-            if (response.ok) {
-                alert("Lokasi Resto berhasil disimpan!");
-            } else {
-                alert("Gagal menyimpan lokasi.");
+            try {
+                const response = await fetch('/menu/update-location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ restoId: restoId, lat: lat, lon: lng })
+                });
+                if (response.ok) alert("Lokasi Resto berhasil disimpan!");
+                else alert("Gagal menyimpan lokasi.");
+            } catch (error) {
+                alert("Gagal mengirim data.");
             }
-        } catch (error) {
-            alert("Gagal mengirim data lokasi.");
-        }
-    }, () => alert("Harap izinkan akses lokasi!"));
-}
+        }, () => alert("Harap izinkan akses lokasi!"));
+    }
 
-    // 8. Fungsi Radius (Dinamis)
- async function simpanRadius() {
+    async function simpanRadius() {
+        const restoId = getRestoId();
+        if (!restoId) return;
         const radius = document.getElementById('inputRadius').value;
-        const restoId = localStorage.getItem('restoId');
         const res = await fetch('/menu/resto/radius/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -203,46 +174,35 @@
         });
         if (res.ok) alert("Radius jangkauan berhasil diperbarui!");
     }
-async function loadDashboardSettings() {
-    const restoId = localStorage.getItem('restoId') || 1; 
-    
-    try {
-        // Kirimkan ?resto_id= agar dibaca oleh backend NestJS
-        const response = await fetch(`/api/printer/settings?resto_id=${restoId}`);
-        const data = await response.json();
-        
-        if (data && data.auto_print !== undefined) {
-            document.getElementById('toggle-auto-print').checked = data.auto_print;
-        }
-    } catch (e) {
-        console.error("Gagal memuat pengaturan printer:", e);
-    }
-}
-async function savePrinterSettings() {
-    const isAutoPrint = document.getElementById('toggle-auto-print').checked;
-    const restoId = localStorage.getItem('restoId') || 1; 
 
-    try {
-        const res = await fetch('/api/printer/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                resto_id: restoId, 
-                auto_print: isAutoPrint 
-            })
-        });
-        
-        if (res.ok) {
-            alert('Pengaturan berhasil disimpan!');
-        } else {
-            alert('Gagal menyimpan ke server');
-        }
-    } catch (err) {
-        alert('Terjadi kesalahan koneksi');
+    async function loadDashboardSettings() {
+        const restoId = getRestoId();
+        if (!restoId) return;
+        try {
+            const response = await fetch(`/api/printer/settings?resto_id=${restoId}`);
+            const data = await response.json();
+            if (data && data.auto_print !== undefined) {
+                document.getElementById('toggle-auto-print').checked = data.auto_print;
+            }
+        } catch (e) { console.error("Gagal memuat:", e); }
     }
-}
-// Jalankan saat dashboard dibuka
-loadDashboardSettings();
+
+    async function savePrinterSettings() {
+        const restoId = getRestoId();
+        if (!restoId) return;
+        const isAutoPrint = document.getElementById('toggle-auto-print').checked;
+        try {
+            const res = await fetch('/api/printer/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resto_id: restoId, auto_print: isAutoPrint })
+            });
+            if (res.ok) alert('Pengaturan berhasil disimpan!');
+            else alert('Gagal menyimpan.');
+        } catch (err) { alert('Terjadi kesalahan koneksi'); }
+    }
+
+    loadDashboardSettings();
 </script>
 </body>
 </html>
