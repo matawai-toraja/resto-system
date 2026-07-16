@@ -234,42 +234,29 @@ button {
         if (uang >= total) { document.getElementById('nominal-kembalian').innerText = (uang - total).toLocaleString(); info.style.display = 'block'; } else { info.style.display = 'none'; }
     }
     function cetakDapur(pEncoded) { 
-        let p = JSON.parse(decodeURIComponent(pEncoded)); 
-        let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
-        let win = window.open('', '_blank', 'width=300,height=400'); 
-        win.document.write(`<html><body style="font-family:monospace;"><h3>SLIP DAPUR<br>Meja: ${p.meja}</h3><ul>${items.map(i => `<li>${i.nama} x${i.jumlah}</li>`).join('')}</ul><script>window.print(); setTimeout(window.close, 500);<\/script></body></html>`); 
-        win.document.close(); 
-    }
-    function konfirmasiBayar() { 
-        fetch('/resto/kasir/bayar', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}, body: JSON.stringify({id: idBayarSekarang, restoId: restoId}) }).then(() => { 
-            let uangInput = document.getElementById('input-uang').value.replace(/\D/g, '') || 0;
-            cetakStrukKasir(dataPesananSekarang, uangInput);
-            tutupModal(); loadPesanan(); 
-        }); 
-    }
-    function cetakStrukKasir(p, uangMasuk) {
-        let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
-        let total = items.reduce((sum, i) => sum + (Number(i.harga) * Number(i.jumlah)), 0);
-        let win = window.open('', '_blank', 'width=300,height=500');
-        win.document.write(`<html><body style="font-family:monospace; font-size:12px;"><h3>STRUK RESTO</h3><p>Meja: ${p.meja} | ${p.nama}</p><hr>${items.map(i => `<div>${i.nama} x${i.jumlah}: Rp ${(i.harga * i.jumlah).toLocaleString()}</div>`).join('')}<hr><div>TOTAL: Rp ${total.toLocaleString()}</div><div>BAYAR: Rp ${Number(uangMasuk).toLocaleString()}</div><div>KEMBALI: Rp ${(Number(uangMasuk) - total).toLocaleString()}</div><script>window.onload=function(){window.print(); setTimeout(window.close, 500);}<\/script></body></html>`);
-        win.document.close();
-    }
-    function selesaiPesanan(id) {
-        fetch(`/menu/selesaikan/${id}`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token} })
-        .then(() => { loadPesanan(); alert("Pesanan telah dipindahkan ke Laporan Harian."); })
-        .catch(err => console.error(err));
-    }
-    function prosesAksi(id, aksi) { if(aksi === 'batal' && confirm("Yakin batal?")) fetch('/resto/kasir/batal', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}, body: JSON.stringify({id, restoId: restoId}) }).then(loadPesanan); }
+    // 1. Parsing data utama
+    let p = JSON.parse(decodeURIComponent(pEncoded)); 
+    
+    // 2. Parsing rincian pesanan
+    let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
+    
+    // 3. Format rincian menu (Nama x Jumlah)
+    let daftarMenu = Array.isArray(items) 
+        ? items.map(i => `<li>${i.nama} x${i.jumlah || 1}</li>`).join('') 
+        : `<li>${p.pesanan}</li>`;
 
-function cetakOtomatis(p) {
-    let win = window.open('', '_blank', 'width=300,height=500');
+    // 4. Buka jendela dan tulis struk dengan format yang sama
+    let win = window.open('', '_blank', 'width=300,height=500'); 
     win.document.write(`
         <html>
             <body style="font-family: monospace; font-size: 14px; padding: 10px;">
                 <h3 style="text-align: center;">ORDER DAPUR</h3>
-                <p>ID: ${p.id} | Meja: ${p.meja}</p>
+                <p>ID: ${p.id || '-'}</p>
+                <p>Meja: ${p.meja || '-'}</p>
+                <p><strong>Pelanggan: ${p.nama || 'Pelanggan'}</strong></p>
                 <hr>
-                <div>Pesanan: ${p.nama}</div>
+                <div>Pesanan:</div>
+                <ul style="padding-left: 20px; font-weight: bold;">${daftarMenu}</ul>
                 <script>
                     window.onload = function() {
                         window.print(); 
@@ -278,10 +265,92 @@ function cetakOtomatis(p) {
                 <\/script>
             </body>
         </html>
+    `); 
+    win.document.close(); 
+}
+    function konfirmasiBayar() { 
+        fetch('/resto/kasir/bayar', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}, body: JSON.stringify({id: idBayarSekarang, restoId: restoId}) }).then(() => { 
+            let uangInput = document.getElementById('input-uang').value.replace(/\D/g, '') || 0;
+            cetakStrukKasir(dataPesananSekarang, uangInput);
+            tutupModal(); loadPesanan(); 
+        }); 
+    }
+   function cetakStrukKasir(p, uangMasuk) {
+    let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
+    let total = items.reduce((sum, i) => sum + (Number(i.harga) * Number(i.jumlah)), 0);
+    
+    let win = window.open('', '_blank', 'width=300,height=500');
+    win.document.write(`
+        <html>
+            <body style="font-family:monospace; font-size:12px;">
+                <h3 style="text-align:center;">STRUK PEMBAYARAN</h3>
+                <p>ID Pesanan: ${p.id || '-'}</p>
+                <p>Meja: ${p.meja} | ${p.nama}</p>
+                <hr>
+                ${items.map(i => `<div>${i.nama} x${i.jumlah}: Rp ${(i.harga * i.jumlah).toLocaleString()}</div>`).join('')}
+                <hr>
+                <div style="font-weight:bold; font-size:14px;">TOTAL: Rp ${total.toLocaleString()}</div>
+                <script>
+                    window.onload=function(){
+                        window.print(); 
+                        setTimeout(window.close, 500);
+                    }
+                <\/script>
+            </body>
+        </html>
     `);
     win.document.close();
 }
+    function selesaiPesanan(id) {
+        fetch(`/menu/selesaikan/${id}`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token} })
+        .then(() => { loadPesanan(); alert("Pesanan telah dipindahkan ke Laporan Harian."); })
+        .catch(err => console.error(err));
+    }
+    function prosesAksi(id, aksi) { if(aksi === 'batal' && confirm("Yakin batal?")) fetch('/resto/kasir/batal', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}, body: JSON.stringify({id, restoId: restoId}) }).then(loadPesanan); }
 
+function cetakOtomatis(p) {
+    // 1. Ambil nama pelanggan dengan aman
+    const namaPelanggan = p.nama || "Pelanggan";
+
+    // 2. Pastikan data pesanan diparsing dengan benar
+    let items = [];
+    try {
+        items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
+    } catch (e) {
+        console.error("Gagal parsing:", e);
+    }
+
+    // 3. Loop untuk membuat list menu yang rapi (Nama x Jumlah)
+    let daftarMenu = "";
+    if (Array.isArray(items)) {
+        daftarMenu = items.map(i => `<li>${i.nama} x${i.jumlah || 1}</li>`).join('');
+    } else {
+        daftarMenu = `<li>${p.pesanan || 'Data tidak tersedia'}</li>`;
+    }
+
+    // 4. Render ke jendela cetak
+    let win = window.open('', '_blank', 'width=300,height=500');
+    win.document.write(`
+        <html>
+            <body style="font-family: monospace; font-size: 14px; padding: 10px;">
+                <h3 style="text-align: center;">ORDER DAPUR</h3>
+                <p>ID: ${p.id || '-'}</p>
+                <p>Meja: ${p.meja || '-'}</p>
+                <p><strong>Pelanggan: ${namaPelanggan}</strong></p>
+                <hr>
+                <div>Pesanan:</div>
+                <ul style="padding-left: 20px; font-weight: bold;">${daftarMenu}</ul>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() { window.close(); }, 500);
+                    }
+                <\/script>
+            </body>
+        </html>
+    `);
+    win.document.close();
+}
 socket.on('pesanan_baru', async (data) => {
 if (!window.location.href.includes('kasir')) {
         return; // Berhenti di sini jika bukan halaman kasir
@@ -309,4 +378,5 @@ if (!window.location.href.includes('kasir')) {
     loadPesanan();
 </script>
 </body>
+
 </html>

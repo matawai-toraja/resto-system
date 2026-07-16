@@ -48,8 +48,8 @@
 </div>
 
     <h3>Pengaturan Kontak</h3>
-    <input type="text" id="inputNomorWa" placeholder="Masukkan Nomor WA">
-    <button onclick="saveNomorWa()" style="background: #27ae60;">Simpan Nomor WhatsApp</button>
+   <input type="text" id="nomorWaInput" placeholder="Masukkan nomor WhatsApp">
+<button onclick="saveDanBukaWa()">Simpan & Chat WhatsApp</button>
 
 </div>
 
@@ -138,22 +138,22 @@
     }
 
     // 6. Fungsi WA (Dinamis)
-    async function saveNomorWa() {
-        const restoId = localStorage.getItem('restoId');
-        const nomorBaru = document.getElementById('inputNomorWa').value;
-        try {
-            const response = await fetch('/menu/resto/wa/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ restoId: restoId, nomor: nomorBaru })
-            });
-            if (response.ok) alert("Nomor WhatsApp berhasil disimpan!");
-            else alert("Gagal menyimpan.");
-        } catch (error) {
-            alert("Terjadi kesalahan koneksi.");
-        }
-    }
+async function saveDanBukaWa() {
+    const nomor = document.getElementById('nomorWaInput').value;
+    const restoId = localStorage.getItem('restoId');
 
+    const response = await fetch('/resto/menu/resto/wa/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restoId, nomor })
+    });
+
+    if (response.ok) {
+        let cleanNomor = nomor.replace(/\D/g, '');
+        if (cleanNomor.startsWith('0')) cleanNomor = '62' + cleanNomor.substring(1);
+        window.open('https://wa.me/' + cleanNomor, '_blank');
+    }
+}
     // 7. Fungsi GPS (Dinamis)
    async function simpanLokasiResto() {
     if (!navigator.geolocation) return alert("Browser tidak mendukung GPS.");

@@ -191,7 +191,27 @@ body {
             </div>
         `).join('');
     }
+function bukaWhatsApp() {
+    if (!waNumber) {
+        alert("Nomor belum disetting.");
+        return;
+    }
+    
+    // Pastikan nomor bersih dari spasi/karakter lain
+    let cleanNomor = waNumber.replace(/\D/g, '');
+    
+    // Pastikan awalan 62
+    if (cleanNomor.startsWith('0')) {
+        cleanNomor = '62' + cleanNomor.substring(1);
+    }
 
+    // Cara paling ampuh: arahkan ke wa.me
+    // Jangan gunakan api.whatsapp.com yang akan memicu halaman 'Buka Aplikasi'
+    const url = 'https://wa.me/' + cleanNomor;
+    
+    // Buka di tab baru
+    window.open(url, '_blank');
+}
 function renderHalamanSukses(data) {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = data.rincianHtml;
@@ -317,7 +337,6 @@ function hapusItem(index) {
     }
     function bukaModal() { document.getElementById('modal-keranjang').style.display = 'flex'; }
     function tutupModal() { document.getElementById('modal-keranjang').style.display = 'none'; }
-    async function bukaWhatsApp() { window.open(`https://wa.me/${waNumber.replace(/[^0-9]/g, '')}`, '_blank'); }
 
     window.onload = function() {
         refreshData();
