@@ -1,382 +1,364 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-<script>
-  const socket = io(); 
 
-  socket.on('pesanan_baru', (data) => {
-      console.log("Pesanan baru diterima:", data);
-  });
-</script>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Monitor Kasir</title>
     <style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&display=swap');
 
+    body { 
+        background: #0f172a; 
+        font-family: 'Outfit', sans-serif; 
+        padding: 40px; 
+    }
+
+    #container-monitor { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+        gap: 30px; 
+    }
+
+    /* Efek Kartu 3D */
+    .card {
+        background: linear-gradient(145deg, #1e293b, #162030);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 24px;
+        padding: 24px;
+        /* Bayangan 3D */
+        box-shadow: 20px 20px 60px #0a0f1a, 
+                    -20px -20px 60px #141f3a;
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover { transform: translateY(-10px); }
+
+    /* Tombol 3D */
+    button {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(145deg, #22c55e, #16a34a);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+    }
 
 body {
-    background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%) !important;
-    background-attachment: fixed;
-    min-height: 100vh;
-    padding: 20px;
-    margin: 0;
-    color: #333;
-}
+        background: radial-gradient(circle at top right, #1a1c2e, #0f1014);
+        color: white;
+        font-family: 'Segoe UI', sans-serif;
+        padding: 20px;
+        min-height: 100vh;
+    }
 
-/* Kartu dengan efek Kaca (Glassmorphism) 3D */
-.card {
-    /* Background semi-transparan putih */
-    background: rgba(255, 255, 255, 0.4) !important;
-    
-    /* Efek Blur Kaca */
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    
-    /* Border untuk mempertegas kesan kaca */
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    
-    /* Bayangan untuk kesan 3D (Timbul) */
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-    
-    border-radius: 25px;
-    padding: 20px;
-    margin-bottom: 20px;
-    transition: transform 0.3s ease;
-}
+    /* Efek Kaca (Glassmorphism) */
+    .card {
+        background: rgba(255, 255, 255, 0.05); /* Transparan */
+        backdrop-filter: blur(20px); /* Efek buram kaca */
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        padding: 25px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        transition: transform 0.3s ease;
+    }
 
-/* Warna Kartu (Pesanan Baru = PINK 3D) */
-/* Kita gunakan transparansi agar efek kaca tetap terlihat */
-.card {
-    background: linear-gradient(145deg, rgba(255, 182, 193, 0.6), rgba(255, 105, 180, 0.5)) !important;
-}
+    /* Indikator status estetik */
+    .status-menunggu { border-left: 6px solid #ff4d6d; }
+    .status-diproses { border-left: 6px solid #ffb703; }
+    .status-disajikan { border-left: 6px solid #22c55e; }
 
-/* Kartu saat diceklis/Disajikan = PUTIH (Kaca) */
-.card.selesai {
-    background: rgba(255, 255, 255, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-}
-body {
-    background-color: #121212 !important; /* Hitam elegan */
-    background-image: radial-gradient(circle at 50% 50%, #1e1e1e 0%, #121212 100%);
-    color: #ffffff;
-    font-family: 'Segoe UI', sans-serif;
-    padding: 20px;
-}
-
-/* Kartu Dasar (Pesanan Baru = PINK) */
-.card {
-    background: linear-gradient(145deg, #ff85c1, #ff4d94) !important; /* Warna Pink Eksotif */
-    border: none;
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 10px 10px 20px #050505, -5px -5px 10px #2a2a2a; /* Efek 3D */
-    color: white !important;
-    transition: 0.3s;
-}
-
-/* Kartu saat diceklis/Disajikan = PUTIH */
-.card.selesai {
-    background: #ffffff !important; /* Putih bersih */
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
-}
-
-/* Paksa teks jadi gelap saat kartu berwarna putih */
-.card.selesai, .card.selesai h2, .card.selesai p, .card.selesai span {
-    color: #333 !important;
-}
-
-/* Tombol agar terlihat lebih 3D */
-button {
-    border-radius: 10px;
-    border: none;
-    padding: 8px 16px;
-    cursor: pointer;
-    box-shadow: 3px 3px 6px rgba(0,0,0,0.3);
-    font-weight: bold;
-}
-        body { font-family: 'Inter', sans-serif; background: #f4f7f6; padding: 20px; color: #2d3436; }
-        h1 { text-align: center; color: #1a1a1a; margin-bottom: 25px; }
-        #search-box { width: 100%; max-width: 500px; display: block; margin: 20px auto; padding: 18px 25px; border: none; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); outline: none; }
+    /* Tombol modern */
+    button {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    button:hover { background: rgba(255, 255, 255, 0.2); }
+        body { background-color: #121212 !important; color: #ffffff; font-family: 'Segoe UI', sans-serif; padding: 20px; }
         #container-monitor { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .card { background: #fff8e1; padding: 25px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 2px solid #ffe082; transition: 0.3s; }
-        .card.selesai { background: #e8f5e9 !important; border: 2px solid #27ae60 !important; }
-        h3 { margin-top: 0; font-size: 1.1em; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px; }
-        ul { padding-left: 20px; margin: 15px 0; }
-        .btn-container { display: flex; gap: 8px; margin-top: 15px; }
-        button { padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: 600; transition: 0.2s; }
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
-        #modal-bayar { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: #fff; padding: 30px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); z-index: 999999; }
-        #btn-aktifkan { display: block; margin: 0 auto 20px; background: #0984e3; padding: 12px 25px; border-radius: 50px; border: none; color: white; cursor: pointer; }
+        .card { padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 10px 10px 20px #050505; color: white !important; transition: 0.3s; }
+        .status-menunggu { background: linear-gradient(145deg, #ff85c1, #ff4d94) !important; }
+        .status-diproses { background: linear-gradient(145deg, #f39c12, #e67e22) !important; }
+        .status-disajikan { background: linear-gradient(145deg, #2ecc71, #27ae60) !important; }
+        button { margin-top: 15px; padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; background: #fff; color: #333; width: 100%; }
     </style>
 </head>
 <body>
-
-    <button id="btn-aktifkan" onclick="aktifkanSuara()">Aktifkan Suara</button>
-    <audio id="notif-sound" src="/notif.mp3" preload="auto"></audio>
-
+<button id="btn-aktifkan-audio" onclick="aktifkanAudio()" 
+        style="position:fixed; top:20px; right:20px; width:auto; background:#f39c12; color:white; z-index:9999;">
+    🔔 Aktifkan Notifikasi Suara
+</button>
     <h1>Daftar Pesanan Masuk</h1>
-    <input type="text" id="search-box" autofocus onkeyup="filterPesanan()" placeholder="🔍 Cari nama pelanggan atau meja...">
+<div style="text-align: center; margin-bottom: 30px;">
+    <input type="text" id="input-pencarian" placeholder="🔍 Cari ID, Nama, atau No Meja..." 
+           oninput="renderPesanan(semuaDataAsli)" 
+           style="
+               width: 400px; 
+               padding: 15px 25px; 
+               border-radius: 50px; 
+               border: 1px solid rgba(255, 255, 255, 0.1); 
+               background: rgba(255, 255, 255, 0.08); 
+               color: white; 
+               font-size: 16px; 
+               outline: none; 
+               text-align: center;
+               transition: all 0.3s ease;
+               box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+           "
+           onfocus="this.style.background='rgba(255, 255, 255, 0.12)'; this.style.borderColor='#ff6b95'; this.style.boxShadow='0 0 15px rgba(255, 107, 149, 0.3)';"
+           onblur="this.style.background='rgba(255, 255, 255, 0.08)'; this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.3)';"
+    >
+</div>
     <div id="container-monitor">Memuat data...</div>
 
-    <div id="modal-bayar">
-        <h3 style="color:#333; margin-top:0;">Form Pembayaran</h3>
-        <div id="list-items" style="margin: 15px 0; border-bottom: 1px dashed #ccc; padding-bottom: 10px;"></div>
-        <p style="font-size: 1.2em; font-weight:bold; color:#333;">Total: Rp <span id="total-tagihan-modal">0</span></p>
-        <input type="text" id="input-uang" oninput="formatRupiahInput(this)" placeholder="Input Uang Pelanggan" style="width:100%; padding:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:8px;">
-        <div id="info-kembalian" style="margin: 15px 0; font-size: 1.4em; font-weight:bold; color:#27ae60; display:none;">
-            Kembali: Rp <span id="nominal-kembalian">0</span>
-        </div>
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button onclick="konfirmasiBayar()" style="flex:2; background:#27ae60;">Selesai Pembayaran & Cetak</button>
-            <button onclick="tutupModal()" style="flex:1; background:#7f8c8d;">Kembali</button>
-        </div>
-    </div>
 
+    <!-- Modal Pembayaran -->
+   <div id="modal-bayar" style="display:none; position:fixed; top:15%; left:30%; width:40%; background:#222; padding:20px; border-radius:15px; color:white; z-index:1000; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+    <h2>Form Pembayaran</h2>
+    <!-- Font diperbesar dan warna biru -->
+    <p style="font-size: 1.2em;">Total Harga: <b id="total-harga-display" style="color: #3498db; font-size: 1.3em;">0</b></p>
+    
+    <div id="rincian-pesanan" style="margin: 10px 0; font-size: 0.9em; border-top: 1px solid #555; border-bottom: 1px solid #555; padding: 10px 0; max-height: 150px; overflow-y: auto;"></div>
+    
+    <input type="text" id="input-uang" placeholder="Masukkan Uang Pelanggan" 
+    style="width:100%; padding:10px; margin-top:10px; border-radius:5px; border:none; box-sizing:border-box;" 
+    oninput="formatDanHitung(this)">
+    
+    <p>Kembalian: <b id="kembalian" style="color: #2ecc71;">0</b></p>
+    
+    <button id="btn-konfirmasi" onclick="prosesBayar()" style="background:#2ecc71; color:white; width:100%; padding:12px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">KONFIRMASI & CETAK</button>
+    
+    <!-- Tombol Kembali -->
+    <button onclick="document.getElementById('modal-bayar').style.display = 'none'" style="background:#e74c3c; color:white; width:100%; padding:12px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; margin-top:10px;">KEMBALI</button>
+    
+    <div id="pesan-sukses" style="display:none; color:#2ecc71; text-align:center; font-weight:bold; padding:10px; border:2px dashed #2ecc71; margin-top:10px;">✅ Pembayaran Berhasil!</div>
+</div>
 <script>
     const token = localStorage.getItem('authKey');
     const restoId = localStorage.getItem('restoId');
-    if (!token) { window.location.href = 'login.html'; }
+    let currentPesanan = null;
+    let semuaPesanan = [];
+let lastOrderIds = [];
+    const audio = new Audio('/notif.mp3'); 
+    let audioAktif = false;
 
-    let isFirstLoad = true;
-    let idBayarSekarang = null;
-    let dataPesananSekarang = null;
-    let jumlahPesananTerakhir = 0;
-
-    function loadPesanan() {
-        fetch(`/resto/kasir/daftar-pesanan?restoId=${restoId}`, { 
-            headers: { 'Authorization': 'Bearer ' + token },
-            cache: 'no-cache' 
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (!isFirstLoad && data.length > jumlahPesananTerakhir) {
-                putarNotif();
-            }
-            jumlahPesananTerakhir = data.length;
-            isFirstLoad = false;
-            renderPesanan(data.reverse());
-            filterPesanan();
-        })
-        .catch(err => console.error("Gagal ambil data:", err));
+    function aktifkanAudio() {
+        audio.play().then(() => { audio.pause(); audioAktif = true; document.getElementById('btn-aktifkan-audio').style.display = 'none'; }).catch(e => console.log(e));
     }
 
-    function renderPesanan(data) {
-        const container = document.getElementById('container-monitor');
-        container.innerHTML = data.map(p => {
-            let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
-            let total = items.reduce((sum, i) => sum + (Number(i.harga) * Number(i.jumlah)), 0);
-            let isPaid = p.status === 'dibayar';
-            let isChecked = localStorage.getItem('siap-'+p.id) === 'true';
-            let pEncoded = encodeURIComponent(JSON.stringify(p));
-            return `
-                <div class="card ${isChecked ? 'selesai' : ''}" data-nama="${p.nama.toLowerCase()}" data-meja="${p.meja}">
-                    <h3>ID: ${p.id} | Meja: ${p.meja} | ${p.nama}</h3>
-                    <label><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="tandaiSiap('${p.id}', this.checked)"> disajikan</label>
+function loadPesanan() {
+    fetch(`/resto/kasir/daftar-pesanan?restoId=${restoId}`, { 
+        headers: { 'Authorization': 'Bearer ' + token } 
+    })
+    .then(res => res.json())
+    .then(data => {
+        // 1. Simpan ke variabel global
+        semuaDataAsli = data.reverse(); 
+        
+        // 2. Logika notifikasi suara
+        const currentIds = semuaDataAsli.map(p => p.id);
+        if (lastOrderIds.length > 0 && !currentIds.every(id => lastOrderIds.includes(id))) {
+            const pesananBaru = semuaDataAsli.filter(p => !lastOrderIds.includes(p.id));
+            if (audioAktif) audio.play();
+            pesananBaru.forEach(p => setTimeout(() => cetakOtomatis(p), 1000));
+        }
+        lastOrderIds = currentIds;
+        
+        // 3. Panggil render (biarkan dia yang menyaring dan menampilkan)
+        renderPesanan(semuaDataAsli);
+    }).catch(err => console.error(err));
+}
+async function batalkanPesanan(id) {
+    if (!confirm("Yakin ingin membatalkan pesanan ini?")) return;
+    await fetch(`/menu/update-status-dapur`, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, 
+        body: JSON.stringify({ id, statusDapur: 'dibatalkan' }) 
+    });
+    loadPesanan();
+}
+function renderPesanan(data) {
+    const keyword = document.getElementById('input-pencarian').value.toLowerCase();
+    
+    const dataAktif = data.filter(p => {
+        const isBukanBatal = p.statusDapur !== 'dibatalkan';
+        const isCocok = String(p.id).includes(keyword) || 
+                        (p.nama && p.nama.toLowerCase().includes(keyword)) || 
+                        String(p.meja).includes(keyword);
+        return isBukanBatal && isCocok;
+    });
+
+    document.getElementById('container-monitor').innerHTML = dataAktif.map(p => {
+        let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
+        let status = p.statusDapur || 'menunggu';
+        
+        let itemsString = JSON.stringify(items).replace(/"/g, '&quot;').replace(/'/g, '\\&#39;');
+        let totalHarga = items.reduce((s, i) => s + (Number(i.harga) * Number(i.jumlah)), 0);
+        let nama = (p.nama || '-').replace(/'/g, "\\'");
+
+        let aksi = "";
+        let tombolText = "";
+
+        if (status === 'diproses') {
+            aksi = `updateStatus(${p.id}, 'disajikan')`;
+            tombolText = 'DISAJIKAN';
+        } else if (status === 'disajikan') {
+            aksi = `selesaikan(${p.id}, ${totalHarga}, '${itemsString}', ${p.meja}, '${nama}')`;
+            tombolText = 'BAYAR / SELESAI';
+        } else {
+            aksi = `updateStatus(${p.id}, 'diproses')`;
+            tombolText = 'PROSES';
+        }
+
+        let tombolBatal = status === 'menunggu' ? 
+            `<button onclick="batalkanPesanan(${p.id})" style="background:#ff4d6d !important; color:white !important; margin-top:10px; border:none; padding:12px; border-radius:10px; cursor:pointer; font-weight:bold; width:100%;">BATAL</button>` : '';
+
+        // --- KODE INI MENGEMBALIKAN SEMUA DATA DENGAN TATA LETAK FLEX ---
+return `<div class="card status-${status}" style="position:relative; padding: 20px;">
+            <!-- Header: ID kiri, MEJA kanan dengan box kontras -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h3 style="margin:0; font-size:1.4rem; color: #ffffff;">ID: ${p.id}</h3>
+                <span style="background:rgba(0,0,0,0.3); padding:6px 14px; border-radius:20px; font-weight:700; color: #ffffff; letter-spacing: 0.5px;">MEJA ${p.meja}</span>
+            </div>
+            
+            <!-- Nama Pelanggan: Putih tebal, ukuran besar -->
+            <div style="margin-bottom: 15px;">
+                <p style="margin:0; font-size:0.8rem; opacity:0.7; text-transform: uppercase; letter-spacing: 1px;">Pelanggan</p>
+                <p style="margin:0; font-size:1.4rem; font-weight:800; color: #ffffff;">${p.nama || '-'}</p>
+            </div>
+            
+            <!-- Daftar Pesanan: Putih, sedikit lebih tipis agar mata fokus ke nama -->
+            <ul style="margin:20px 0; padding-left:20px; list-style-type: none; font-size: 1.15rem; color: rgba(255,255,255,0.9);">
+                ${items.map(i => `<li style="margin-bottom:8px; display:flex; justify-content:space-between;">
+                    <span>${i.nama}</span>
+                    <span style="font-weight:700;">x ${i.jumlah}</span>
+                </li>`).join('')}
+            </ul>
+            
+            <!-- Tombol -->
+            <button onclick="${aksi}" style="margin-top:10px; padding:14px; border-radius:12px; border:none; cursor:pointer; font-weight:800; background:#ffffff; color:#000000; width:100%; font-size: 1rem;">
+                ${tombolText}
+            </button>
+            ${tombolBatal}
+        </div>`;
+    }).join('');
+}
+   function cetakOtomatis(pesanan) {
+        let win = window.open('', '_blank', 'width=300,height=500');
+        let items = typeof pesanan.pesanan === 'string' ? JSON.parse(pesanan.pesanan) : pesanan.pesanan;
+        
+        // Perhatikan bagian Meja: ${pesanan.meja || "-"} yang saya tambahkan
+        win.document.write(`
+            <html>
+                <body>
+                    <h3>ORDER DAPUR</h3>
+                    <p>Pelanggan: ${pesanan.nama || "-"}</p>
+                    <p>Meja: ${pesanan.meja || "-"}</p> 
+                    <hr>
                     <ul>${items.map(i => `<li>${i.nama} x ${i.jumlah}</li>`).join('')}</ul>
-                    <p><strong>Total: Rp ${total.toLocaleString()}</strong></p>
-                    <div class="btn-container">
-                        ${!isPaid ? `
-                            <button onclick="bukaModal('${p.id}', ${total}, '${pEncoded}')" style="background:#27ae60;">Bayar</button>
-                            <button onclick="prosesAksi('${p.id}', 'batal')" style="background:#e67e22;">Batal</button>
-                            <button onclick="cetakDapur('${pEncoded}')" style="background:#8e44ad;">Dapur</button>
-                        ` : `<button onclick="selesaiPesanan(${p.id})" style="background:#2c3e50;">Selesai</button>`}
-                    </div>
-                </div>`;
-        }).join('');
+                    <script>window.print(); setTimeout(()=>window.close(), 500);<\/script>
+                </body>
+            </html>
+        `);
+        win.document.close();
+    }
+    async function updateStatus(id, status) {
+        await fetch(`/menu/update-status-dapur`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ id, statusDapur: status }) });
+        loadPesanan();
     }
 
-    function filterPesanan() {
-        let filter = document.getElementById('search-box').value.toLowerCase();
-        document.querySelectorAll('.card').forEach(card => {
-            card.style.display = (card.dataset.nama.includes(filter) || card.dataset.meja.includes(filter)) ? "" : "none";
-        });
+    function selesaikan(id, total, itemsEncoded, meja, nama) {
+        const items = JSON.parse(itemsEncoded.replace(/&quot;/g, '"'));
+        currentPesanan = { id, total, meja, nama };
+        document.getElementById('total-harga-display').innerText = total.toLocaleString('id-ID');
+        document.getElementById('rincian-pesanan').innerHTML = items.map(i => 
+            `<div>${i.nama} x ${i.jumlah} : ${(Number(i.harga) * Number(i.jumlah)).toLocaleString('id-ID')}</div>`
+        ).join('');
+        
+        document.getElementById('pesan-sukses').style.display = 'none';
+        document.getElementById('modal-bayar').style.display = 'block';
     }
 
-    function aktifkanSuara() {
-        const audio = document.getElementById('notif-sound');
-        audio.src = "/notif.mp3";
-        audio.play().then(() => {
-            const btn = document.getElementById('btn-aktifkan');
-            btn.innerText = "Suara Sudah Aktif";
-            btn.disabled = true;
-            localStorage.setItem('suaraSudahAktif', 'true');
-        }).catch(e => console.error(e));
+    function formatDanHitung(input) {
+        let value = input.value.replace(/\./g, '');
+        if (value === "") { input.value = ""; document.getElementById('kembalian').innerText = "0"; return; }
+        input.value = Number(value).toLocaleString('id-ID');
+        const kembalian = Number(value) - currentPesanan.total;
+        document.getElementById('kembalian').innerText = kembalian >= 0 ? kembalian.toLocaleString('id-ID') : "0";
     }
 
-    function putarNotif() {
-        const audio = document.getElementById('notif-sound');
-        if (audio) {
-            audio.currentTime = 0;
-            audio.play().catch(e => console.log("Audio diblokir"));
-        }
+    async function prosesBayar() {
+        const uangInput = document.getElementById('input-uang').value;
+        const uang = Number(uangInput.replace(/[^0-9]/g, ''));
+        if (uang < currentPesanan.total) return alert("Uang kurang!");
+        await fetch(`/menu/selesaikan/${currentPesanan.id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uangBayar: uang }) });
+        
+  const namaResto = localStorage.getItem('namaResto') || "Resto"; 
+cetakStrukPembayaran(currentPesanan, namaResto);
+
+        document.getElementById('pesan-sukses').style.display = 'block';
+        setTimeout(() => { 
+            document.getElementById('modal-bayar').style.display = 'none'; 
+            document.getElementById('pesan-sukses').style.display = 'none'; 
+            loadPesanan(); 
+        }, 2000);
     }
 
-    function tandaiSiap(id, checked) { localStorage.setItem('siap-'+id, checked); loadPesanan(); }
-    function bukaModal(id, total, pEncoded) { 
-        idBayarSekarang = id; 
-        dataPesananSekarang = JSON.parse(decodeURIComponent(pEncoded));
-        let items = typeof dataPesananSekarang.pesanan === 'string' ? JSON.parse(dataPesananSekarang.pesanan) : dataPesananSekarang.pesanan;
-        document.getElementById('list-items').innerHTML = items.map(i => `<div>${i.nama} x${i.jumlah} <span>Rp ${(i.harga * i.jumlah).toLocaleString()}</span></div>`).join(''); 
-        document.getElementById('total-tagihan-modal').innerText = total.toLocaleString(); 
-        document.getElementById('modal-bayar').style.display = 'block'; 
-        document.getElementById('input-uang').value = '';
-    }
-    function tutupModal() { document.getElementById('modal-bayar').style.display = 'none'; }
-    function formatRupiahInput(i) { i.value = new Intl.NumberFormat('id-ID').format(i.value.replace(/\D/g, '')); hitungKembalian(); }
-    function hitungKembalian() {
-        let total = Number(document.getElementById('total-tagihan-modal').innerText.replace(/\D/g, ''));
-        let uang = Number(document.getElementById('input-uang').value.replace(/\D/g, ''));
-        let info = document.getElementById('info-kembalian');
-        if (uang >= total) { document.getElementById('nominal-kembalian').innerText = (uang - total).toLocaleString(); info.style.display = 'block'; } else { info.style.display = 'none'; }
-    }
-    function cetakDapur(pEncoded) { 
-    // 1. Parsing data utama
-    let p = JSON.parse(decodeURIComponent(pEncoded)); 
+    function cetakStrukPembayaran(data, namaResto) {
+    // Jika namaResto kosong, ambil dari localStorage sebagai cadangan terakhir
+   const displayNamaResto = localStorage.getItem('namaResto') || 'Resto';
+
+    const rincian = document.getElementById('rincian-pesanan').innerHTML;
+    let iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
     
-    // 2. Parsing rincian pesanan
-    let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
-    
-    // 3. Format rincian menu (Nama x Jumlah)
-    let daftarMenu = Array.isArray(items) 
-        ? items.map(i => `<li>${i.nama} x${i.jumlah || 1}</li>`).join('') 
-        : `<li>${p.pesanan}</li>`;
-
-    // 4. Buka jendela dan tulis struk dengan format yang sama
-    let win = window.open('', '_blank', 'width=300,height=500'); 
-    win.document.write(`
+    let doc = iframe.contentWindow.document;
+    doc.write(`
         <html>
-            <body style="font-family: monospace; font-size: 14px; padding: 10px;">
-                <h3 style="text-align: center;">ORDER DAPUR</h3>
-                <p>ID: ${p.id || '-'}</p>
-                <p>Meja: ${p.meja || '-'}</p>
-                <p><strong>Pelanggan: ${p.nama || 'Pelanggan'}</strong></p>
+            <head>
+                <style>
+                    @page { size: 58mm; margin: 0; }
+                    body { font-family: 'Courier New', Courier, monospace; font-size: 12px; width: 58mm; margin: 0; padding: 5px; }
+                    .center { text-align: center; }
+                    hr { border-top: 1px dashed #000; }
+                </style>
+            </head>
+            <body>
+                <div class="center">
+                    <!-- Gunakan variabel displayNamaResto di sini -->
+                    <h3 style="margin:0;">${displayNamaResto}</h3>
+                    <p style="margin:0;">ID Pesanan: ${data.id}</p>
+                    <p style="margin:0;">Meja: ${data.meja || '-'}</p>
+                    <p style="margin:0;">Pelanggan: ${data.nama || '-'}</p>
+                </div>
                 <hr>
-                <div>Pesanan:</div>
-                <ul style="padding-left: 20px; font-weight: bold;">${daftarMenu}</ul>
-                <script>
-                    window.onload = function() {
-                        window.print(); 
-                        setTimeout(function() { window.close(); }, 500);
-                    }
-                <\/script>
-            </body>
-        </html>
-    `); 
-    win.document.close(); 
-}
-    function konfirmasiBayar() { 
-        fetch('/resto/kasir/bayar', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}, body: JSON.stringify({id: idBayarSekarang, restoId: restoId}) }).then(() => { 
-            let uangInput = document.getElementById('input-uang').value.replace(/\D/g, '') || 0;
-            cetakStrukKasir(dataPesananSekarang, uangInput);
-            tutupModal(); loadPesanan(); 
-        }); 
-    }
-   function cetakStrukKasir(p, uangMasuk) {
-    let items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
-    let total = items.reduce((sum, i) => sum + (Number(i.harga) * Number(i.jumlah)), 0);
-    
-    let win = window.open('', '_blank', 'width=300,height=500');
-    win.document.write(`
-        <html>
-            <body style="font-family:monospace; font-size:12px;">
-                <h3 style="text-align:center;">STRUK PEMBAYARAN</h3>
-                <p>ID Pesanan: ${p.id || '-'}</p>
-                <p>Meja: ${p.meja} | ${p.nama}</p>
+                <div style="text-align: left;">${rincian}</div>
                 <hr>
-                ${items.map(i => `<div>${i.nama} x${i.jumlah}: Rp ${(i.harga * i.jumlah).toLocaleString()}</div>`).join('')}
-                <hr>
-                <div style="font-weight:bold; font-size:14px;">TOTAL: Rp ${total.toLocaleString()}</div>
-                <script>
-                    window.onload=function(){
-                        window.print(); 
-                        setTimeout(window.close, 500);
-                    }
-                <\/script>
+                <p class="center"><b>Total: Rp ${data.total.toLocaleString('id-ID')}</b></p>
+                <p class="center">Terima Kasih!</p>
             </body>
         </html>
     `);
-    win.document.close();
-}
-    function selesaiPesanan(id) {
-        fetch(`/menu/selesaikan/${id}`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token} })
-        .then(() => { loadPesanan(); alert("Pesanan telah dipindahkan ke Laporan Harian."); })
-        .catch(err => console.error(err));
-    }
-    function prosesAksi(id, aksi) { if(aksi === 'batal' && confirm("Yakin batal?")) fetch('/resto/kasir/batal', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}, body: JSON.stringify({id, restoId: restoId}) }).then(loadPesanan); }
-
-function cetakOtomatis(p) {
-    // 1. Ambil nama pelanggan dengan aman
-    const namaPelanggan = p.nama || "Pelanggan";
-
-    // 2. Pastikan data pesanan diparsing dengan benar
-    let items = [];
-    try {
-        items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
-    } catch (e) {
-        console.error("Gagal parsing:", e);
-    }
-
-    // 3. Loop untuk membuat list menu yang rapi (Nama x Jumlah)
-    let daftarMenu = "";
-    if (Array.isArray(items)) {
-        daftarMenu = items.map(i => `<li>${i.nama} x${i.jumlah || 1}</li>`).join('');
-    } else {
-        daftarMenu = `<li>${p.pesanan || 'Data tidak tersedia'}</li>`;
-    }
-
-    // 4. Render ke jendela cetak
-    let win = window.open('', '_blank', 'width=300,height=500');
-    win.document.write(`
-        <html>
-            <body style="font-family: monospace; font-size: 14px; padding: 10px;">
-                <h3 style="text-align: center;">ORDER DAPUR</h3>
-                <p>ID: ${p.id || '-'}</p>
-                <p>Meja: ${p.meja || '-'}</p>
-                <p><strong>Pelanggan: ${namaPelanggan}</strong></p>
-                <hr>
-                <div>Pesanan:</div>
-                <ul style="padding-left: 20px; font-weight: bold;">${daftarMenu}</ul>
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        setTimeout(function() { window.close(); }, 500);
-                    }
-                <\/script>
-            </body>
-        </html>
-    `);
-    win.document.close();
-}
-socket.on('pesanan_baru', async (data) => {
-if (!window.location.href.includes('kasir')) {
-        return; // Berhenti di sini jika bukan halaman kasir
-    }
-    if (typeof loadPesanan === 'function') loadPesanan();
+    doc.close();
     
-    // 1. Panggil suara segera
-    putarNotif();
-    
-    // 2. Gunakan setTimeout agar proses cetak tidak memblokir suara
-    try {
-        const restoId = localStorage.getItem('restoId') || 3;
-        const response = await fetch(`/api/printer/settings?resto_id=${restoId}`);
-        const settings = await response.json();
-
-        if (settings && settings.auto_print === true) {
-            setTimeout(() => cetakOtomatis(data), 500);
-        }
-    } catch (err) {
-        console.error("Gagal menjalankan auto-print:", err);
-    }
-});
+    setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        document.body.removeChild(iframe);
+    }, 500);
+}
 
     setInterval(loadPesanan, 3000);
     loadPesanan();
 </script>
 </body>
-
 </html>

@@ -17,6 +17,7 @@ export class AuthController {
       token: result.accessToken,
       restoId: result.restoId,
       role: result.role,
+namaResto: result.namaResto,
     };
   }
 

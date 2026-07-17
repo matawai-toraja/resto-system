@@ -142,10 +142,9 @@ export class AppController {
     await this.restoRepo.update(this.validateRestoId(body.restoId), { latitude: body.lat, longitude: body.lon });
     return { status: "Sukses" };
   }
-@Post('/resto/menu/resto/wa/update')
+@Post('menu/resto/wa/update')
 async updateWa(@Body() body: { restoId: number, nomor: string }) {
-  // Gunakan restoRepo yang sudah didefinisikan di constructor
-  return await this.restoRepo.update(body.restoId, { nomorWa: body.nomor });
+    return await this.restoRepo.update(body.restoId, { nomorWa: body.nomor });
 }
 
 @Get('/menu/resto/wa')

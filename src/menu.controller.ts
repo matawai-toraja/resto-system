@@ -40,9 +40,20 @@ async updateRadius(@Body() body: any) {
   // --- FITUR BARU: TRANSAKSI & LAPORAN ---
   
   // Panggil rute ini saat tombol "Selesai" ditekan di kasir
- @Post('selesaikan/:id')
-async selesaikan(@Param('id') id: number) { 
-    return await this.menuService.selesaikanPesanan(id); 
+@Post('selesaikan/:id')
+async selesaikanPesanan(@Param('id') id: number, @Body() body: { uangBayar: number }) {
+    // Ini sekarang akan cocok karena service sudah menerima 2 argumen
+    return await this.menuService.selesaikanPesanan(id, body.uangBayar);
+}
+@Post('selesaikan/:id')
+async selesaikan(@Param('id') id: number, @Body('uangBayar') uangBayar: number) {
+    // 1. Jalankan proses simpan ke riwayat
+    await this.menuService.selesaikanPesanan(id, uangBayar);
+    
+    // 2. Perintahkan printer untuk mencetak
+    await this.menuService.cetakStruk(id, uangBayar);
+    
+    return { success: true };
 }
   // Panggil rute ini di halaman Laporan Harian
 @Get('laporan/harian')
@@ -80,11 +91,11 @@ async pesanSemua(@Body() body: any) {
     const hasil = await this.menuService.prosesPesanSemua(body);
     return { id: hasil.id || hasil }; 
 }
-@Post('update-status')
-  updateStatus(@Body() body: { id: string, status: string }) {
-    return this.menuService.updateStatusPesanan(body.id, body.status);
-  }
-
+@Post('update-status-dapur')
+async updateStatusDapur(@Body() body: { id: number, statusDapur: string }) {
+  console.log("Data diterima controller:", body); // Cek di terminal VS Code saat tombol diklik
+  return await this.menuService.updateStatusDapur(body.id, body.statusDapur);
+}
   @Get('cek-status-pesanan')
   getStatus(@Query('id') id: string) {
     return { status: this.menuService.getStatusPesanan(id) };

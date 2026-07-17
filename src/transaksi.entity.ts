@@ -8,7 +8,8 @@ export class Transaksi {
   @Column()
   idTransaksi: string;
 
-  @Column()
+  // Hanya satu deklarasi idPelanggan dengan nullable: true agar tidak error
+  @Column({ nullable: true })
   idPelanggan: number;
 
   @Column()
@@ -23,7 +24,6 @@ export class Transaksi {
   @Column('decimal', { precision: 10, scale: 2 })
   totalBayar: number;
 
-  // TAMBAHKAN BARIS INI:
   @Column({ nullable: true })
   restoId: number; 
 }

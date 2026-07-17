@@ -310,32 +310,108 @@ function hapusItem(index) {
     keranjang.splice(index, 1);
     renderKeranjang();
 }
-   function prosesKirimPesanan() { 
-        const nama = document.getElementById('nama-modal').value; 
-        const meja = document.getElementById('meja-modal').value; 
-        if (!nama || !meja) return alert("Isi Nama & Meja!"); 
-        
-        fetch('/menu/kasir/pesan-semua', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ nama, meja, pesanan: keranjang, restoId: Number(restoId) }) 
-        })
-        .then(res => res.json()) // Menangkap respons dari server sebagai JSON
-        .then(data => { 
-            const dataSukses = { 
-                id: data.id, // Menangkap ID dari server
+function prosesKirimPesanan() {
+    const nama = document.getElementById('nama-modal').value;
+    const meja = document.getElementById('meja-modal').value;
+    if (!nama || !meja) return alert("Isi Nama & Meja!");
+
+    // 1. Ambil lokasi pelanggan sebelum mengirim pesanan
+    if (!navigator.geolocation) {
+        return alert("Browser Anda tidak mendukung deteksi lokasi. Harap aktifkan GPS.");
+    }
+
+    navigator.geolocation.getCurrentPosition((position) => {
+        const latPelanggan = position.coords.latitude;
+        const lonPelanggan = position.coords.longitude;
+
+        // 2. Kirim data beserta koordinat pelanggan
+        fetch('/menu/kasir/pesan-semua', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
                 nama, 
                 meja, 
-                rincianHtml: document.getElementById('keranjang-list').innerHTML, 
-                total: document.getElementById('total-harga').innerText 
-            }; 
-            localStorage.setItem('pesananSukses', JSON.stringify(dataSukses)); 
-            renderHalamanSukses(dataSukses); 
-            tutupModal(); 
+                pesanan: keranjang, 
+                restoId: Number(restoId),
+                latPelanggan: latPelanggan, // DATA INI PENTING
+                lonPelanggan: lonPelanggan  // DATA INI PENTING
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Lokasi Anda di luar jangkauan!");
+            return res.json();
+        })
+        .then(data => {
+            const dataSukses = {
+                id: data.id,
+                nama,
+                meja,
+                rincianHtml: document.getElementById('keranjang-list').innerHTML,
+                total: document.getElementById('total-harga').innerText
+            };
+            localStorage.setItem('pesananSukses', JSON.stringify(dataSukses));
+            renderHalamanSukses(dataSukses);
+            tutupModal();
             keranjang = [];
-        }); 
+        })
+        .catch(err => {
+            alert(err.message);
+        });
+    }, (error) => {
+        alert("Gagal mendapatkan lokasi. Harap izinkan akses GPS untuk memesan.");
+    });
+}function prosesKirimPesanan() {
+    const nama = document.getElementById('nama-modal').value;
+    const meja = document.getElementById('meja-modal').value;
+    if (!nama || !meja) return alert("Isi Nama & Meja!");
+
+    // 1. Ambil lokasi pelanggan sebelum mengirim pesanan
+    if (!navigator.geolocation) {
+        return alert("Browser Anda tidak mendukung deteksi lokasi. Harap aktifkan GPS.");
     }
-    function bukaModal() { document.getElementById('modal-keranjang').style.display = 'flex'; }
+
+    navigator.geolocation.getCurrentPosition((position) => {
+        const latPelanggan = position.coords.latitude;
+        const lonPelanggan = position.coords.longitude;
+
+        // 2. Kirim data beserta koordinat pelanggan
+        fetch('/menu/kasir/pesan-semua', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                nama, 
+                meja, 
+                pesanan: keranjang, 
+                restoId: Number(restoId),
+                latPelanggan: latPelanggan, // DATA INI PENTING
+                lonPelanggan: lonPelanggan  // DATA INI PENTING
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Lokasi Anda di luar jangkauan!");
+            return res.json();
+        })
+        .then(data => {
+            const dataSukses = {
+                id: data.id,
+                nama,
+                meja,
+                rincianHtml: document.getElementById('keranjang-list').innerHTML,
+                total: document.getElementById('total-harga').innerText
+            };
+            localStorage.setItem('pesananSukses', JSON.stringify(dataSukses));
+            renderHalamanSukses(dataSukses);
+            tutupModal();
+            keranjang = [];
+        })
+        .catch(err => {
+            alert(err.message);
+        });
+    }, (error) => {
+        alert("Gagal mendapatkan lokasi. Harap izinkan akses GPS untuk memesan.");
+    });
+}
+function bukaModal() { document.getElementById('modal-keranjang').style.display = 'flex'; }
     function tutupModal() { document.getElementById('modal-keranjang').style.display = 'none'; }
 
     window.onload = function() {

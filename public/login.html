@@ -33,20 +33,25 @@
         // Membaca hasil dari server
         const data = await response.json();
 
-        if (response.ok) {
-            // Simpan data jika berhasil
-            localStorage.setItem('authKey', data.token || "");
-            localStorage.setItem('token', data.token || "");
-            localStorage.setItem('userRole', data.role || 'admin');
+    if (response.ok) {
+    // Simpan data jika berhasil
+    localStorage.setItem('authKey', data.token || "");
+    localStorage.setItem('token', data.token || "");
+    localStorage.setItem('userRole', data.role || 'admin');
 
-            // Menyimpan restoId yang baru saja kita perbaiki di backend
-            if (data.restoId) {
-                localStorage.setItem('restoId', data.restoId);
-            }
-            
-            // Redirect ke dashboard
-            window.location.href = '/resto/page/dashboard';
-        } else {
+    // Menyimpan restoId
+    if (data.restoId) {
+        localStorage.setItem('restoId', data.restoId);
+    }
+    
+    // TAMBAHKAN INI: Menyimpan nama resto dari backend
+    if (data.namaResto) {
+        localStorage.setItem('namaResto', data.namaResto);
+    }
+    
+    // Redirect ke dashboard
+    window.location.href = '/resto/page/dashboard';
+} else {
             // Tampilkan error dari server jika login gagal
             alert(data.message || "Login Gagal");
         }

@@ -57,33 +57,46 @@
             let totalOmset = 0;
             const menuCount = {};
 
-            if (Array.isArray(data)) {
-                data.forEach(item => {
-                    totalOmset += Number(item.totalBayar || 0);
-                    
-                    // Logika Menu Terlaris
-                    if (item.pesanan) {
-                        item.pesanan.split(', ').forEach(p => {
-                            const [nama, jml] = p.split(' x');
-                            menuCount[nama] = (menuCount[nama] || 0) + (parseInt(jml) || 1);
-                        });
-                    }
-                    
-                    // Render Tabel
-                    tbody.innerHTML += `<tr>
-                        <td>${item.nama || '-'}</td>
-                        <td>${item.pesanan || '-'}</td>
-                        <td>${item.waktuSelesai ? new Date(item.waktuSelesai).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
-                        <td>Rp ${Number(item.totalBayar || 0).toLocaleString()}</td>
-                    </tr>`;
+           if (Array.isArray(data)) {
+    data.forEach(item => {
+        totalOmset += Number(item.totalBayar || 0);
+        
+        // 1. Mengubah JSON String menjadi Objek agar bisa dibaca
+        let detailTeks = '-';
+        try {
+            const items = typeof item.pesanan === 'string' ? JSON.parse(item.pesanan) : item.pesanan;
+            if (Array.isArray(items)) {
+                // 2. Format ulang menjadi teks rapi (Nama x Jumlah)
+                detailTeks = items.map(i => `${i.nama} x ${i.jumlah}`).join(', ');
+                
+                // 3. Logika untuk Menu Terlaris yang akurat
+                items.forEach(i => {
+                    menuCount[i.nama] = (menuCount[i.nama] || 0) + (parseInt(i.jumlah) || 1);
                 });
-
-                // Update Statistik
-                let menuTerlaris = Object.keys(menuCount).reduce((a, b) => (menuCount[a] > menuCount[b] ? a : b), 'Belum ada');
-                document.getElementById('total-omset').innerText = 'Rp ' + totalOmset.toLocaleString();
-                document.getElementById('jml-transaksi').innerText = data.length;
-                document.getElementById('menu-terlaris').innerText = menuTerlaris;
             }
+        } catch (e) {
+            // Jika data bukan format JSON, tampilkan apa adanya
+            detailTeks = item.pesanan || '-';
+        }
+        
+        // 4. Render ke tabel
+        tbody.innerHTML += `<tr>
+            <td>${item.nama || '-'}</td>
+            <td>${detailTeks}</td>
+            <td>${item.waktuSelesai ? new Date(item.waktuSelesai).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) : '-'}</td>
+            <td>Rp ${Number(item.totalBayar || 0).toLocaleString()}</td>
+        </tr>`;
+    });
+
+    // Update Statistik Tampilan
+    let menuTerlaris = Object.keys(menuCount).length > 0 
+        ? Object.keys(menuCount).reduce((a, b) => (menuCount[a] > menuCount[b] ? a : b)) 
+        : 'Belum ada';
+    
+    document.getElementById('total-omset').innerText = 'Rp ' + totalOmset.toLocaleString();
+    document.getElementById('jml-transaksi').innerText = data.length;
+    document.getElementById('menu-terlaris').innerText = menuTerlaris;
+}
         } catch (err) {
             console.error("Gagal memuat:", err);
         }

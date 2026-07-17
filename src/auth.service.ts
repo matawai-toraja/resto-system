@@ -26,6 +26,7 @@ constructor(
     return {
         ...restoData,
         restoId: resto.id, // <--- INI KUNCI YANG DIBUTUHKAN FRONTEND
+namaResto: resto.namaResto,
         accessToken: "token_akses_aktif",
         role: 'admin'
     };

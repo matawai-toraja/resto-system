@@ -67,25 +67,24 @@
 </div>
 
 <script>
-    const token = localStorage.getItem('token');
     const restoId = localStorage.getItem('restoId');
+    const token = localStorage.getItem('token');
 
-    // FUNGSI UTAMA PENGECEKAN
+    // FUNGSI UTAMA
     async function initRiwayat() {
-        // Cek sesi
-        if (sessionStorage.getItem('aksesRiwayatOK') === 'true') {
+        console.log("Memulai inisialisasi..."); // Cek di konsol apakah ini muncul
+        
+        if (sessionStorage.getItem('aksesRiwayat_' + restoId) === 'true') {
             updateRiwayat(); 
             return;
         }
 
-        // Minta password jika belum ada sesi
         const password = prompt("Masukkan Password Khusus Karyawan:");
         if (!password) {
             window.location.href = '/resto/page/dashboard';
             return;
         }
 
-        // Verifikasi ke server
         try {
             const res = await fetch('/resto/verifikasi-karyawan', {
                 method: 'POST',
@@ -94,7 +93,7 @@
             });
 
             if (res.ok) {
-                sessionStorage.setItem('aksesRiwayatOK', 'true'); // Key konsisten
+                sessionStorage.setItem('aksesRiwayat_' + restoId, 'true');
                 updateRiwayat();
             } else {
                 alert("Password Salah!");
@@ -102,38 +101,65 @@
             }
         } catch (err) {
             alert("Gagal terhubung ke server.");
-            window.location.href = '/resto/page/dashboard';
         }
     }
 
     function updateRiwayat() {
+        console.log("Memanggil data riwayat...");
         fetch(`/resto/kasir/riwayat?restoId=${restoId}`, {
             headers: { 'Authorization': 'Bearer ' + token }
         })
         .then(res => res.json())
         .then(data => {
             const tbody = document.getElementById('daftar-riwayat');
+            const totalBox = document.getElementById('total-pendapatan');
+            
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data transaksi.</td></tr>';
+                totalBox.innerText = 'Total Pendapatan: Rp 0';
+                return;
+            }
+
             let total = 0;
             tbody.innerHTML = data.map(p => {
                 const subtotal = Number(p.totalBayar || 0);
                 total += subtotal;
-                return `<tr><td><strong>${p.nama || 'Pelanggan'}</strong></td><td>${p.meja || '-'}</td><td>${p.waktuSelesai ? new Date(p.waktuSelesai).toLocaleString('id-ID') : '-'}</td><td>Rp ${subtotal.toLocaleString('id-ID')}</td></tr>`;
+                return `<tr>
+                    <td><strong>${p.nama || 'Pelanggan'}</strong></td>
+                    <td>${p.meja || '-'}</td>
+                    <td>${p.waktuSelesai ? new Date(p.waktuSelesai).toLocaleString('id-ID') : '-'}</td>
+                    <td>Rp ${subtotal.toLocaleString('id-ID')}</td>
+                </tr>`;
             }).join('');
-            document.getElementById('total-pendapatan').innerText = 'Total Pendapatan: Rp ' + total.toLocaleString('id-ID');
+            
+            totalBox.innerText = 'Total Pendapatan: Rp ' + total.toLocaleString('id-ID');
+        })
+        .catch(err => {
+            console.error("Error Fetch Data:", err);
         });
     }
-
-    function konfirmasiReset() {
-        if (confirm("Yakin hapus SEMUA data?")) {
+function konfirmasiReset() {
+        if (confirm("Yakin hapus SEMUA data riwayat?")) {
             fetch('/resto/kasir/reset-data', { 
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': 'Bearer ' + token 
+                },
                 body: JSON.stringify({ restoId: restoId })
-            }).then(() => location.reload());
+            })
+            .then(res => {
+                if (res.ok) {
+                    location.reload();
+                } else {
+                    alert("Gagal mereset data.");
+                }
+            })
+            .catch(err => console.error("Error saat reset:", err));
         }
     }
 
-    // Panggil fungsi utama saat halaman dimuat
+    // Panggil sekali saja di sini
     initRiwayat();
 </script>
 </body>
