@@ -115,7 +115,10 @@ export class AppController {
     });
   }
 
-
+@Post('payment/notification')
+async receiveNotification(@Body() body: any) {
+  return await this.paymentService.handleNotification(body);
+}
 @Get('kasir/cek-status-pesanan')
   async cekStatusPesanan(@Query('restoId') restoId: string) {
     const rId = this.validateRestoId(restoId);

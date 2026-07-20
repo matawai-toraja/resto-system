@@ -79,6 +79,43 @@ export class PaymentService {
         console.log("=========================================");
         throw new Error(hasilTransaksi.error_messages ? hasilTransaksi.error_messages.join(', ') : 'Ditolak oleh Midtrans');
       }
+async handleNotification(notificationDto: any) {
+    try {
+      const orderId = notificationDto.order_id; // contoh: RESTO-62-1784571635950
+      const transactionStatus = notificationDto.transaction_status;
+      const fraudStatus = notificationDto.fraud_status;
+
+      let statusPesanan = 'pending';
+
+      if (transactionStatus == 'capture') {
+        if (fraudStatus == 'challenge') {
+          statusPesanan = 'challenge';
+        } else if (fraudStatus == 'accept') {
+          statusPesanan = 'lunas';
+        }
+      } else if (transactionStatus == 'settlement') {
+        statusPesanan = 'lunas';
+      } else if (
+        transactionStatus == 'cancel' ||
+        transactionStatus == 'deny' ||
+        transactionStatus == 'expire'
+      ) {
+        statusPesanan = 'gagal';
+      } else if (transactionStatus == 'pending') {
+        statusPesanan = 'pending';
+      }
+
+      // TODO: Update status pesanan di database berdasarkan orderId
+      // Contoh: 
+      // const idAsli = orderId.split('-')[1]; // Mengambil ID pesanan asli
+      // await this.pesananRepo.update({ id: idAsli }, { status: statusPesanan });
+
+      return { status: 'OK', message: 'Notifikasi berhasil diproses' };
+    } catch (error) {
+      console.error('[Notification Error]:', error);
+      throw new InternalServerErrorException('Gagal memproses notifikasi pembayaran');
+    }
+  }
 
       return {
         token: hasilTransaksi.token,
