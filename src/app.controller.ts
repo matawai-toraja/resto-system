@@ -115,7 +115,7 @@ export class AppController {
     });
   }
 
-@Post('payment/notification')
+@Post('notification')
 async receiveNotification(@Body() body: any) {
   return await this.paymentService.handleNotification(body);
 }
