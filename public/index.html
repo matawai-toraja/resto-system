@@ -6,6 +6,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu Digital Resto</title>
     <style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+/* Memperbaiki Header Agar Tulisan Terbaca Jelas */
+#header-container {
+    background: #5c6bc0 !important; /* Warna biru yang lebih tegas */
+    padding: 20px 15px !important;
+    text-align: center;
+}
+
+#nama-restoran {
+    color: #ffffff !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase;
+    margin: 10px 0 !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+#filter, #searchInput {
+    background-color: #ffffff !important; /* Latar Belakang Putih */
+    color: #000000 !important;           /* Tulisan Hitam Pekat */
+    border: 2px solid #5c6bc0 !important; /* Border biru agar terlihat rapi */
+    padding: 12px 15px !important;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+}
+
+/* Memastikan teks di dalam pilihan (dropdown) juga hitam */
+#filter option {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* Memperjelas warna placeholder */
+#searchInput::placeholder {
+    color: #555555 !important;
+}
+
+/* Memperbaiki Form Agar Solid dan Jelas */
+.header-form-wrapper {
+    display: flex !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 500px !important;
+    margin: 10px auto 0 auto !important;
+}
+
+/* Kunci utama: Memaksa warna putih solid dan font hitam */
+#filter, #searchInput {
+    background-color: #ffffff !important;
+    color: #333333 !important; /* Teks Hitam agar kelihatan */
+    border: none !important;
+    padding: 12px 15px !important;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+}
+
+#searchInput::placeholder {
+    color: #777777 !important;
+    font-weight: 400 !important;
+}
+/* Pastikan header container tetap diam dan transparan */
+#header-container {
+    background: rgba(102, 126, 234, 0.8) !important; /* Paksa transparan */
+    backdrop-filter: blur(5px); /* Efek kaca */
+    padding: 20px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+.menu-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 15px !important;
+    padding: 15px !important;
+    max-width: 1200px !important; /* Agar tidak terlalu lebar di desktop */
+    margin: 0 auto !important;
+}
+
+/* Tampilan Laptop/Desktop: 6 kolom */
+@media (min-width: 1024px) {
+    .menu-grid {
+        grid-template-columns: repeat(6, 1fr) !important;
+    }
+}
+/* Kunci form agar tidak bergerak */
+.header-form-wrapper {
+    display: flex !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 500px !important;
+    margin: 10px auto 0 auto !important;
+}
+
+#filter, #searchInput {
+    background: rgba(255, 255, 255, 0.3) !important; /* Paksa transparan */
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    padding: 12px !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+}
+
+#filter { width: 110px !important; flex-shrink: 0; }
+#searchInput { flex-grow: 1 !important; }
 .resto-card {
     /* 1. Warna latar belakang transparan (putih dengan opacity 40%) */
     background: rgba(255, 255, 255, 0.4) !important;
@@ -114,31 +224,44 @@ body {
         
         #modal-keranjang { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; }
+
     </style>
 </head>
 <body>
 
-<div class="app-wrapper" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
-        <div class="resto-card" id="header-area">
-        <div class="container-utama" id="container-utama">
-            <div class="resto-card" id="header-area">
- <p style="font-size: 0,9em; color: #666;">Selamat Datang di</p>
-                <h1 id="nama-restoran" style="font-size: 25px;">Memuat...</h1>
-               
-<p style="font-size: 0.8em; color: #444;">silahkan pilih menu favorit Anda!</p>
-                <button class="btn-wa-elegan" onclick="bukaWhatsApp()">Hubungi Resto via WhatsApp</button>
-            </div>
+<div id="header-container" style="flex-shrink: 0; padding: 15px; background: #667eea; color: white;">
+    <div class="container-utama" id="container-utama" style="max-width: 500px; margin: auto;">
+        
+        <!-- Info Resto -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            <p style="font-size: 0.8em; opacity: 0.8; margin: 0;">Selamat Datang di</p>
+            <h1 id="nama-restoran" style="font-size: 25px; margin: 5px 0;">Memuat...</h1>
+        <button onclick="bukaWhatsApp()" style="background: #25d366; color: #0000FF; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 5px;">
+    Konfirmasi via WhatsApp
+</button>
+<p style="margin-top: 10px; color: white; font-size: 14px;">
+    Silahkan pilih menu favorit anda
+</p>
+        </div>
 
-            <div class="resto-card">
-                <h2 style="font-size: 16px; margin-bottom: 8px;">Pilih Menu Anda</h2>
-                <select id="filter" onchange="tampilkanMenu()" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ddd;">
-                    <option value="Semua">Semua</option>
-                    <option value="Makanan">Makanan</option>
-                    <option value="Minuman">Minuman</option>
-                </select>
-                <input type="text" id="searchInput" placeholder="Cari menu..." onkeyup="tampilkanMenu()" style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box;">
-            </div>
+        <!-- Filter & Search (Menyatu tanpa kartu putih yang tebal) -->
+      <div style="display: flex; gap: 8px; justify-content: center; margin: 10px auto; max-width: 350px;">
+    <!-- padding dikurangi, flex dihapus agar ukurannya lebih pas -->
+    <select id="filter" onchange="tampilkanMenu()" style="padding: 6px 10px; border-radius: 8px; border: none; font-size: 14px;">
+        <option value="Semua">Semua</option>
+        <option value="Makanan">Makanan</option>
+        <option value="Minuman">Minuman</option>
+    </select>
+    
+    <!-- padding dikurangi, flex dihapus agar ukurannya lebih pas -->
+    <input type="text" id="searchInput" placeholder="Cari..." onkeyup="tampilkanMenu()" style="padding: 6px 10px; border-radius: 8px; border: none; font-size: 14px; width: 150px;">
+</div>
+    </div>
+</div>
 
+<!-- AREA MENU (Sekarang punya ruang penuh) -->
+<div id="menu-list" class="menu-grid" style="flex: 1; overflow-y: auto; padding: 15px; max-width: 500px; margin: auto; width: 100%; box-sizing: border-box;">
+</div>
             <div id="menu-list" class="menu-grid"></div>
         </div>
     </div>
@@ -150,7 +273,26 @@ body {
             <input type="number" id="meja-modal" placeholder="Nomor Meja" style="width:100%; margin-bottom:10px; padding:8px; box-sizing:border-box;">
             <div id="keranjang-list"></div>
             <div id="total-harga" style="font-weight:bold; margin-top:10px;">Total: Rp 0</div>
-            <button onclick="prosesKirimPesanan()" style="width:100%; margin-top:10px; padding:10px; background:#2980b9; color:white; border:none; border-radius:5px;">Kirim Pesanan</button>
+<div id="pilihan-pembayaran" style="margin: 20px 0;">
+    <p>Pilih Metode Pembayaran:</p>
+    <label>
+        <input type="radio" name="metode" value="tunai" checked> Bayar Tunai (di Kasir)
+    </label><br>
+    <label>
+        <input type="radio" name="metode" value="digital"> Bayar Digital (QRIS/Transfer)
+    </label>
+</div>
+
+<div id="modal-qris" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center; padding:20px;">
+    <div class="modal-content" style="text-align:center;">
+        <h3>Scan QRIS untuk Bayar</h3>
+        <img src="URL_GAMBAR_QRIS_ANDA.jpg" style="width:100%; max-width:250px; margin:10px 0;">
+        <p>Setelah transfer, klik tombol di bawah untuk verifikasi pesanan.</p>
+        <button onclick="lanjutKirimKeServer()" style="width:100%; padding:12px; background:#27ae60; color:white; border:none; border-radius:5px;">Saya Sudah Bayar</button>
+        <button onclick="document.getElementById('modal-qris').style.display='none'" style="width:100%; margin-top:10px; padding:10px; background:#ccc; border:none; border-radius:5px;">Batal</button>
+    </div>
+</div>
+            <button onclick="prosesKirimPesanan(event)" style="width:100%; margin-top:10px; padding:10px; background:#2980b9; color:white; border:none; border-radius:5px;">Kirim Pesanan</button>
             <button onclick="tutupModal()" style="width:100%; margin-top:5px; padding:10px; background:#f0f0f0; border:none; border-radius:5px;">Tambah Menu Lain</button>
         </div>
     </div>
@@ -160,6 +302,22 @@ body {
     </div>
 
 <script>
+(function() {
+    const DURASI_SESI = 3600000; // 1 jam dalam milidetik
+    let sessionStart = localStorage.getItem('session_start');
+
+    if (!sessionStart) {
+        // Jika belum ada sesi, buat sesi baru sekarang
+        localStorage.setItem('session_start', new Date().getTime());
+    } else {
+        // Jika sudah ada, cek apakah sudah lebih dari 1 jam
+        if (new Date().getTime() - Number(sessionStart) > DURASI_SESI) {
+            alert("Waktu sesi Anda telah berakhir. Silakan scan ulang QR untuk memesan kembali.");
+            localStorage.clear(); // Hapus semua data lama
+            location.reload();    // Refresh halaman
+        }
+    }
+})();
     let menuData = [], keranjang = [], waNumber = "";
     const restoId = new URLSearchParams(window.location.search).get('restoId') || 1;
 
@@ -172,17 +330,25 @@ body {
         fetch(`/menu/resto/info?restoId=${restoId}`).then(res => res.json()).then(data => { document.getElementById('nama-restoran').innerText = data.namaResto; });
     }
 
-    function tampilkanMenu() {
-        const filter = document.getElementById('filter').value;
-        const search = document.getElementById('searchInput').value.toLowerCase();
+   function tampilkanMenu() {
+        // 1. Ambil elemen HTML-nya terlebih dahulu
+        const filterElement = document.getElementById('filter');
+        const searchElement = document.getElementById('searchInput');
+        const list = document.getElementById('menu-list');
+
+        // 🛡️ KUNCI PENGAMAN: Jika salah satu elemen filter/search atau menu-list 
+        // sudah hilang dari layar (karena beralih ke halaman sukses), langsung hentikan fungsi ini!
+        if (!filterElement || !searchElement || !list) return;
+
+        // 2. Jika elemennya aman dan ada di layar, baru ambil value-nya
+        const filter = filterElement.value;
+        const search = searchElement.value.toLowerCase();
+        
         const filtered = menuData.filter(m => (filter === "Semua" || m.kategori === filter) && m.nama.toLowerCase().includes(search));
         
-        const list = document.getElementById('menu-list');
-        if(!list) return;
-
         list.innerHTML = filtered.map(m => `
             <div class="menu-card">
-                <img src="${m.gambar || 'https://via.placeholder.com/150'}">
+                <img src="${m.gambarUrl || 'https://via.placeholder.com/200'}">
                 <h3>${m.nama}</h3>
                 <p>Rp ${Number(m.harga).toLocaleString()}</p>
                 <button onclick="tambahKeKeranjang(${m.id})" ${m.stok <= 0 ? 'disabled style="background:#95a5a6; cursor:not-allowed;"' : 'style="background:#27ae60;"'}>
@@ -310,116 +476,132 @@ function hapusItem(index) {
     keranjang.splice(index, 1);
     renderKeranjang();
 }
-function prosesKirimPesanan() {
+function prosesKirimPesanan(event) {
     const nama = document.getElementById('nama-modal').value;
     const meja = document.getElementById('meja-modal').value;
+    const metodePembayaran = document.querySelector('input[name="metode"]:checked').value;
+
     if (!nama || !meja) return alert("Isi Nama & Meja!");
+    if (keranjang.length === 0) return alert("Keranjang masih kosong!");
 
-    // 1. Ambil lokasi pelanggan sebelum mengirim pesanan
-    if (!navigator.geolocation) {
-        return alert("Browser Anda tidak mendukung deteksi lokasi. Harap aktifkan GPS.");
-    }
+    const tombol = event.target;
+    tombol.disabled = true;
+    tombol.innerText = "Mengirim...";
 
+    // Dapatkan lokasi GPS untuk keamanan/validasi area resto
     navigator.geolocation.getCurrentPosition((position) => {
-        const latPelanggan = position.coords.latitude;
-        const lonPelanggan = position.coords.longitude;
+        const payload = {
+            nama, 
+            meja, 
+            pesanan: keranjang, 
+            restoId: Number(restoId),
+            latPelanggan: position.coords.latitude,
+            lonPelanggan: position.coords.longitude,
+            metodePembayaran: metodePembayaran,
+            sessionStart: localStorage.getItem('session_start'),
+            // Tambahkan totalHarga agar dibaca oleh NestJS PaymentService
+            totalHarga: keranjang.reduce((s, i) => s + (Number(i.harga) * Number(i.jumlah)), 0)
+        };
 
-        // 2. Kirim data beserta koordinat pelanggan
-        fetch('/menu/kasir/pesan-semua', {
+        // Kirim data langsung ke endpoint NestJS controller
+        fetch('/resto/kasir/pesan-semua', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                nama, 
-                meja, 
-                pesanan: keranjang, 
-                restoId: Number(restoId),
-                latPelanggan: latPelanggan, // DATA INI PENTING
-                lonPelanggan: lonPelanggan  // DATA INI PENTING
-            })
+            body: JSON.stringify(payload)
         })
         .then(res => {
-            if (!res.ok) throw new Error("Lokasi Anda di luar jangkauan!");
+            if (!res.ok) throw new Error("Gagal mengirim pesanan ke server!");
             return res.json();
         })
         .then(data => {
-            const dataSukses = {
-                id: data.id,
-                nama,
-                meja,
-                rincianHtml: document.getElementById('keranjang-list').innerHTML,
-                total: document.getElementById('total-harga').innerText
-            };
-            localStorage.setItem('pesananSukses', JSON.stringify(dataSukses));
-            renderHalamanSukses(dataSukses);
+            alert("Pesanan berhasil dibuat!");
             tutupModal();
-            keranjang = [];
+
+            // SINKRONISASI MIDTRANS: Jika memilih digital, langsung buka portal pembayaran QRIS/Transfer
+            if (metodePembayaran === 'digital' && data.paymentUrl) {
+                // Mengarahkan pelanggan ke halaman pembayaran dinamis Midtrans Snap
+                window.location.href = data.paymentUrl; 
+            } else {
+                // Jika tunai, simpan status sukses lokal dan render struk pemesanan
+                const totalText = document.getElementById('total-harga').innerText;
+                const rincianHtml = document.getElementById('keranjang-list').innerHTML;
+                
+                const dataSukses = {
+                    id: data.id,
+                    nama: nama,
+                    meja: meja,
+                    total: totalText,
+                    rincianHtml: rincianHtml
+                };
+
+                localStorage.setItem('pesananSukses', JSON.stringify(dataSukses));
+                renderHalamanSukses(dataSukses);
+                keranjang = [];
+                renderKeranjang();
+            }
         })
         .catch(err => {
             alert(err.message);
+        })
+        .finally(() => {
+            tombol.disabled = false;
+            tombol.innerText = "Kirim Pesanan";
         });
+
     }, (error) => {
-        alert("Gagal mendapatkan lokasi. Harap izinkan akses GPS untuk memesan.");
-    });
-}function prosesKirimPesanan() {
-    const nama = document.getElementById('nama-modal').value;
-    const meja = document.getElementById('meja-modal').value;
-    if (!nama || !meja) return alert("Isi Nama & Meja!");
-
-    // 1. Ambil lokasi pelanggan sebelum mengirim pesanan
-    if (!navigator.geolocation) {
-        return alert("Browser Anda tidak mendukung deteksi lokasi. Harap aktifkan GPS.");
-    }
-
-    navigator.geolocation.getCurrentPosition((position) => {
-        const latPelanggan = position.coords.latitude;
-        const lonPelanggan = position.coords.longitude;
-
-        // 2. Kirim data beserta koordinat pelanggan
-        fetch('/menu/kasir/pesan-semua', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                nama, 
-                meja, 
-                pesanan: keranjang, 
-                restoId: Number(restoId),
-                latPelanggan: latPelanggan, // DATA INI PENTING
-                lonPelanggan: lonPelanggan  // DATA INI PENTING
-            })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Lokasi Anda di luar jangkauan!");
-            return res.json();
-        })
-        .then(data => {
-            const dataSukses = {
-                id: data.id,
-                nama,
-                meja,
-                rincianHtml: document.getElementById('keranjang-list').innerHTML,
-                total: document.getElementById('total-harga').innerText
-            };
-            localStorage.setItem('pesananSukses', JSON.stringify(dataSukses));
-            renderHalamanSukses(dataSukses);
-            tutupModal();
-            keranjang = [];
-        })
-        .catch(err => {
-            alert(err.message);
-        });
-    }, (error) => {
-        alert("Gagal mendapatkan lokasi. Harap izinkan akses GPS untuk memesan.");
+        alert("GPS diperlukan untuk validasi keamanan pemesanan di area restoran.");
+        tombol.disabled = false;
+        tombol.innerText = "Kirim Pesanan";
     });
 }
 function bukaModal() { document.getElementById('modal-keranjang').style.display = 'flex'; }
     function tutupModal() { document.getElementById('modal-keranjang').style.display = 'none'; }
+function refreshData() {
+    // Gunakan URL string biasa dengan penggabungan + jika backtick bermasalah
+    const timestamp = Date.now();
+    
+    // Fetch menu
+    fetch('/menu/' + restoId + '?t=' + timestamp)
+        .then(res => res.json())
+        .then(data => { 
+            menuData = data; 
+            tampilkanMenu(); 
+        });
 
-    window.onload = function() {
-        refreshData();
-        setInterval(refreshData, 3000);
-        const dataTersimpan = localStorage.getItem('pesananSukses');
-        if (dataTersimpan) renderHalamanSukses(JSON.parse(dataTersimpan));
-    };
+    // Fetch WA
+    fetch('/menu/resto/wa?restoId=' + restoId + '&t=' + timestamp)
+        .then(res => res.text())
+        .then(text => { 
+            waNumber = text.trim().replace(/['"]/g, ''); 
+        });
+
+    // Fetch Info
+    fetch('/menu/resto/info?restoId=' + restoId + '&t=' + timestamp)
+        .then(res => res.json())
+        .then(data => { 
+            document.getElementById('nama-restoran').innerText = data.namaResto; 
+        });
+}
+
+window.onload = function() {
+    // 1. Panggil fungsi utama Anda sekali saja
+    refreshData();
+    
+    // 2. Hanya setInterval yang kita modifikasi untuk refresh menu
+    // Gunakan ?t=${Date.now()} agar terhindar dari cache 304
+    setInterval(function() {
+        fetch(`/menu/${restoId}?t=${Date.now()}`)
+            .then(res => res.json())
+            .then(data => { 
+                menuData = data; 
+                tampilkanMenu(); 
+            });
+    }, 3000); // Ganti angka 3000 ini sesuai durasi yang Anda inginkan
+
+    // 3. Logika lain Anda tetap berjalan normal
+    const dataTersimpan = localStorage.getItem('pesananSukses');
+    if (dataTersimpan) renderHalamanSukses(JSON.parse(dataTersimpan));
+};
 </script>
 </body>
 </html>

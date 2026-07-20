@@ -9,9 +9,12 @@ import { Menu } from './menu.entity';
 import { Pesanan } from './pesanan.entity';
 import { Riwayat } from './riwayat.entity';
 import { Transaksi } from './transaksi.entity';
-import { Resto } from './resto.entity'; // Pastikan entity ini ada
-import { Karyawan } from './karyawan.entity'; // Pastikan entity ini ada
+import { Resto } from './resto.entity'; 
+import { Karyawan } from './karyawan.entity'; 
 import { AuthGuard } from './auth.guard';
+import { PaymentService } from './PaymentService';
+import * as crypto from 'crypto';
+import { DataSource } from 'typeorm';
 
 @Controller('resto')
 export class AppController {
@@ -22,16 +25,16 @@ export class AppController {
     @InjectRepository(Transaksi) private transaksiRepo: Repository<Transaksi>,
     @InjectRepository(Resto) private restoRepo: Repository<Resto>,
     @InjectRepository(Karyawan) private karyawanRepo: Repository<Karyawan>,
+    private readonly paymentService: PaymentService,
+    private readonly dataSource: DataSource,
   ) {}
 
-  // --- Helper Validasi ---
   private validateRestoId(id: any) {
     const restoId = Number(id);
     if (!id || isNaN(restoId)) throw new BadRequestException("restoId wajib diisi dan harus berupa angka");
     return restoId;
   }
-
-  // --- Tampilan ---
+  
   @Get('menu-pelanggan') getMenuPelanggan(@Res() res: Response) { return res.sendFile(join(process.cwd(), 'public', 'index.html')); }
   @Get('page/login') getLoginPage(@Res() res: Response) { return res.sendFile(join(process.cwd(), 'public', 'login.html')); }
   @Get('page/register') getRegisterPage(@Res() res: Response) { return res.sendFile(join(process.cwd(), 'public', 'register.html')); }
@@ -44,7 +47,6 @@ export class AppController {
   @UseGuards(AuthGuard) @Get('page/pengaturan') getPengaturanPage(@Res() res: Response) { return res.sendFile(join(process.cwd(), 'public', 'pengaturan.html')); }
   @Get('page/analisa-menu') getAnalisaMenuPage(@Res() res: Response) { return res.sendFile(join(process.cwd(), 'public', 'analisa-menu.html')); }
 
-  // --- Menu ---
   @Get('menu')
   async getMenu(@Query('restoId') restoId: string) {
     return await this.menuRepo.find({ where: { restoId: this.validateRestoId(restoId) } });
@@ -65,20 +67,76 @@ export class AppController {
   @Post('edit-status')
   async editStatus(@Body() data: { id: number; stok: number }) { await this.menuRepo.update(data.id, { stok: data.stok }); return { status: "Status Diperbarui" }; }
 
-  // --- Kasir ---
   @Post('kasir/pesan-semua')
   async pesanSemua(@Body() data: any) {
-    this.validateRestoId(data.restoId);
-    return await this.pesananRepo.save(this.pesananRepo.create({ ...data, meja: String(data.meja), pesanan: JSON.stringify(data.pesanan), status: 'pending', statusDapur: 'menunggu' }));
+    const sessionStart = data.sessionStart;
+    const waktuSekarang = new Date().getTime();
+    if (!sessionStart || (waktuSekarang - Number(sessionStart) > 3600000)) {
+        throw new HttpException("Sesi telah berakhir atau tidak valid!", HttpStatus.FORBIDDEN);
+    }
+
+    const restoId = this.validateRestoId(data.restoId);
+    const totalBayar = Number(data.totalHarga) || Number(data.total) || 0;
+
+    return await this.dataSource.transaction(async (entityManager) => {
+        const pesananBaru = await entityManager.save(
+          entityManager.create(Pesanan, { 
+            ...data, 
+            meja: String(data.meja), 
+            pesanan: typeof data.pesanan === 'string' ? data.pesanan : JSON.stringify(data.pesanan), 
+            status: 'pending',
+            statusDapur: 'menunggu',
+            restoId: restoId
+          })
+        );
+
+        if (data.metodePembayaran === 'digital') {
+          try {
+            const paymentResult = await this.paymentService.createSnapToken(restoId, {
+                order_id: pesananBaru.id, 
+                total: totalBayar, 
+                pesanan: data.pesanan
+            });
+
+            return { 
+                id: pesananBaru.id, 
+                paymentUrl: paymentResult.redirectUrl 
+            };
+          } catch (midtransError) {
+            console.error("[Pembayaran Gagal - Batalkan Pesanan]:", midtransError.message);
+            throw new HttpException(
+              "Metode pembayaran QRIS/Digital sedang gangguan. Silakan gunakan metode pembayaran Tunai!", 
+              HttpStatus.BAD_REQUEST
+            );
+          }
+        }
+
+        return { id: pesananBaru.id, paymentUrl: null };
+    });
   }
 
-  @UseGuards(AuthGuard) @Get('kasir/daftar-pesanan')
-  async getPesanan(@Query('restoId') restoId: string) {
-    return await this.pesananRepo.find({ where: { restoId: this.validateRestoId(restoId) } });
+
+@Get('kasir/cek-status-pesanan')
+  async cekStatusPesanan(@Query('restoId') restoId: string) {
+    const rId = this.validateRestoId(restoId);
+    const semuaPesanan = await this.pesananRepo.find({ where: { restoId: rId } });
+    
+    // Saat di-hosting, sistem menyaring secara otomatis:
+    // - Metode 'tunai' langsung masuk monitor.
+    // - Metode 'digital' HANYA masuk monitor jika status pembayarannya sudah 'lunas'.
+    return semuaPesanan.filter(p => {
+      if (p.metodePembayaran === 'tunai') return true;
+      if (p.metodePembayaran === 'digital' && p.statusPembayaran === 'lunas') return true;
+      return false; 
+    });
   }
 
-  @UseGuards(AuthGuard) @Post('kasir/batal')
-  async batalPesanan(@Body() body: { id: number }) { await this.pesananRepo.delete(body.id); return { success: true }; }
+  @UseGuards(AuthGuard)
+  @Post('kasir/batal')
+  async batalPesanan(@Body() body: { id: number }) { 
+    await this.pesananRepo.delete(body.id); 
+    return { success: true }; 
+  }
 
   @UseGuards(AuthGuard) @Post('kasir/update-dapur')
   async updateStatusDapur(@Body() body: { id: number, statusDapur: string }) { await this.pesananRepo.update(body.id, { statusDapur: body.statusDapur }); return { success: true }; }
@@ -88,12 +146,32 @@ export class AppController {
 
   @UseGuards(AuthGuard) @Post('kasir/selesai')
   async selesaiPesanan(@Body() body: { id: number }) {
-    const pesanan = await this.pesananRepo.findOne({ where: { id: body.id } });
-    if (!pesanan) return { success: false };
-    const dataP = JSON.parse(pesanan.pesanan || '[]');
-    const total = dataP.reduce((s: number, i: any) => s + (Number(i.harga) * Number(i.jumlah)), 0);
-    await this.riwayatRepo.save(this.riwayatRepo.create({ ...pesanan, totalBayar: total, tanggalTransaksi: new Date().toLocaleDateString('id-ID'), waktuSelesai: new Date().toISOString() }));
+    const pesanan = await this.pesananRepo.findOne({ where: { id: Number(body.id) } });
+    if (!pesanan) {
+      return { success: false, message: "Pesanan tidak ditemukan" };
+    }
+
+    let dataP = [];
+    try {
+      dataP = typeof pesanan.pesanan === 'string' ? JSON.parse(pesanan.pesanan) : (pesanan.pesanan || []);
+    } catch (e) {
+      dataP = [];
+    }
+    const total = dataP.reduce((s: number, i: any) => s + (Number(i.harga || 0) * Number(i.jumlah || 1)), 0);
+    
+    const riwayatBaru = this.riwayatRepo.create({
+      nama: pesanan.nama || 'Pelanggan',
+      meja: String(pesanan.meja || '-'),
+      pesanan: typeof pesanan.pesanan === 'string' ? pesanan.pesanan : JSON.stringify(pesanan.pesanan),
+      totalBayar: total,
+      restoId: Number(pesanan.restoId),
+      tanggalTransaksi: new Date().toISOString().split('T')[0],
+      waktuSelesai: new Date().toISOString()
+    });
+
+    await this.riwayatRepo.save(riwayatBaru);
     await this.pesananRepo.delete(pesanan.id);
+
     return { success: true };
   }
 
@@ -105,7 +183,7 @@ export class AppController {
   @UseGuards(AuthGuard) @Get('kasir/laporan-harian')
   async getLaporanHarian(@Query('restoId') rId: string) {
     const restoId = this.validateRestoId(rId);
-    const h = new Date().toLocaleDateString('id-ID');
+    const h = new Date().toISOString().split('T')[0];
     const d = await this.riwayatRepo.find({ where: { tanggalTransaksi: h, restoId } });
     return { tanggal: h, data: d, totalOmzet: d.reduce((s, r) => s + Number(r.totalBayar), 0) };
   }
@@ -142,17 +220,60 @@ export class AppController {
     await this.restoRepo.update(this.validateRestoId(body.restoId), { latitude: body.lat, longitude: body.lon });
     return { status: "Sukses" };
   }
-@Post('menu/resto/wa/update')
-async updateWa(@Body() body: { restoId: number, nomor: string }) {
-    return await this.restoRepo.update(body.restoId, { nomorWa: body.nomor });
-}
 
-@Get('/menu/resto/wa')
-async getWa(@Query('restoId') restoId: number) {
-  // Gunakan restoRepo yang sudah didefinisikan di constructor
-  const resto = await this.restoRepo.findOne({ where: { id: restoId } });
-  return resto ? resto.nomorWa : "";
-}
+  @Post('menu/resto/wa/update')
+  async updateWa(@Body() body: { restoId: number, nomor: string }) {
+    return await this.restoRepo.update(Number(body.restoId), { nomorWa: body.nomor });
+  }
+
+@Post('midtrans-callback')
+  async handleMidtransCallback(@Body() notification: any) {
+    const { order_id, status_code, gross_amount, signature_key, transaction_status } = notification;
+
+    let realPesananId = order_id;
+    if (order_id.includes('RESTO-')) {
+      const parts = order_id.split('-');
+      realPesananId = parts[1]; 
+    }
+
+    const pesanan = await this.pesananRepo.findOne({ where: { id: Number(realPesananId) } });
+    if (!pesanan) {
+      throw new HttpException('Data pesanan tidak ditemukan', HttpStatus.NOT_FOUND);
+    }
+
+    const resto = await this.restoRepo.findOne({ where: { id: pesanan.restoId } });
+    if (!resto || !resto.midtransServerKey) {
+      throw new HttpException('Kredensial Resto tidak valid', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const localSignature = crypto
+      .createHash('sha512')
+      .update(order_id + status_code + gross_amount + resto.midtransServerKey)
+      .digest('hex');
+
+    if (localSignature !== signature_key) {
+      throw new HttpException('Tanda tangan enkripsi tidak cocok! Akses ditolak.', HttpStatus.UNAUTHORIZED);
+    }
+
+    // PASANG POTONGAN KODE TERSEBUT DI SINI:
+    if (transaction_status === 'settlement' || transaction_status === 'capture') {
+      await this.pesananRepo.update(pesanan.id, { 
+        statusPembayaran: 'lunas',
+        status: 'pending' // Ubah status agar sah muncul di monitor kasir & dapur
+      }); 
+      return { status: 'success', message: 'Pembayaran terverifikasi' };
+    } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
+      await this.pesananRepo.update(pesanan.id, { statusPembayaran: 'gagal' });
+      return { status: 'failed', mfessage: 'Transaksi dibatalkan/kadaluwarsa' };
+    }
+
+    return { status: 'pending' };
+  }
+  @Get('/menu/resto/wa')
+  async getWa(@Query('restoId') restoId: number) {
+    const resto = await this.restoRepo.findOne({ where: { id: restoId } });
+    return resto ? resto.nomorWa : "";
+  }
 
   @Post('kasir/ganti-password-karyawan')
   async gantiPasswordKaryawan(@Body() body: { passwordLama: string, passwordBaru: string, restoId: string }) {

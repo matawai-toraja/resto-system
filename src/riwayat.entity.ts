@@ -21,6 +21,8 @@ export class Riwayat {
   @Column({ nullable: true })
   tanggalTransaksi: string;
 
+
+
 @Column({ nullable: true })
 restoId: number;
 

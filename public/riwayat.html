@@ -1,68 +1,240 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
-    <title>Riwayat Penjualan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Penjualan - Dashboard Resto</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            padding: 40px; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
             min-height: 100vh;
-            color: #fff;
+            color: var(--text-main);
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .glass-container {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            max-width: 900px;
-            margin: auto;
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.5s ease-in-out;
         }
-        h1 { text-align: center; margin-bottom: 25px; }
-        .total-box { 
-            font-size: 24px; font-weight: bold; margin: 25px 0; 
-            padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: 15px; 
-            text-align: center; color: #ffffff;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: rgba(255, 255, 255, 0.1); padding: 15px; text-align: left; border-bottom: 2px solid rgba(255, 255, 255, 0.2); }
-        td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        tr:hover { background: rgba(255, 255, 255, 0.05); }
-        
-        .btn-container { text-align: center; margin-top: 30px; }
-        a, button { 
-            padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer;
-            background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; 
-            font-weight: bold; transition: 0.3s; margin: 5px; display: inline-block;
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
         }
-        a:hover, button:hover { background: rgba(255, 255, 255, 0.4); }
-        .btn-reset { background: #e74c3c; }
-        .btn-reset:hover { background: #c0392b; }
+
+        .header-section h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .summary-info h3 {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .summary-info .total-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 16px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .badge-meja {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .action-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease-in-out;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-reset {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-reset:hover {
+            background: var(--danger);
+            color: #ffffff;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .dashboard-container { padding: 20px; }
+            .summary-card { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .action-container { flex-direction: column-reverse; width: 100%; }
+            .btn { width: 100%; }
+        }
     </style>
 </head>
 <body>
 
+<div class="dashboard-container">
+    <div class="header-section">
+        <h1>📊 Riwayat Penjualan Restoran</h1>
+    </div>
 
-<div class="glass-container">
-    <h1>Riwayat Penjualan</h1>
-    
-    <table>
-        <thead>
-            <tr><th>Pelanggan</th><th>Meja</th><th>Waktu</th><th>Total Bayar</th></tr>
-        </thead>
-        <tbody id="daftar-riwayat"></tbody>
-    </table>
+    <!-- Kotak Ringkasan Pendapatan -->
+    <div class="summary-card">
+        <div class="summary-info">
+            <h3>Total Pendapatan Keseluruhan</h3>
+            <div class="total-value" id="total-pendapatan">Rp 0</div>
+        </div>
+    </div>
 
-    <div class="total-box" id="total-pendapatan">Memuat...</div>
-    
-    <div class="btn-container">
-        <a href="kasir-monitor.html">Kembali ke Monitor</a>
-        <button class="btn-reset" onclick="konfirmasiReset()">Bersihkan Semua Data Riwayat</button>
+    <!-- Tabel Data Riwayat -->
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Pelanggan</th>
+                    <th>Meja</th>
+                    <th>Waktu Selesai</th>
+                    <th>Total Bayar</th>
+                </tr>
+            </thead>
+            <tbody id="daftar-riwayat">
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted);">Memuat data riwayat...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tombol Aksi Navigasi & Reset -->
+    <div class="action-container">
+        <a href="kasir-monitor.html" class="btn btn-back">← Kembali ke Monitor Kasir</a>
+        <button class="btn btn-reset" onclick="konfirmasiReset()">🗑️ Bersihkan Database Riwayat</button>
     </div>
 </div>
 
@@ -70,10 +242,14 @@
     const restoId = localStorage.getItem('restoId');
     const token = localStorage.getItem('token');
 
-    // FUNGSI UTAMA
+    // Fungsi Inisialisasi & Verifikasi Akses Karyawan
     async function initRiwayat() {
-        console.log("Memulai inisialisasi..."); // Cek di konsol apakah ini muncul
-        
+        if (!restoId) {
+            alert("Resto ID tidak ditemukan. Silakan login ulang.");
+            window.location.href = '/resto/page/dashboard';
+            return;
+        }
+
         if (sessionStorage.getItem('aksesRiwayat_' + restoId) === 'true') {
             updateRiwayat(); 
             return;
@@ -81,7 +257,7 @@
 
         const password = prompt("Masukkan Password Khusus Karyawan:");
         if (!password) {
-            window.location.href = '/resto/page/dashboard';
+            window.location.href = 'kasir-monitor.html';
             return;
         }
 
@@ -97,15 +273,16 @@
                 updateRiwayat();
             } else {
                 alert("Password Salah!");
-                window.location.href = '/resto/page/dashboard';
+                window.location.href = 'kasir-monitor.html';
             }
         } catch (err) {
+            console.error("Gagal verifikasi:", err);
             alert("Gagal terhubung ke server.");
         }
     }
 
-    function updateRiwayat() {
-        console.log("Memanggil data riwayat...");
+    // Fungsi Mengambil Data Riwayat dari Backend
+   function updateRiwayat() {
         fetch(`/resto/kasir/riwayat?restoId=${restoId}`, {
             headers: { 'Authorization': 'Bearer ' + token }
         })
@@ -115,8 +292,8 @@
             const totalBox = document.getElementById('total-pendapatan');
             
             if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data transaksi.</td></tr>';
-                totalBox.innerText = 'Total Pendapatan: Rp 0';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Belum ada data transaksi tersimpan.</td></tr>';
+                totalBox.innerText = 'Rp 0';
                 return;
             }
 
@@ -126,20 +303,22 @@
                 total += subtotal;
                 return `<tr>
                     <td><strong>${p.nama || 'Pelanggan'}</strong></td>
-                    <td>${p.meja || '-'}</td>
-                    <td>${p.waktuSelesai ? new Date(p.waktuSelesai).toLocaleString('id-ID') : '-'}</td>
-                    <td>Rp ${subtotal.toLocaleString('id-ID')}</td>
+                    <td><span class="badge-meja">Meja ${p.meja || '-'}</span></td>
+                    <td style="color: var(--text-muted);">${p.waktuSelesai ? new Date(p.waktuSelesai).toLocaleString('id-ID') : '-'}</td>
+                    <td style="font-weight: 600; color: #34d399;">Rp ${subtotal.toLocaleString('id-ID')}</td>
                 </tr>`;
             }).join('');
             
-            totalBox.innerText = 'Total Pendapatan: Rp ' + total.toLocaleString('id-ID');
+            totalBox.innerText = 'Rp ' + total.toLocaleString('id-ID');
         })
         .catch(err => {
             console.error("Error Fetch Data:", err);
+            document.getElementById('daftar-riwayat').innerHTML = '<tr><td colspan="4" style="text-align:center; color: #fca5a5;">Gagal memuat data dari server.</td></tr>';
         });
     }
-function konfirmasiReset() {
-        if (confirm("Yakin hapus SEMUA data riwayat?")) {
+    // Fungsi Tombol Bersihkan / Reset Data Agar Server Tidak Berat
+    function konfirmasiReset() {
+        if (confirm("Peringatan: Yakin ingin menghapus SEMUA data riwayat transaksi resto ini dari database? Tindakan ini tidak dapat dibatalkan!")) {
             fetch('/resto/kasir/reset-data', { 
                 method: 'POST',
                 headers: { 
@@ -150,6 +329,7 @@ function konfirmasiReset() {
             })
             .then(res => {
                 if (res.ok) {
+                    alert("Data riwayat berhasil dibersihkan.");
                     location.reload();
                 } else {
                     alert("Gagal mereset data.");
@@ -159,7 +339,7 @@ function konfirmasiReset() {
         }
     }
 
-    // Panggil sekali saja di sini
+    // Jalankan inisialisasi
     initRiwayat();
 </script>
 </body>

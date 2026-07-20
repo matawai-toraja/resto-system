@@ -22,6 +22,7 @@ import { KaryawanService } from './karyawan.service';
 import { PrinterModule } from './printer/printer.module';
 import { PrinterSettings } from './printer/printer-settings.entity';
 import { AppService } from './app.service';
+import { PaymentService } from './PaymentService';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), 
@@ -51,6 +52,13 @@ entities: [Menu, Pesanan, Riwayat, Transaksi, Resto, Karyawan, PrinterSettings],
     PrinterModule,
   ],
   controllers: [AppController, AuthController, MenuController, KaryawanController],
- providers: [AppService, AuthService, MenuService, KaryawanService, AppGateway],
+providers: [
+    AppService, 
+    AuthService, 
+    MenuService, 
+    KaryawanService, 
+    AppGateway,
+    PaymentService, 
+  ],
 })
 export class AppModule {}

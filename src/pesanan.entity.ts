@@ -29,7 +29,11 @@ export class Pesanan {
   @Column({ nullable: true })
   kategori: string;
 
-  // Tambahkan baris ini agar sinkron dengan AppController
+@Column({ default: 'menunggu' })
+  statusPembayaran: string;
+@Column({ nullable: true })
+  metodePembayaran: string;
+
   @Column({ nullable: true })
   restoId: number;
 }

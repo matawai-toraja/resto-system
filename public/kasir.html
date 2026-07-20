@@ -29,7 +29,8 @@
             <option value="Makanan">Makanan</option>
             <option value="Minuman">Minuman</option>
         </select>
-        <input type="file" id="gambar" accept="image/*">
+   <label>Gambar Menu:</label>
+    <input type="file" id="gambar" accept="image/*">
         <button onclick="simpan()">Simpan Menu</button>
 
         <h2>Daftar Menu Saat Ini</h2>
@@ -40,6 +41,7 @@
         </select>
         <div id="daftar-menu"></div>
     </div>
+
 
 <script>
     // Validasi Login
@@ -59,7 +61,7 @@
             const filtered = (filter === "Semua") ? data : data.filter(m => m.kategori === filter);
             document.getElementById('daftar-menu').innerHTML = filtered.map(m => `
                 <div class="menu-card">
-                    <img src="${m.gambar}">
+                   <img src="${m.gambarUrl || m.gambar}">
                     <div class="menu-info">
                         <strong>${m.nama}</strong><br>
                         <span>Rp ${m.harga}</span> | <span>${m.stok == 1 ? 'Ada' : 'Habis'}</span>
@@ -72,18 +74,32 @@
     }
 
     // Fungsi Simpan
-    async function simpan() {
-        const formData = new FormData();
-        formData.append('nama', document.getElementById('nama').value);
-        formData.append('harga', document.getElementById('harga').value);
-        formData.append('stok', document.getElementById('stok').value);
-        formData.append('kategori', document.getElementById('kategori').value);
-        formData.append('restoId', localStorage.getItem('restoId'));
-        formData.append('gambar', document.getElementById('gambar').files[0]);
-
-        const res = await fetch('/resto/tambah-menu', { method: 'POST', body: formData });
-        if (res.ok) { alert("Berhasil!"); location.reload(); } else { alert("Gagal!"); }
+ async function simpan() {
+    const formData = new FormData();
+    formData.append('nama', document.getElementById('nama').value);
+    formData.append('harga', document.getElementById('harga').value);
+    formData.append('stok', document.getElementById('stok').value);
+    formData.append('kategori', document.getElementById('kategori').value);
+    formData.append('restoId', localStorage.getItem('restoId'));
+    
+    // Pastikan ID input file-nya adalah 'gambar'
+    const fileInput = document.getElementById('gambar');
+    if (fileInput.files.length > 0) {
+        formData.append('gambar', fileInput.files[0]);
     }
+
+    const res = await fetch('/menu', { // Pastikan route ini sama dengan di Controller
+        method: 'POST', 
+        body: formData 
+    });
+    
+    if (res.ok) { 
+        alert("Berhasil!"); 
+        location.reload(); 
+    } else { 
+        alert("Gagal menyimpan menu!"); 
+    }
+}
 
     // Fungsi Hapus
     async function hapusMenu(id) {

@@ -22,6 +22,9 @@ export class Menu {
   @Column({ type: 'varchar', length: 100, nullable: false })
   kategori: string;
 
+@Column({ nullable: true })
+gambarUrl: string;
+
   // Relasi profesional ke Resto
   @Column()
   restoId: number;

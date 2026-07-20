@@ -23,6 +23,11 @@ latitude: number;
 
 @Column({ type: 'decimal', precision: 10, scale: 8, nullable: true })
 longitude: number;
+@Column({ type: 'varchar', length: 255, nullable: true })
+  midtransServerKey: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  midtransClientKey: string;
 
 @Column({ type: 'int', default: 5 }) // default 5 km
 radiusJarak: number;

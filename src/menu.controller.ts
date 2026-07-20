@@ -1,20 +1,28 @@
-import { Controller, Post, Get, Body, Param, Query, Res } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Query, Res, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { MenuService } from './menu.service';
-
+import { FileInterceptor } from '@nestjs/platform-express';
 @Controller('menu')
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
   // --- MENU ---
-  @Post()
-  async tambah(@Body() body: any) {
-    return await this.menuService.tambahMenu(body);
-  }
-
+@Post()
+@UseInterceptors(FileInterceptor('gambar'))
+async tambah(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
+  // Debug: Mari kita lihat apa yang sebenarnya terkirim ke backend
+  console.log('Data Body:', body); 
+  console.log('File:', file);
+  
+  return await this.menuService.tambahMenu(body, file);
+}
   @Get(':restoId')
   async tampilkan(@Param('restoId') restoId: number) {
     return await this.menuService.ambilMenuResto(restoId);
   }
+@Post('selesaikan/:id')
+async konfirmasiBayar(@Param('id') id: number) {
+    return await this.menuService.konfirmasiPembayaran(id);
+}
 
   // --- STATUS TOKO ---
  @Get('status-toko')
@@ -39,20 +47,13 @@ async updateRadius(@Body() body: any) {
 
   // --- FITUR BARU: TRANSAKSI & LAPORAN ---
   
-  // Panggil rute ini saat tombol "Selesai" ditekan di kasir
 @Post('selesaikan/:id')
-async selesaikanPesanan(@Param('id') id: number, @Body() body: { uangBayar: number }) {
-    // Ini sekarang akan cocok karena service sudah menerima 2 argumen
-    return await this.menuService.selesaikanPesanan(id, body.uangBayar);
-}
-@Post('selesaikan/:id')
-async selesaikan(@Param('id') id: number, @Body('uangBayar') uangBayar: number) {
-    // 1. Jalankan proses simpan ke riwayat
-    await this.menuService.selesaikanPesanan(id, uangBayar);
-    
-    // 2. Perintahkan printer untuk mencetak
-    await this.menuService.cetakStruk(id, uangBayar);
-    
+async selesaikanPesanan(
+    @Param('id') id: number, 
+    @Body() body: { uangBayar: number, metode: string } // Tangkap object body
+) {
+    // Teruskan metode ke service
+    await this.menuService.selesaikanPesanan(id, body.uangBayar, body.metode);
     return { success: true };
 }
   // Panggil rute ini di halaman Laporan Harian

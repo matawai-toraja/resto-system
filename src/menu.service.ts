@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common'; 
+import cloudinary from './cloudinary.config'; 
+import { Readable } from 'stream';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Menu } from './menu.entity';
@@ -26,35 +28,31 @@ export class MenuService {
     return await this.pesananRepository.update(id, { statusDapur: statusDapur });
   }
 
-  async selesaikanPesanan(id: number, uangBayar: number) {
+async selesaikanPesanan(id: number, uangBayar: number, metode: string) {
+    // 1. Ambil data pesanan
     const p = await this.pesananRepository.findOne({ where: { id: id } });
     if (!p) throw new Error("Pesanan tidak ditemukan");
 
+    // 2. Hitung total harga item
     const items = typeof p.pesanan === 'string' ? JSON.parse(p.pesanan) : p.pesanan;
     const totalBayar = await this.hitungTotal(items);
 
-    // ... (kode bagian simpan ke Transaksi tetap sama) ...
-
-    // Simpan ke Riwayat
+    // 3. Simpan ke Riwayat
     const r = new Riwayat();
     r.nama = p.nama || "";
     r.meja = (p.meja || 0).toString();
     r.totalBayar = totalBayar;
-    
-    // --- UBAH BAGIAN INI ---
-    // Hapus atau ganti baris lama yang menggunakan .map().join(', ') menjadi:
-    r.pesanan = JSON.stringify(items); 
-    // -----------------------
+    r.pesanan = JSON.stringify(items);
     
     r.restoId = p.restoId;
     r.waktuSelesai = new Date().toISOString();
     r.tanggalTransaksi = new Date().toISOString().split('T')[0];
+    
     await this.riwayatRepository.save(r);
-
     await this.pesananRepository.delete(id);
+    
     return { success: true };
-  }
-  async hitungTotal(items: any[]) {
+  }  async hitungTotal(items: any[]) {
     let total = 0;
     for (const item of items) {
       const menuAsli = await this.menuRepository.findOne({ where: { nama: item.nama } });
@@ -82,35 +80,70 @@ export class MenuService {
   }
 
   // --- FUNGSI LAINNYA ---
-  async tambahMenu(data: any) { return await this.menuRepository.save(data); }
-  async ambilStatusToko(restoId: string) { const pathData = path.join(process.cwd(), 'data-resto.json'); return fs.existsSync(pathData) ? JSON.parse(fs.readFileSync(pathData, 'utf8')) : { tokoBuka: true }; }
-  async updateRestoRadius(restoId: number, radius: number) { return await this.restoRepository.update({ id: Number(restoId) }, { radiusJarak: radius }); }
-  async ambilLaporanHarian(restoId: number) { const hariIni = new Date().toISOString().split('T')[0]; return await this.riwayatRepository.find({ where: { restoId, tanggalTransaksi: hariIni }, order: { waktuSelesai: 'DESC' } }); }
-  async updateNomorWa(restoId: number, nomorWa: string) { return await this.restoRepository.update({ id: Number(restoId) }, { nomorWa }); }
-  async ambilNomorWa(restoId: number) { const r = await this.restoRepository.findOne({ where: { id: restoId } }); return r?.nomorWa || ''; }
-  async ambilInfoResto(restoId: number) { return await this.restoRepository.findOne({ where: { id: restoId } }); }
-  async updateLocation(restoId: number, lat: number, lon: number) { return await this.restoRepository.update({ id: Number(restoId) }, { latitude: lat, longitude: lon }); }
-  async getLaporanHarianStatistik(restoId: number) { const h = new Date().toISOString().split('T')[0]; const d = await this.riwayatRepository.find({ where: { restoId, tanggalTransaksi: h } }); return { totalOmset: d.reduce((s, i) => s + Number(i.totalBayar || 0), 0), jumlahTransaksi: d.length, data: d }; }
-async getAnalisaKasir(restoId: number) {
-    // 1. Ambil semua riwayat transaksi dari database
+  async tambahMenu(data: any, file: Express.Multer.File) {
+    if (file) {
+      const result = await new Promise((resolve, reject) => {
+        const upload = cloudinary.uploader.upload_stream(
+          { folder: 'menu_restoran' }, 
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+        Readable.from(file.buffer).pipe(upload);
+      });
+      // Simpan URL dari Cloudinary ke kolom gambarUrl
+      data.gambarUrl = (result as any).secure_url; 
+    }
+    return await this.menuRepository.save(data);
+  }
+
+  async ambilStatusToko(restoId: string) { 
+    const pathData = path.join(process.cwd(), 'data-resto.json'); 
+    return fs.existsSync(pathData) ? JSON.parse(fs.readFileSync(pathData, 'utf8')) : { tokoBuka: true }; 
+  }
+
+  async updateRestoRadius(restoId: number, radius: number) { 
+    return await this.restoRepository.update({ id: Number(restoId) }, { radiusJarak: radius }); 
+  }
+
+  async ambilLaporanHarian(restoId: number) { 
+    const hariIni = new Date().toISOString().split('T')[0]; 
+    return await this.riwayatRepository.find({ where: { restoId, tanggalTransaksi: hariIni }, order: { waktuSelesai: 'DESC' } }); 
+  }
+
+  async updateNomorWa(restoId: number, nomorWa: string) { 
+    return await this.restoRepository.update({ id: Number(restoId) }, { nomorWa }); 
+  }
+
+  async ambilNomorWa(restoId: number) { 
+    const r = await this.restoRepository.findOne({ where: { id: restoId } }); 
+    return r?.nomorWa || ''; 
+  }
+
+  async ambilInfoResto(restoId: number) { 
+    return await this.restoRepository.findOne({ where: { id: restoId } }); 
+  }
+
+  async updateLocation(restoId: number, lat: number, lon: number) { 
+    return await this.restoRepository.update({ id: Number(restoId) }, { latitude: lat, longitude: lon }); 
+  }
+
+  async getLaporanHarianStatistik(restoId: number) { 
+    const h = new Date().toISOString().split('T')[0]; 
+    const d = await this.riwayatRepository.find({ where: { restoId, tanggalTransaksi: h } }); 
+    return { totalOmset: d.reduce((s, i) => s + Number(i.totalBayar || 0), 0), jumlahTransaksi: d.length, data: d }; 
+  }
+
+  async getAnalisaKasir(restoId: number) {
     const riwayat = await this.riwayatRepository.find({ where: { restoId: restoId } });
-    
-    // 2. Siapkan wadah untuk menampung hasil perhitungan
     const analisa: any = {};
 
-    // 3. Loop setiap transaksi untuk diolah
     riwayat.forEach(r => {
-        // Karena r.pesanan di Riwayat adalah string (hasil .join), 
-        // kita perlu memprosesnya kembali menjadi objek
-        // Catatan: Jika r.pesanan berupa JSON String, kita parse.
-        // Jika berupa format lama "nama x jumlah, nama x jumlah", kita pecah.
-        
         let items: any[] = [];
         try {
-            // Coba parse jika itu JSON String
             items = typeof r.pesanan === 'string' ? JSON.parse(r.pesanan) : [];
         } catch (e) {
-            // Jika gagal parse, artinya format lama, abaikan saja atau buat logika fallback
             return; 
         }
 
@@ -119,7 +152,6 @@ async getAnalisaKasir(restoId: number) {
                 if (!analisa[i.nama]) {
                     analisa[i.nama] = { jumlah: 0, totalPendapatan: 0 };
                 }
-                
                 const jumlah = Number(i.jumlah) || 0;
                 const harga = Number(i.harga) || 0;
                 
@@ -129,25 +161,99 @@ async getAnalisaKasir(restoId: number) {
         }
     });
 
-    // 4. Kembalikan data yang sudah terhitung rapi
     return analisa;
   }
+
   private statusPesanan: Map<string, string> = new Map();
   updateStatusPesanan(id: string, status: string) { this.statusPesanan.set(id, status); }
   getStatusPesanan(id: string): string { return this.statusPesanan.get(id) || 'Menunggu'; }
 
   async prosesPesanSemua(data: any) {
+    // 1. Simpan pesanan awal ke database local
     const p = new Pesanan();
-    p.nama = data.nama; p.meja = data.meja; p.restoId = data.restoId;
-    p.pesanan = typeof data.pesanan === 'string' ? data.pesanan : JSON.stringify(data.pesanan);
-    p.status = 'pending'; p.statusDapur = 'menunggu';
-    const saved = await this.pesananRepository.save(p);
-    this.appGateway.server.emit('pesanan_baru', saved);
-    return saved;
+    p.nama = data.nama;
+    p.meja = data.meja;
+    p.pesanan = JSON.stringify(data.pesanan);
+    p.restoId = Number(data.restoId);
+    p.metodePembayaran = data.metodePembayaran; 
+    p.statusPembayaran = 'menunggu';
+    
+    const pesananTersimpan = await this.pesananRepository.save(p);
+
+    // 2. JIKA memilih Bayar Digital, minta token dengan HTTP Request Native (Bypass Bug SDK)
+    if (data.metodePembayaran === 'Bayar Digital (QRIS/Transfer)') {
+        try {
+            const resto = await this.restoRepository.findOne({ where: { id: p.restoId } });
+            if (!resto || !resto.midtransServerKey) {
+                throw new Error("Midtrans Server Key untuk restoran ini belum diatur di database!");
+            }
+
+            const cleanServerKey = resto.midtransServerKey.trim();
+            const totalHarga = await this.hitungTotal(data.pesanan);
+
+            const parameter = {
+                transaction_details: {
+                    order_id: `RESTO-${pesananTersimpan.id}-${Date.now()}`,
+                    gross_amount: Math.round(totalHarga), 
+                },
+                customer_details: {
+                    first_name: data.nama || 'Pelanggan',
+                }
+            };
+
+            // Mengonversi kunci otorisasi ke dalam standar Base64
+            const authString = Buffer.from(cleanServerKey + ':').toString('base64');
+
+            // Menembak langsung ke server utama Production Midtrans
+            const responseMidtrans = await fetch('https://app.midtrans.com/snap/v1/transactions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Basic ${authString}`
+                },
+                body: JSON.stringify(parameter)
+            });
+
+            const hasilTransaksi = await responseMidtrans.json();
+
+            // Jika ada kode error dari Midtrans, cetak di log terminal Anda
+            if (!responseMidtrans.ok || hasilTransaksi.error_messages) {
+                console.log("=== DETAIL EROR DARI MIDTRANS (FETCH METHOD) ===");
+                console.log(JSON.stringify(hasilTransaksi, null, 2));
+                console.log("=================================================");
+                throw new Error(hasilTransaksi.error_messages ? hasilTransaksi.error_messages.join(', ') : 'Gagal memproses transaksi.');
+            }
+
+            return {
+                ...pesananTersimpan,
+                token: hasilTransaksi.token,
+                redirect_url: hasilTransaksi.redirect_url
+            };
+
+        } catch (error) {
+            console.log("=== EROR PADA PROSES PESAN DIGITAL ===");
+            console.log(error.message || error);
+            console.log("======================================");
+
+            throw new BadRequestException('Metode pembayaran QRIS/Digital sedang gangguan.');
+        }
+    }
+
+    // 3. JIKA Bayar Tunai di Kasir, langsung kembalikan data biasa
+    return pesananTersimpan;
   }
+
   async ambilMenuResto(restoId: number) { return await this.menuRepository.find({ where: { restoId } }); }
+  
   async updateStatusToko(restoId: string, status: boolean) { 
     fs.writeFileSync(path.join(process.cwd(), 'data-resto.json'), JSON.stringify({ tokoBuka: status })); 
     return { success: true }; 
+  }
+
+  async konfirmasiPembayaran(id: number) {
+    return await this.pesananRepository.update(id, { 
+        statusPembayaran: 'lunas' 
+    });
   }
 }

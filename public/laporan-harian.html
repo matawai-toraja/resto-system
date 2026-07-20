@@ -48,7 +48,7 @@
 
         try {
             // Logika inti: Tetap mengambil data riwayat harian yang sudah benar
-            const res = await fetch(`/menu/laporan/harian?restoId=${restoId}`);
+            const res = await fetch(`/resto/kasir/laporan-harian?restoId=${restoId}`);
             const data = await res.json();
             
             const tbody = document.getElementById('tabel-laporan');
