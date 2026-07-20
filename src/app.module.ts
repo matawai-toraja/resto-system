@@ -44,7 +44,7 @@ import { PaymentService } from './PaymentService';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
 entities: [Menu, Pesanan, Riwayat, Transaksi, Resto, Karyawan, PrinterSettings],
-       synchronize: false,
+       synchronize: true,
       }),
     }),
 
