@@ -2,12 +2,16 @@ import { Injectable, BadRequestException, InternalServerErrorException } from '@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Resto } from './resto.entity';
+import { Pesanan } from './pesanan.entity';
 
 @Injectable()
 export class PaymentService {
   constructor(
     @InjectRepository(Resto)
     private readonly restoRepo: Repository<Resto>,
+
+    @InjectRepository(Pesanan)
+    private readonly pesananRepo: Repository<Pesanan>,
   ) {}
 
   async createSnapToken(restoId: number, orderData: any) {
@@ -60,7 +64,6 @@ export class PaymentService {
 
       const authString = Buffer.from(cleanServerKey + ':').toString('base64');
 
-      // DI SINI SUDAH DIKUNCI KE SANDBOX
       const responseMidtrans = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
         method: 'POST',
         headers: {
@@ -90,13 +93,14 @@ export class PaymentService {
       throw new InternalServerErrorException("Gagal memproses pembuatan kode QRIS ke server pembayaran: " + (error.message || ''));
     }
   }
-async handleNotification(notificationDto: any) {
+
+  async handleNotification(notificationDto: any) {
     try {
-      const orderId = notificationDto.order_id;
+      const orderIdFull = notificationDto.order_id;
       const transactionStatus = notificationDto.transaction_status;
       const fraudStatus = notificationDto.fraud_status;
 
-      let statusPesanan = 'pending';
+      let statusPesanan = 'menunggu';
 
       if (transactionStatus == 'capture') {
         if (fraudStatus == 'challenge') {
@@ -114,7 +118,19 @@ async handleNotification(notificationDto: any) {
         statusPesanan = 'gagal';
       }
 
-      console.log(`[Midtrans Webhook] Order ${orderId} status: ${statusPesanan}`);
+      console.log(`[Midtrans Webhook] Order ${orderIdFull} status: ${statusPesanan}`);
+
+      const parts = orderIdFull.split('-');
+      if (parts.length >= 2) {
+        const idPesananAsli = Number(parts[1]);
+
+        await this.pesananRepo.update(
+          { id: idPesananAsli },
+          { statusPembayaran: statusPesanan }
+        );
+
+        console.log(`[Database Updated] Pesanan ID ${idPesananAsli} berhasil diubah statusPembayaran-nya menjadi: ${statusPesanan}`);
+      }
 
       return { status: 'OK', message: 'Notifikasi berhasil diproses' };
     } catch (error) {
