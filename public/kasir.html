@@ -1,49 +1,205 @@
-
+HTML
 <!DOCTYPE html>
 <html>
 <head>
     <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --glass-card: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
         #daftar-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; max-height: 70vh; overflow-y: auto; padding: 10px; }
-        .menu-card { display: flex; align-items: center; gap: 20px; padding: 20px; border-bottom: 1px solid #eee; background: #fdfdfd; border-radius: 8px; }
+        
+        .menu-card { 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+            padding: 20px; 
+            border-bottom: 1px solid var(--glass-border); 
+            background: var(--glass-card); 
+            backdrop-filter: blur(10px);
+            border-radius: 12px; 
+            color: var(--text-primary);
+        }
+        
         .menu-card img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; }
         .menu-info { flex-grow: 1; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: #2c3e50; padding: 20px; }
-        .container { width: 95%; max-width: 1200px; margin: auto; background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin: 5px 0; }
-        .btn-hapus { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+        
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: var(--bg-gradient); 
+            background-attachment: fixed;
+            padding: 20px; 
+            color: var(--text-primary);
+        }
+        
+        .container { 
+            width: 95%; 
+            max-width: 1200px; 
+            margin: auto; 
+            background: var(--glass-card); 
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+        }
+        
+        input, select { 
+            padding: 10px; 
+            border: 1px solid var(--glass-border); 
+            border-radius: 5px; 
+            margin: 5px 0; 
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        select option {
+            background-color: #1e1b4b;
+            color: var(--text-primary);
+        }
+
+        .form-inline-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .form-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-item input[type="text"], 
+        .form-item input[type="number"], 
+        .form-item select {
+            width: 180px;
+        }
+
+        button, .btn-hapus { 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: 600;
+            height: 41px;
+        }
+
+        button[onclick="simpan()"] {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-hapus { background: #e74c3c; color: white; padding: 8px 15px; height: auto; }
+
+        .menu-card button:not(.btn-hapus) {
+            background: #f39c12;
+            color: white;
+            padding: 8px 15px;
+            height: auto;
+        }
+
+        h1, h2, label {
+            color: var(--text-primary);
+        }
     </style>
     <title>Input Menu Admin</title>
 </head>
 <body>
     <div class="container">
         <h1>Tambah Menu Baru</h1>
-        <input type="text" id="nama" placeholder="Nama Menu">
-        <input type="number" id="harga" placeholder="Harga">
-        <label>Status Stok:</label>
-        <select id="stok">
-            <option value="1">Ada</option>
-            <option value="0">Habis</option>
-        </select>
-        <label>Kategori:</label>
-        <select id="kategori">
-            <option value="Makanan">Makanan</option>
-            <option value="Minuman">Minuman</option>
-        </select>
-   <label>Gambar Menu:</label>
-    <input type="file" id="gambar" accept="image/*">
-        <button onclick="simpan()">Simpan Menu</button>
+        
+        <div class="form-inline-group">
+            <div class="form-item">
+                <input type="text" id="nama" placeholder="Nama Menu">
+            </div>
+            <div class="form-item">
+                <!-- Diubah menjadi text agar format titik ribuan bisa langsung tampil saat diketik -->
+                <input type="text" id="harga" placeholder="Harga" oninput="formatRupiahInput(this)">
+            </div>
+            <div class="form-item">
+                <label>Status Stok:</label>
+                <select id="stok">
+                    <option value="1">Ada</option>
+                    <option value="0">Habis</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label>Kategori:</label>
+                <select id="kategori">
+                    <option value="Makanan">Makanan</option>
+                    <option value="Minuman">Minuman</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label>Gambar Menu:</label>
+                <input type="file" id="gambar" accept="image/*" style="background:transparent; border:none; padding:5px 0;">
+            </div>
+            <div class="form-item">
+                <button onclick="simpan()">Simpan Menu</button>
+            </div>
+        </div>
 
         <h2>Daftar Menu Saat Ini</h2>
-        <select id="filter-kasir" onchange="loadMenu()">
-            <option value="Semua">Semua</option>
-            <option value="Makanan">Makanan</option>
-            <option value="Minuman">Minuman</option>
-        </select>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center;">
+            <select id="filter-kasir" onchange="loadMenu()">
+                <option value="Semua">Semua</option>
+                <option value="Makanan">Makanan</option>
+                <option value="Minuman">Minuman</option>
+            </select>
+            <input type="text" id="search-admin" placeholder="Cari menu..." onkeyup="loadMenu()">
+        </div>
+
         <div id="daftar-menu"></div>
     </div>
 
-
 <script>
+    // Fungsi pembantu untuk memformat angka dengan titik ribuan
+    function formatRibuan(angka) {
+        if (!angka) return "0";
+        let number_string = angka.toString().replace(/[^,\d]/g, ""),
+            split = number_string.split(","),
+            sisa = split[0].length % 3,
+            rupiah = split[0].substr(0, sisa),
+            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+        if (ribuan) {
+            let separator = sisa ? "." : "";
+            rupiah += separator + ribuan.join(".");
+        }
+        return split[1] != undefined ? rupiah + "," + split[1] : rupiah;
+    }
+
+    // Fungsi otomatis format saat mengetik di input harga
+    function formatRupiah(angka) {
+        return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function formatRupiahInput(input) {
+        let value = input.value.replace(/[^,\d]/g, "").toString();
+        let split = value.split(",");
+        let sisa = split[0].length % 3;
+        let rupiah = split[0].substr(0, sisa);
+        let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+        if (ribuan) {
+            let separator = sisa ? "." : "";
+            rupiah += separator + ribuan.join(".");
+        }
+        input.value = rupiah;
+    }
+
     // Validasi Login
     if (!localStorage.getItem('userRole')) {
         alert('Akses Ditolak!');
@@ -53,18 +209,25 @@
     // Fungsi Load Menu
     async function loadMenu() {
         const filter = document.getElementById('filter-kasir').value;
+        const searchQuery = document.getElementById('search-admin') ? document.getElementById('search-admin').value.toLowerCase() : "";
         const restoId = localStorage.getItem('restoId');
         try {
             const res = await fetch(`/menu/${restoId}`);
             const data = await res.json();
             if (!Array.isArray(data)) return;
-            const filtered = (filter === "Semua") ? data : data.filter(m => m.kategori === filter);
+            
+            const filtered = data.filter(m => {
+                const matchKategori = (filter === "Semua" || m.kategori === filter);
+                const matchSearch = m.nama.toLowerCase().includes(searchQuery);
+                return matchKategori && matchSearch;
+            });
+
             document.getElementById('daftar-menu').innerHTML = filtered.map(m => `
                 <div class="menu-card">
                    <img src="${m.gambarUrl || m.gambar}">
                     <div class="menu-info">
                         <strong>${m.nama}</strong><br>
-                        <span>Rp ${m.harga}</span> | <span>${m.stok == 1 ? 'Ada' : 'Habis'}</span>
+                        <span>Rp ${formatRupiah(m.harga)}</span> | <span>${m.stok == 1 ? 'Ada' : 'Habis'}</span>
                     </div>
                     <button onclick="toggleStatus(${m.id}, ${m.stok})">Status</button>
                     <button class="btn-hapus" onclick="hapusMenu(${m.id})">Hapus</button>
@@ -74,32 +237,33 @@
     }
 
     // Fungsi Simpan
- async function simpan() {
-    const formData = new FormData();
-    formData.append('nama', document.getElementById('nama').value);
-    formData.append('harga', document.getElementById('harga').value);
-    formData.append('stok', document.getElementById('stok').value);
-    formData.append('kategori', document.getElementById('kategori').value);
-    formData.append('restoId', localStorage.getItem('restoId'));
-    
-    // Pastikan ID input file-nya adalah 'gambar'
-    const fileInput = document.getElementById('gambar');
-    if (fileInput.files.length > 0) {
-        formData.append('gambar', fileInput.files[0]);
-    }
+    async function simpan() {
+        const formData = new FormData();
+        formData.append('nama', document.getElementById('nama').value);
+        // Hapus titik pada harga sebelum dikirim ke database agar tetap berupa angka murni
+        const hargaMurni = document.getElementById('harga').value.replace(/\./g, '');
+        formData.append('harga', hargaMurni);
+        formData.append('stok', document.getElementById('stok').value);
+        formData.append('kategori', document.getElementById('kategori').value);
+        formData.append('restoId', localStorage.getItem('restoId'));
+        
+        const fileInput = document.getElementById('gambar');
+        if (fileInput.files.length > 0) {
+            formData.append('gambar', fileInput.files[0]);
+        }
 
-    const res = await fetch('/menu', { // Pastikan route ini sama dengan di Controller
-        method: 'POST', 
-        body: formData 
-    });
-    
-    if (res.ok) { 
-        alert("Berhasil!"); 
-        location.reload(); 
-    } else { 
-        alert("Gagal menyimpan menu!"); 
+        const res = await fetch('/menu', { 
+            method: 'POST', 
+            body: formData 
+        });
+        
+        if (res.ok) { 
+            alert("Berhasil!"); 
+            location.reload(); 
+        } else { 
+            alert("Gagal menyimpan menu!"); 
+        }
     }
-}
 
     // Fungsi Hapus
     async function hapusMenu(id) {

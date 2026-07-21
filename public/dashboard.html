@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -6,11 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Resto</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; flex-wrap: wrap; gap: 20px; }
-        .container { background: rgba(255, 255, 255, 0.2); padding: 30px; border-radius: 20px; backdrop-filter: blur(10px); text-align: center; color: white; width: 300px; }
-        button { display: block; width: 100%; color: white; padding: 12px; margin: 8px 0; background: rgba(255, 255, 255, 0.1); border: none; border-radius: 10px; cursor: pointer; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; box-sizing: border-box; }
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --glass-card: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: var(--bg-gradient); 
+            background-attachment: fixed;
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+            color: var(--text-primary);
+        }
+
+        .container { 
+            background: var(--glass-card); 
+            padding: 30px; 
+            border-radius: 20px; 
+            backdrop-filter: blur(20px); 
+            border: 1px solid var(--glass-border);
+            text-align: center; 
+            color: var(--text-primary); 
+            width: 300px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        button { 
+            display: block; 
+            width: 100%; 
+            color: white; 
+            padding: 12px; 
+            margin: 8px 0; 
+            background: rgba(255, 255, 255, 0.1); 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border-radius: 5px; 
+            border: 1px solid var(--glass-border); 
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            box-sizing: border-box; 
+            outline: none;
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        input[type="text"]#linkMenuSaya {
+            color: black !important; 
+            font-weight: bold;
+        }
+
         .logout-btn { background: rgba(255, 0, 0, 0.3); margin-top: 10px; }
+
+        h1, h3, label {
+            color: var(--text-primary);
+        }
     </style>
 </head>
 <body>
@@ -30,12 +103,12 @@
     <input type="text" id="linkMenuSaya" readonly style="color: black; font-weight: bold;">
     <button onclick="copyLink()" style="background: #e67e22; margin-bottom: 20px;">Salin Link</button>
     <button onclick="simpanLokasiResto()" style="background: #3498db; margin-top: 10px;">Update Titik GPS Resto</button>
-<h3>Update Lokasi Resto</h3>
-<input type="text" id="inputLat" placeholder="Latitude (Contoh: -6.123456)">
-<input type="text" id="inputLon" placeholder="Longitude (Contoh: 106.123456)">
-<button onclick="simpanLokasiManual()" style="background: #3498db;">Simpan GPS Manual</button>
-<button onclick="simpanLokasiResto()" style="background: #2980b9; margin-top: 5px;">Gunakan GPS Otomatis</button>
-    
+    <h3>Update Lokasi Resto</h3>
+    <input type="text" id="inputLat" placeholder="Latitude (Contoh: -6.123456)">
+    <input type="text" id="inputLon" placeholder="Longitude (Contoh: 106.123456)">
+    <button onclick="simpanLokasiManual()" style="background: #3498db;">Simpan GPS Manual</button>
+    <button onclick="simpanLokasiResto()" style="background: #2980b9; margin-top: 5px;">Gunakan GPS Otomatis</button>
+     
     <h3>Atur Jarak Maksimal (KM)</h3>
     <input type="number" id="inputRadius" placeholder="Contoh: 5" value="5">
     <button onclick="simpanRadius()">Simpan Radius Jarak</button>
@@ -59,11 +132,23 @@
 </div>
 
 <script>
-    window.onload = function() {
+    window.onload = async function() {
         const restoId = localStorage.getItem('restoId');
         if (restoId) {
-            const link = `${window.location.origin}/resto?restoId=${restoId}`;
-            document.getElementById('linkMenuSaya').value = link;
+            try {
+                // Menggunakan endpoint baru yang bebas bentrok
+                const response = await fetch(`/resto/get-token-unik?restoId=${restoId}`);
+                const data = await response.json();
+                 
+                if (data && data.tokenUnik) {
+                    const link = `${window.location.origin}/resto?token=${data.tokenUnik}`;
+                    document.getElementById('linkMenuSaya').value = link;
+                } else {
+                    document.getElementById('linkMenuSaya').value = `${window.location.origin}/resto?restoId=${restoId}`;
+                }
+            } catch (e) {
+                console.error("Gagal memuat token unik", e);
+            }
         }
         loadDashboardSettings();
     };
@@ -88,17 +173,29 @@
     }
 
     async function verifikasiLaluBuka(url) {
-        const password = prompt("Masukkan Password Karyawan:");
-        if (!password) return;
-        const res = await fetch('/resto/verifikasi-karyawan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: password, restoId: localStorage.getItem('restoId') })
-        });
-        if (res.ok) { sessionStorage.setItem('aksesDiberikan', 'true'); window.location.href = url; }
-        else { alert("Password Salah!"); }
+    const password = prompt("Masukkan Password Karyawan:");
+    if (!password) return;
+     
+    const restoId = localStorage.getItem('restoId');
+    const res = await fetch('/resto/verifikasi-karyawan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password, restoId: restoId })
+    });
+     
+    if (res.ok) { 
+        // Jika tujuannya ke riwayat, set session khusus riwayat
+        if (url.includes('riwayat')) {
+            sessionStorage.setItem('sudahLoginRiwayat_' + restoId, 'true');
+        } else {
+            sessionStorage.setItem('aksesDiberikan', 'true'); 
+        }
+        window.location.href = url; 
     }
-
+    else { 
+        alert("Password Salah!"); 
+    }
+}
     // FUNGSI WA: MURNI MENYIMPAN KE DATABASE SAJA
     async function saveNomorWa() {
         const restoId = localStorage.getItem('restoId');
@@ -120,7 +217,7 @@
 
     async function simpanLokasiResto() {
     if (!navigator.geolocation) return alert("Browser tidak mendukung GPS.");
-    
+     
     navigator.geolocation.getCurrentPosition(async (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;

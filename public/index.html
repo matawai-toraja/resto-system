@@ -1,305 +1,269 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu Digital Resto</title>
+    <!-- Google Fonts & FontAwesome untuk ikon modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-}
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-card: rgba(255, 255, 255, 0.05);
+            --glass-card-hover: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #8b5cf6;
+        }
 
-/* Memperbaiki Header Agar Tulisan Terbaca Jelas */
-#header-container {
-    background: #5c6bc0 !important; /* Warna biru yang lebih tegas */
-    padding: 20px 15px !important;
-    text-align: center;
-}
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif !important; 
+            background: var(--bg-gradient) !important; 
+            background-attachment: fixed !important;
+            margin: 0; 
+            padding: 20px; 
+            color: var(--text-primary) !important; 
+            min-height: 100vh;
+        }
 
-#nama-restoran {
-    color: #ffffff !important;
-    font-size: 28px !important;
-    font-weight: 800 !important;
-    text-transform: uppercase;
-    margin: 10px 0 !important;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-}
-#filter, #searchInput {
-    background-color: #ffffff !important; /* Latar Belakang Putih */
-    color: #000000 !important;           /* Tulisan Hitam Pekat */
-    border: 2px solid #5c6bc0 !important; /* Border biru agar terlihat rapi */
-    padding: 12px 15px !important;
-    border-radius: 10px !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    opacity: 1 !important;
-}
-
-/* Memastikan teks di dalam pilihan (dropdown) juga hitam */
-#filter option {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-}
-
-/* Memperjelas warna placeholder */
-#searchInput::placeholder {
-    color: #555555 !important;
-}
-
-/* Memperbaiki Form Agar Solid dan Jelas */
-.header-form-wrapper {
-    display: flex !important;
-    gap: 10px !important;
-    width: 100% !important;
-    max-width: 500px !important;
-    margin: 10px auto 0 auto !important;
-}
-
-/* Kunci utama: Memaksa warna putih solid dan font hitam */
-#filter, #searchInput {
-    background-color: #ffffff !important;
-    color: #333333 !important; /* Teks Hitam agar kelihatan */
-    border: none !important;
-    padding: 12px 15px !important;
-    border-radius: 10px !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
-}
-
-#searchInput::placeholder {
-    color: #777777 !important;
-    font-weight: 400 !important;
-}
-/* Pastikan header container tetap diam dan transparan */
-#header-container {
-    background: rgba(102, 126, 234, 0.8) !important; /* Paksa transparan */
-    backdrop-filter: blur(5px); /* Efek kaca */
-    padding: 20px 15px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-.menu-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 15px !important;
-    padding: 15px !important;
-    max-width: 1200px !important; /* Agar tidak terlalu lebar di desktop */
-    margin: 0 auto !important;
-}
-
-/* Tampilan Laptop/Desktop: 6 kolom */
-@media (min-width: 1024px) {
-    .menu-grid {
-        grid-template-columns: repeat(6, 1fr) !important;
-    }
-}
-/* Kunci form agar tidak bergerak */
-.header-form-wrapper {
-    display: flex !important;
-    gap: 10px !important;
-    width: 100% !important;
-    max-width: 500px !important;
-    margin: 10px auto 0 auto !important;
-}
-
-#filter, #searchInput {
-    background: rgba(255, 255, 255, 0.3) !important; /* Paksa transparan */
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-    padding: 12px !important;
-    border-radius: 10px !important;
-    box-sizing: border-box !important;
-}
-
-#filter { width: 110px !important; flex-shrink: 0; }
-#searchInput { flex-grow: 1 !important; }
-.resto-card {
-    /* 1. Warna latar belakang transparan (putih dengan opacity 40%) */
-    background: rgba(255, 255, 255, 0.4) !important;
-    
-    /* 2. Efek blur di belakang kartu */
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    
-    /* 3. Border tipis untuk kesan kristal */
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    
-    /* 4. Shadow lembut */
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    
-    /* 5. Sudut membulat */
-    border-radius: 20px;
-}
-
-.glass-effect {
-    background: rgba(255, 255, 255, 0.7); /* Warna putih semi-transparan */
-    backdrop-filter: blur(10px);          /* Efek buram seperti kaca */
-    -webkit-backdrop-filter: blur(10px);  /* Dukungan untuk Safari */
-    border: 1px solid rgba(255, 255, 255, 0.3); /* Border tipis untuk kesan kristal */
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); /* Bayangan lembut */
-    border-radius: 20px; /* Sudut membulat agar lebih manis */
-}
-.menu-card { 
-    background: white; 
-    padding: 8px; /* Padding luar diperkecil agar gambar lebih luas */
-    border-radius: 20px; 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
-    text-align: center; 
-    transition: 0.3s;
-    border: 1px solid #f0f0f0;
-}
-
-.menu-card img { 
-    width: 100%;           /* Lebar mengikuti lebar kartu */
-    aspect-ratio: 1 / 1;   /* INI YANG MEMBUAT LEBAR DAN TINGGI SELALU SAMA */
-    object-fit: cover;     /* Memastikan gambar memenuhi kotak tanpa distorsi/gepeng */
-    border-radius: 16px;   /* Sudut melengkung yang elegan */
-    margin-bottom: 8px; 
-    display: block;        /* Menghindari spasi aneh di bawah gambar */
-}
-.resto-card {
-    /* Ganti warna di sini */
-    background-color: #e9ecef; /* Abu-abu muda yang elegan */
-    
-    /* Tambahan agar lebih manis */
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Bayangan tipis agar kartu tampak menonjol */
-}
-.resto-card {
-    /* Warna abu-abu muda dengan transparansi untuk efek kaca */
-    background-color: rgba(233, 236, 239, 0.6) !important; 
-    
-    /* Efek buram (glassmorphism) */
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    
-    /* Border halus untuk mempertegas kesan kaca */
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    
-    /* Sudut membulat dan bayangan lembut */
-    border-radius: 20px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-    
-    /* Padding dan margin agar layout tidak berantakan */
-    padding: 20px;
-    margin-bottom: 20px;
-}
-body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); /* Contoh background lembut */
-    min-height: 100vh;
-    padding: 20px;
-}
-.menu-card h3 { 
-    font-size: 1em; 
-    margin: 4px 0; /* Spasi rapat untuk nama */
-    color: #2d3436; 
-}
-
-.menu-card p { 
-    font-size: 0.9em; 
-    color: #27ae60; 
-    font-weight: 700; 
-    margin: 0 0 10px 0; /* Spasi rapat untuk harga */
-}
-
-.menu-card button { 
-    width: 90%; /* Tombol sedikit lebih ramping terlihat lebih elegan */
-    padding: 8px; 
-    border: none; 
-    border-radius: 10px; 
-    font-weight: 600; 
-    background: #27ae60; 
-    color: white;
-}        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; color: #333; }
         .container-utama { max-width: 500px; margin: auto; }
-        .resto-card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; }
-        .btn-wa-elegan { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; padding: 12px 25px; border-radius: 50px; font-weight: 600; cursor: pointer; }
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        @media (max-width: 480px) { .menu-grid { grid-template-columns: 1fr; } }
-        .menu-card { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        
-        #modal-keranjang { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; }
 
+        /* Kartu Resto & Header dengan Efek Glassmorphism Elegan */
+        .resto-card, .modal-content, .menu-card { 
+            background: var(--glass-card) !important; 
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3) !important; 
+        }
+
+        .resto-card { 
+            padding: 25px; 
+            border-radius: 24px !important; 
+            text-align: center; 
+            margin-bottom: 20px; 
+        }
+
+        .btn-wa-elegan { 
+            background: linear-gradient(135deg, #27ae60, #2ecc71); 
+            color: white; 
+            border: none; 
+            padding: 12px 25px; 
+            border-radius: 50px; 
+            font-weight: 600; 
+            cursor: pointer; 
+        }
+
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+        }
+
+        @media (max-width: 480px) { 
+            .menu-grid { grid-template-columns: 1fr; } 
+        }
+
+        .menu-card { 
+            padding: 12px; 
+            border-radius: 20px !important; 
+            text-align: center; 
+            transition: all 0.3s ease;
+        }
+
+        .menu-card:hover {
+            background: var(--glass-card-hover) !important;
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.3) !important;
+        }
+
+        .menu-card img { 
+            width: 100%; 
+            aspect-ratio: 1 / 1; 
+            object-fit: cover; 
+            border-radius: 16px; 
+            margin-bottom: 8px; 
+            display: block; 
+        }
+
+        .menu-card h3 { 
+            font-size: 1em; 
+            margin: 6px 0; 
+            color: var(--text-primary) !important; 
+        }
+
+        .menu-card p { 
+            font-size: 0.9em; 
+            color: #4ade80 !important; 
+            font-weight: 700; 
+            margin: 0 0 10px 0; 
+        }
+
+        .menu-card button { 
+            width: 90%; 
+            padding: 9px; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            background: #27ae60; 
+            color: white; 
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .menu-card button:hover {
+            opacity: 0.9;
+        }
+
+        #modal-keranjang, #modal-qris { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(15, 23, 42, 0.8) !important; 
+            backdrop-filter: blur(10px);
+            z-index: 1000; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        .modal-content { 
+            padding: 25px; 
+            border-radius: 24px !important; 
+            width: 90%; 
+            max-width: 400px; 
+        }
+
+        /* Penyesuaian Header Kontainer */
+        #header-container {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 24px;
+            padding: 20px 15px;
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3);
+        }
+
+        #nama-restoran {
+            color: var(--text-primary) !important;
+            font-size: 25px;
+            margin: 5px 0;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        /* Input & Filter Form Styling */
+        #filter, #searchInput, input[type="text"], input[type="number"] {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--glass-border) !important;
+            padding: 10px 12px !important;
+            border-radius: 12px !important;
+            font-size: 14px !important;
+            outline: none;
+        }
+
+        #filter option {
+            background-color: #1e1b4b !important;
+            color: var(--text-primary) !important;
+        }
+
+        #searchInput::placeholder, input::placeholder {
+            color: var(--text-secondary) !important;
+        }
+
+        #tombol-keranjang-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 10px 25px rgba(39, 174, 96, 0.4);
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
-<div id="header-container" style="flex-shrink: 0; padding: 15px; background: #667eea; color: white;">
-    <div class="container-utama" id="container-utama" style="max-width: 500px; margin: auto;">
+<div id="header-container">
+    <div class="container-utama" id="container-utama">
         
         <!-- Info Resto -->
         <div style="text-align: center; margin-bottom: 15px;">
-            <p style="font-size: 0.8em; opacity: 0.8; margin: 0;">Selamat Datang di</p>
-            <h1 id="nama-restoran" style="font-size: 25px; margin: 5px 0;">Memuat...</h1>
-        <button onclick="bukaWhatsApp()" style="background: #25d366; color: #0000FF; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 5px;">
-    Konfirmasi via WhatsApp
-</button>
-<p style="margin-top: 10px; color: white; font-size: 14px;">
-    Silahkan pilih menu favorit anda
-</p>
+            <p style="font-size: 0.8em; color: var(--text-secondary); margin: 0;">Selamat Datang di</p>
+            <h1 id="nama-restoran">Memuat...</h1>
+            <button onclick="bukaWhatsApp()" style="background: rgba(37, 211, 102, 0.2); color: #4ade80; border: 1px solid rgba(37, 211, 102, 0.4); padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 5px;">
+                <i class="fab fa-whatsapp"></i> Konfirmasi via WhatsApp
+            </button>
+            <p style="margin-top: 10px; color: var(--text-secondary); font-size: 14px;">
+                Silahkan pilih menu favorit anda
+            </p>
         </div>
 
-        <!-- Filter & Search (Menyatu tanpa kartu putih yang tebal) -->
-      <div style="display: flex; gap: 8px; justify-content: center; margin: 10px auto; max-width: 350px;">
-    <!-- padding dikurangi, flex dihapus agar ukurannya lebih pas -->
-    <select id="filter" onchange="tampilkanMenu()" style="padding: 6px 10px; border-radius: 8px; border: none; font-size: 14px;">
-        <option value="Semua">Semua</option>
-        <option value="Makanan">Makanan</option>
-        <option value="Minuman">Minuman</option>
-    </select>
-    
-    <!-- padding dikurangi, flex dihapus agar ukurannya lebih pas -->
-    <input type="text" id="searchInput" placeholder="Cari..." onkeyup="tampilkanMenu()" style="padding: 6px 10px; border-radius: 8px; border: none; font-size: 14px; width: 150px;">
-</div>
-    </div>
-</div>
-
-<!-- AREA MENU (Sekarang punya ruang penuh) -->
-<div id="menu-list" class="menu-grid" style="flex: 1; overflow-y: auto; padding: 15px; max-width: 500px; margin: auto; width: 100%; box-sizing: border-box;">
-</div>
-            <div id="menu-list" class="menu-grid"></div>
+        <!-- Filter & Search -->
+        <div style="display: flex; gap: 8px; justify-content: center; margin: 10px auto; max-width: 350px;">
+            <select id="filter" onchange="tampilkanMenu()">
+                <option value="Semua">Semua</option>
+                <option value="Makanan">Makanan</option>
+                <option value="Minuman">Minuman</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Cari..." onkeyup="tampilkanMenu()" style="width: 150px;">
         </div>
     </div>
-
-    <div id="modal-keranjang">
-        <div class="modal-content">
-            <h3>Daftar Pesanan Anda</h3>
-            <input type="text" id="nama-modal" placeholder="Nama Anda" style="width:100%; margin-bottom:10px; padding:8px; box-sizing:border-box;">
-            <input type="number" id="meja-modal" placeholder="Nomor Meja" style="width:100%; margin-bottom:10px; padding:8px; box-sizing:border-box;">
-            <div id="keranjang-list"></div>
-            <div id="total-harga" style="font-weight:bold; margin-top:10px;">Total: Rp 0</div>
-<div id="pilihan-pembayaran" style="margin: 20px 0;">
-    <p>Pilih Metode Pembayaran:</p>
-    <label>
-        <input type="radio" name="metode" value="tunai" checked> Bayar Tunai (di Kasir)
-    </label><br>
-    <label>
-        <input type="radio" name="metode" value="digital"> Bayar Digital (QRIS/Transfer)
-    </label>
 </div>
 
-<div id="modal-qris" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center; padding:20px;">
-    <div class="modal-content" style="text-align:center;">
-        <h3>Scan QRIS untuk Bayar</h3>
-        <img src="URL_GAMBAR_QRIS_ANDA.jpg" style="width:100%; max-width:250px; margin:10px 0;">
-        <p>Setelah transfer, klik tombol di bawah untuk verifikasi pesanan.</p>
-        <button onclick="lanjutKirimKeServer()" style="width:100%; padding:12px; background:#27ae60; color:white; border:none; border-radius:5px;">Saya Sudah Bayar</button>
-        <button onclick="document.getElementById('modal-qris').style.display='none'" style="width:100%; margin-top:10px; padding:10px; background:#ccc; border:none; border-radius:5px;">Batal</button>
-    </div>
+<!-- AREA MENU -->
+<div id="menu-list" class="menu-grid" style="max-width: 500px; margin: auto; width: 100%; box-sizing: border-box;">
 </div>
-            <button onclick="prosesKirimPesanan(event)" style="width:100%; margin-top:10px; padding:10px; background:#2980b9; color:white; border:none; border-radius:5px;">Kirim Pesanan</button>
-            <button onclick="tutupModal()" style="width:100%; margin-top:5px; padding:10px; background:#f0f0f0; border:none; border-radius:5px;">Tambah Menu Lain</button>
+
+<div id="modal-keranjang">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:var(--text-primary);">Daftar Pesanan Anda</h3>
+        <input type="text" id="nama-modal" placeholder="Nama Anda" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
+        <input type="number" id="meja-modal" placeholder="Nomor Meja" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
+        <div id="keranjang-list"></div>
+        <div id="total-harga" style="font-weight:bold; margin-top:10px; color:var(--text-primary);">Total: Rp 0</div>
+        
+        <div id="pilihan-pembayaran" style="margin: 15px 0; color:var(--text-secondary); font-size: 14px;">
+            <p style="margin-bottom: 5px; color:var(--text-primary);">Pilih Metode Pembayaran:</p>
+            <label style="cursor:pointer;"><input type="radio" name="metode" value="tunai" checked> Bayar Tunai (di Kasir)</label><br>
+            <label style="cursor:pointer;"><input type="radio" name="metode" value="digital"> Bayar Digital (QRIS/Transfer)</label>
         </div>
-    </div>
 
-    <div id="tombol-keranjang-container" style="position:fixed; bottom:20px; right:20px; background:#27ae60; color:white; padding:15px; border-radius:50px; cursor:pointer; z-index:999;" onclick="bukaModal()">
-        🛒 <span id="cart-count">Keranjang (0)</span>
+        <div id="modal-qris">
+            <div class="modal-content" style="text-align:center;">
+                <h3>Scan QRIS untuk Bayar</h3>
+                <img src="URL_GAMBAR_QRIS_ANDA.jpg" style="width:100%; max-width:250px; margin:10px 0; border-radius: 12px;">
+                <p style="color:var(--text-secondary); font-size:13px;">Setelah transfer, klik tombol di bawah untuk verifikasi pesanan.</p>
+                <button onclick="lanjutKirimKeServer()" style="width:100%; padding:12px; background:#27ae60; color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer;">Saya Sudah Bayar</button>
+                <button onclick="document.getElementById('modal-qris').style.display='none'" style="width:100%; margin-top:10px; padding:10px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:12px; cursor:pointer;">Batal</button>
+            </div>
+        </div>
+
+        <button onclick="prosesKirimPesanan(event)" style="width:100%; margin-top:10px; padding:12px; background:#2980b9; color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer;">Kirim Pesanan</button>
+        <button onclick="tutupModal()" style="width:100%; margin-top:8px; padding:10px; background:rgba(255,255,255,0.08); color:white; border:none; border-radius:12px; cursor:pointer;">Tambah Menu Lain</button>
     </div>
+</div>
+
+<div id="tombol-keranjang-container" onclick="bukaModal()">
+    🛒 <span id="cart-count">Keranjang (0)</span>
+</div>
 
 <script>
 (function() {
@@ -307,40 +271,39 @@ body {
     let sessionStart = localStorage.getItem('session_start');
 
     if (!sessionStart) {
-        // Jika belum ada sesi, buat sesi baru sekarang
         localStorage.setItem('session_start', new Date().getTime());
     } else {
-        // Jika sudah ada, cek apakah sudah lebih dari 1 jam
         if (new Date().getTime() - Number(sessionStart) > DURASI_SESI) {
             alert("Waktu sesi Anda telah berakhir. Silakan scan ulang QR untuk memesan kembali.");
-            localStorage.clear(); // Hapus semua data lama
-            location.reload();    // Refresh halaman
+            localStorage.clear();
+            location.reload();
         }
     }
 })();
+
     let menuData = [], keranjang = [], waNumber = "";
-    const restoId = new URLSearchParams(window.location.search).get('restoId') || 1;
+    let restoId = window.dynamicRestoId || new URLSearchParams(window.location.search).get('restoId') || 1;
 
     function refreshData() {
-        // Jangan refresh data jika halaman sedang dalam status sukses
         if (localStorage.getItem('pesananSukses')) return;
         
-        fetch(`/menu/${restoId}`).then(res => res.json()).then(data => { menuData = data; tampilkanMenu(); });
+        fetch(`/resto/menu?restoId=${restoId}`).then(res => res.json()).then(data => { menuData = data; tampilkanMenu(); });
         fetch(`/menu/resto/wa?restoId=${restoId}`).then(res => res.text()).then(text => waNumber = text.trim().replace(/['"]/g, ''));
-        fetch(`/menu/resto/info?restoId=${restoId}`).then(res => res.json()).then(data => { document.getElementById('nama-restoran').innerText = data.namaResto; });
+        
+        if (window.dynamicNamaResto) {
+            document.getElementById('nama-restoran').innerText = window.dynamicNamaResto;
+        } else {
+            fetch(`/menu/resto/info?restoId=${restoId}`).then(res => res.json()).then(data => { if(data && data.namaResto) document.getElementById('nama-restoran').innerText = data.namaResto; });
+        }
     }
 
    function tampilkanMenu() {
-        // 1. Ambil elemen HTML-nya terlebih dahulu
         const filterElement = document.getElementById('filter');
         const searchElement = document.getElementById('searchInput');
         const list = document.getElementById('menu-list');
 
-        // 🛡️ KUNCI PENGAMAN: Jika salah satu elemen filter/search atau menu-list 
-        // sudah hilang dari layar (karena beralih ke halaman sukses), langsung hentikan fungsi ini!
         if (!filterElement || !searchElement || !list) return;
 
-        // 2. Jika elemennya aman dan ada di layar, baru ambil value-nya
         const filter = filterElement.value;
         const search = searchElement.value.toLowerCase();
         
@@ -348,41 +311,33 @@ body {
         
         list.innerHTML = filtered.map(m => `
             <div class="menu-card">
-                <img src="${m.gambarUrl || 'https://via.placeholder.com/200'}">
+                <img src="${m.gambar || m.gambarUrl || 'https://via.placeholder.com/200'}">
                 <h3>${m.nama}</h3>
                 <p>Rp ${Number(m.harga).toLocaleString()}</p>
-                <button onclick="tambahKeKeranjang(${m.id})" ${m.stok <= 0 ? 'disabled style="background:#95a5a6; cursor:not-allowed;"' : 'style="background:#27ae60;"'}>
+                <button onclick="tambahKeKeranjang(${m.id})" ${m.stok <= 0 ? 'disabled style="background:#475569; cursor:not-allowed;"' : 'style="background:#27ae60;"'}>
                     ${m.stok > 0 ? 'Tambah' : 'Habis'}
                 </button>
             </div>
         `).join('');
     }
+
 function bukaWhatsApp() {
     if (!waNumber) {
         alert("Nomor belum disetting.");
         return;
     }
-    
-    // Pastikan nomor bersih dari spasi/karakter lain
     let cleanNomor = waNumber.replace(/\D/g, '');
-    
-    // Pastikan awalan 62
     if (cleanNomor.startsWith('0')) {
         cleanNomor = '62' + cleanNomor.substring(1);
     }
-
-    // Cara paling ampuh: arahkan ke wa.me
-    // Jangan gunakan api.whatsapp.com yang akan memicu halaman 'Buka Aplikasi'
     const url = 'https://wa.me/' + cleanNomor;
-    
-    // Buka di tab baru
     window.open(url, '_blank');
 }
+
 function renderHalamanSukses(data) {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = data.rincianHtml;
     
-    // Pembersihan elemen rincian
     tempDiv.querySelectorAll('button').forEach(btn => btn.remove());
     tempDiv.querySelectorAll('div, span').forEach(el => {
         if (el.querySelector('button') || el.innerText.trim() === '') el.remove();
@@ -392,67 +347,52 @@ function renderHalamanSukses(data) {
     
     const rincianBersih = tempDiv.innerHTML;
 
-    // Tampilan dengan efek kaca
     document.getElementById('container-utama').innerHTML = `
-        <div class="resto-card" style="
-            text-align: center; 
-            padding: 20px; 
-            background: rgba(255, 255, 255, 0.6); 
-            backdrop-filter: blur(15px); 
-            -webkit-backdrop-filter: blur(15px); 
-            border: 1px solid rgba(255, 255, 255, 0.3); 
-            border-radius: 20px; 
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        ">
-            <h2 style="color:#27ae60; margin: 0 0 5px 0;">Terima Kasih, ${data.nama}!</h2>
-            
-            <p style="font-size: 0.9em; color: #555; margin: 0 0 5px 0; font-weight: bold;">
+        <div class="resto-card" style="text-align: center; padding: 20px;">
+            <h2 style="color:#4ade80; margin: 0 0 5px 0;">Terima Kasih, ${data.nama}!</h2>
+            <p style="font-size: 0.9em; color: var(--text-secondary); margin: 0 0 5px 0; font-weight: bold;">
                 ID Pesanan: #${data.id || '-'}
             </p>
-            
-            <p style="margin: 0 0 10px 0;">Pesanan untuk Meja ${data.meja} telah diterima.</p>
-            
-            <div style="text-align:left; margin: 5px 0; border-top: 1px solid rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05); padding: 8px 0; line-height: 1.4;">
+            <p style="margin: 0 0 10px 0; color: var(--text-primary);">Pesanan untuk Meja ${data.meja} telah diterima.</p>
+            <div style="text-align:left; margin: 5px 0; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); padding: 8px 0; line-height: 1.4; color: var(--text-secondary);">
                 ${rincianBersih}
             </div>
-            
-            <div style="font-weight:bold; font-size: 1.2em; margin: 10px 0;">${data.total}</div>
-            
+            <div style="font-weight:bold; font-size: 1.2em; margin: 10px 0; color: var(--text-primary);">${data.total}</div>
             <button onclick="bukaWhatsApp()" style="width:100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">Konfirmasi via WA</button>
             <button onclick="kembaliKeMenu()" style="width:100%; margin-top:8px; padding:12px; background: rgba(243, 156, 18, 0.9); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">Pesan Lagi</button>
-            
-            <div style="margin-top: 15px; color: #777; font-size: 0.75em; font-style: italic;">
-                <p style="margin: 0;">* Pesanan tidak bisa diBATALKAN, silahkan konfirmasi WA jika ingin membatalkan pesanan atau ingin konfirmasi pesanan & lain-lain.</p>
+            <div style="margin-top: 15px; color: var(--text-secondary); font-size: 0.75em; font-style: italic;">
+                <p style="margin: 0;">* Pesanan tidak bisa diBATALKAN, silahkan konfirmasi WA jika ingin membatalkan pesanan.</p>
             </div>
         </div>
     `;
     document.getElementById('tombol-keranjang-container').style.display = 'none';
-}  function kembaliKeMenu() {
-        localStorage.removeItem('pesananSukses');
-        location.reload(); 
-    }
+} 
 
-    function tambahKeKeranjang(id) { 
-        const item = menuData.find(m => m.id === id); 
-        if (keranjang.find(c => c.id === id)) keranjang.find(c => c.id === id).jumlah++; 
-        else keranjang.push({ ...item, jumlah: 1 }); 
-        renderKeranjang(); 
-    }
+function kembaliKeMenu() {
+    localStorage.removeItem('pesananSukses');
+    location.reload(); 
+}
 
-  function renderKeranjang() { 
+function tambahKeKeranjang(id) { 
+    const item = menuData.find(m => m.id === id); 
+    if (keranjang.find(c => c.id === id)) keranjang.find(c => c.id === id).jumlah++; 
+    else keranjang.push({ ...item, jumlah: 1 }); 
+    renderKeranjang(); 
+}
+
+function renderKeranjang() { 
     const list = document.getElementById('keranjang-list'); 
     let total = 0; 
     
-    // Menggunakan index (idx) untuk memanipulasi item spesifik dalam array
     list.innerHTML = keranjang.map((c, idx) => { 
         total += c.harga * c.jumlah; 
         return `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
-                <span style="flex:1;">${c.nama} <br><small>Rp ${c.harga.toLocaleString()} x ${c.jumlah}</small></span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--glass-border); padding-bottom:5px;">
+                <span style="flex:1; color:var(--text-primary); text-align:left;">${c.nama} <br><small style="color:var(--text-secondary);">Rp ${c.harga.toLocaleString()} x ${c.jumlah}</small></span>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <button onclick="updateJumlah(${idx}, -1)" style="padding:2px 8px; cursor:pointer;">-</button>
-                    <span>${c.jumlah}</span>
-                    <button onclick="updateJumlah(${idx}, 1)" style="padding:2px 8px; cursor:pointer;">+</button>
+                    <button onclick="updateJumlah(${idx}, -1)" style="padding:2px 8px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px;">-</button>
+                    <span style="color:var(--text-primary);">${c.jumlah}</span>
+                    <button onclick="updateJumlah(${idx}, 1)" style="padding:2px 8px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px;">+</button>
                     <button onclick="hapusItem(${idx})" style="padding:2px 8px; cursor:pointer; background:#e74c3c; color:white; border:none; border-radius:4px;">✕</button>
                 </div>
             </div>`;
@@ -462,7 +402,6 @@ function renderHalamanSukses(data) {
     document.getElementById('cart-count').textContent = `Keranjang (${keranjang.reduce((a, b) => a + b.jumlah, 0)})`; 
 }
 
-// Fungsi pendukung yang harus ditambahkan di bawahnya:
 function updateJumlah(index, perubahan) {
     keranjang[index].jumlah += perubahan;
     if (keranjang[index].jumlah <= 0) {
@@ -476,6 +415,7 @@ function hapusItem(index) {
     keranjang.splice(index, 1);
     renderKeranjang();
 }
+
 function prosesKirimPesanan(event) {
     const nama = document.getElementById('nama-modal').value;
     const meja = document.getElementById('meja-modal').value;
@@ -488,7 +428,6 @@ function prosesKirimPesanan(event) {
     tombol.disabled = true;
     tombol.innerText = "Mengirim...";
 
-    // Dapatkan lokasi GPS untuk keamanan/validasi area resto
     navigator.geolocation.getCurrentPosition((position) => {
         const payload = {
             nama, 
@@ -499,11 +438,9 @@ function prosesKirimPesanan(event) {
             lonPelanggan: position.coords.longitude,
             metodePembayaran: metodePembayaran,
             sessionStart: localStorage.getItem('session_start'),
-            // Tambahkan totalHarga agar dibaca oleh NestJS PaymentService
             totalHarga: keranjang.reduce((s, i) => s + (Number(i.harga) * Number(i.jumlah)), 0)
         };
 
-        // Kirim data langsung ke endpoint NestJS controller
         fetch('/resto/kasir/pesan-semua', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -517,12 +454,9 @@ function prosesKirimPesanan(event) {
             alert("Pesanan berhasil dibuat!");
             tutupModal();
 
-            // SINKRONISASI MIDTRANS: Jika memilih digital, langsung buka portal pembayaran QRIS/Transfer
             if (metodePembayaran === 'digital' && data.paymentUrl) {
-                // Mengarahkan pelanggan ke halaman pembayaran dinamis Midtrans Snap
                 window.location.href = data.paymentUrl; 
             } else {
-                // Jika tunai, simpan status sukses lokal dan render struk pemesanan
                 const totalText = document.getElementById('total-harga').innerText;
                 const rincianHtml = document.getElementById('keranjang-list').innerHTML;
                 
@@ -554,51 +488,42 @@ function prosesKirimPesanan(event) {
         tombol.innerText = "Kirim Pesanan";
     });
 }
+
 function bukaModal() { document.getElementById('modal-keranjang').style.display = 'flex'; }
-    function tutupModal() { document.getElementById('modal-keranjang').style.display = 'none'; }
-function refreshData() {
-    // Gunakan URL string biasa dengan penggabungan + jika backtick bermasalah
-    const timestamp = Date.now();
-    
-    // Fetch menu
-    fetch('/menu/' + restoId + '?t=' + timestamp)
-        .then(res => res.json())
-        .then(data => { 
-            menuData = data; 
-            tampilkanMenu(); 
-        });
+function tutupModal() { document.getElementById('modal-keranjang').style.display = 'none'; }
 
-    // Fetch WA
-    fetch('/menu/resto/wa?restoId=' + restoId + '&t=' + timestamp)
-        .then(res => res.text())
-        .then(text => { 
-            waNumber = text.trim().replace(/['"]/g, ''); 
-        });
+window.onload = async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenUnik = urlParams.get('token');
 
-    // Fetch Info
-    fetch('/menu/resto/info?restoId=' + restoId + '&t=' + timestamp)
-        .then(res => res.json())
-        .then(data => { 
-            document.getElementById('nama-restoran').innerText = data.namaResto; 
-        });
-}
+    if (window.dynamicRestoId) {
+        restoId = window.dynamicRestoId;
+    } else if (tokenUnik) {
+        try {
+            const res = await fetch(`/resto/by-token?token=${tokenUnik}`);
+            const data = await res.json();
+            if (data && data.restoId) {
+                restoId = data.restoId;
+                if (data.namaResto) {
+                    document.getElementById('nama-restoran').innerText = data.namaResto;
+                }
+            }
+        } catch (err) {
+            console.error("Gagal memuat resto dari token", err);
+        }
+    }
 
-window.onload = function() {
-    // 1. Panggil fungsi utama Anda sekali saja
     refreshData();
-    
-    // 2. Hanya setInterval yang kita modifikasi untuk refresh menu
-    // Gunakan ?t=${Date.now()} agar terhindar dari cache 304
+
     setInterval(function() {
-        fetch(`/menu/${restoId}?t=${Date.now()}`)
+        fetch(`/resto/menu?restoId=${restoId}&t=${Date.now()}`)
             .then(res => res.json())
             .then(data => { 
                 menuData = data; 
                 tampilkanMenu(); 
             });
-    }, 3000); // Ganti angka 3000 ini sesuai durasi yang Anda inginkan
+    }, 3000);
 
-    // 3. Logika lain Anda tetap berjalan normal
     const dataTersimpan = localStorage.getItem('pesananSukses');
     if (dataTersimpan) renderHalamanSukses(JSON.parse(dataTersimpan));
 };

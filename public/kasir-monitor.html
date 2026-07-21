@@ -2,36 +2,203 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitor Kasir Profesional</title>
+    <!-- Google Fonts & FontAwesome untuk ikon profesional -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { background-color: #121212 !important; color: #ffffff; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        #container-monitor { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-card: rgba(255, 255, 255, 0.05);
+            --glass-card-hover: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body { 
+            background: var(--bg-gradient) !important; 
+            background-attachment: fixed !important;
+            color: var(--text-primary); 
+            padding: 35px 25px; 
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .dashboard-monitor-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .dashboard-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+        }
+
+        h1 i {
+            color: var(--accent-primary);
+            background: rgba(139, 92, 246, 0.1);
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 20px;
+        }
+
+        /* Style untuk kolom pencarian */
+        .search-box-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box-wrapper i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        #input-pencarian {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 10px 14px 10px 38px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            width: 240px;
+            transition: all 0.3s ease;
+        }
+
+        #input-pencarian:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        #container-monitor { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 20px; 
+        }
         
-        .card { background: #1e1e1e; border-radius: 12px; padding: 15px; color: white; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .card { 
+            background: var(--glass-card); 
+            border: 1px solid var(--glass-border);
+            border-radius: 18px; 
+            padding: 20px; 
+            color: var(--text-primary); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); 
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            background: var(--glass-card-hover);
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
         
-        /* Penanda Status Dapur dengan garis kiri */
-        .status-menunggu { border-left: 10px solid #ff4d94; } 
-        .status-diproses { border-left: 10px solid #f39c12; }
-        .status-disajikan { border-left: 10px solid #2ecc71; }
+        .status-menunggu { border-left: 6px solid #ff4d94; } 
+        .status-diproses { border-left: 6px solid #f39c12; }
+        .status-disajikan { border-left: 6px solid #2ecc71; }
         
-        button { background: #3498db; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
-        button:hover { background: #2980b9; }
-        .btn-batal { background: #e74c3c; }
+        button { 
+            background: #3498db; 
+            color: white; 
+            border: none; 
+            padding: 11px 16px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 13px;
+            width: 100%; 
+            margin-top: 6px; 
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        button:hover { 
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .card ul {
+            padding-left: 18px;
+            margin: 12px 0;
+            color: var(--text-secondary);
+        }
+        .card li {
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
-    <button id="btn-aktifkan-audio" onclick="aktifkanAudio()" style="position:fixed; top:20px; right:20px; width:auto; background:#f39c12; color:white; z-index:9999;">🔔 Aktifkan Notifikasi</button>
+<div class="dashboard-monitor-wrapper">
+    <div class="dashboard-header-flex">
+        <h1><i class="fa-solid fa-desktop"></i> Daftar Pesanan Aktif</h1>
+        
+        <div class="header-actions">
+            <!-- Kolom Pencarian Pesanan -->
+            <div class="search-box-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="input-pencarian" placeholder="Cari ID, Nama, / Meja..." oninput="filterPesanan()">
+            </div>
+
+            <button id="btn-aktifkan-audio" onclick="aktifkanAudio()" style="width:auto; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color:white; padding: 10px 20px; border-radius: 12px; font-weight: 600; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); margin:0;"><i class="fa-solid fa-bell" style="margin-right: 6px;"></i> Aktifkan Notifikasi</button>
+        </div>
+    </div>
     
-    <h1>Daftar Pesanan</h1>
     <div id="container-monitor">Memuat data...</div>
+</div>
+
 <script>
 let lastOrderIds = [];
+let globalPesananData = []; // Menyimpan data mentah untuk kebutuhan pencarian
 const audio = new Audio('/notif.mp3'); 
 let audioAktif = false;
 let currentPesanan = { id: null, total: 0 };
 let restoPrinterConfig = { auto_print: 0 };
-// 1. Fungsi Aktifkan Audio (Wajib diklik sekali oleh kasir)
+
 function aktifkanAudio() {
     audio.play().then(() => {
         audio.pause();
@@ -44,6 +211,7 @@ function aktifkanAudio() {
         alert("Gagal mengaktifkan audio. Pastikan file /notif.mp3 ada di folder public.");
     });
 }
+
 async function loadPrinterConfig() {
     const restoId = localStorage.getItem('restoId');
     const token = localStorage.getItem('authKey');
@@ -56,13 +224,14 @@ async function loadPrinterConfig() {
         if (res.ok) {
             const data = await res.json();
             if (data) {
-                restoPrinterConfig = data; // Menyimpan status auto_print (0 atau 1)
+                restoPrinterConfig = data;
             }
         }
     } catch (err) {
         console.error("Gagal memuat config printer:", err);
     }
 }
+
 function cetakStruk(id, meja, nama, pesananStr, total, metode) {
     let displayNamaResto = localStorage.getItem('namaResto') || 'Resto';
     let items = [];
@@ -94,11 +263,11 @@ function cetakStruk(id, meja, nama, pesananStr, total, metode) {
     `);
     printWindow.document.close();
 }
+
 function cetakDapur(id, meja, nama, pesananStr) {
     let items = [];
     try { items = typeof pesananStr === 'string' ? JSON.parse(pesananStr) : pesananStr; } catch(e) {}
     
-    // Perbaikan: gunakan window.open agar jendela baru terbuka dengan benar
     let printWindow = window.open('', '_blank', 'width=400,height=600');
     
     printWindow.document.write(`
@@ -119,7 +288,7 @@ function cetakDapur(id, meja, nama, pesananStr) {
     `);
     printWindow.document.close();
 }
-// 2. Fungsi Utama Load Pesanan & Deteksi Suara Otomatis
+
 function loadPesanan() {
     const token = localStorage.getItem('authKey');
     const restoId = localStorage.getItem('restoId');
@@ -147,10 +316,9 @@ function loadPesanan() {
         return res.json();
     })
     .then(data => {
-        const listData = Array.isArray(data) ? data.reverse() : [];
-        const currentIds = listData.map(p => p.id);
+        globalPesananData = Array.isArray(data) ? data.reverse() : [];
+        const currentIds = globalPesananData.map(p => p.id);
         
-        // Deteksi pesanan baru untuk membunyikan alarm
         if (lastOrderIds.length > 0) {
             const adaPesananBaru = currentIds.some(id => !lastOrderIds.includes(id));
             if (adaPesananBaru && audioAktif) {
@@ -160,23 +328,39 @@ function loadPesanan() {
         }
         
         lastOrderIds = currentIds;
-        renderPesanan(listData);
+        renderPesanan(globalPesananData);
     })
     .catch(err => {
         console.error("Error Fetch:", err);
     });
 }
 
-// 3. Render Kartu Pesanan ke Layar Monitor
+function filterPesanan() {
+    renderPesanan(globalPesananData);
+}
+
 function renderPesanan(data) {
     const container = document.getElementById('container-monitor');
     if (!container) return;
 
-    // Filter agar pesanan yang sudah berstatus 'selesai' atau 'dibatalkan' tidak muncul lagi di monitor utama
-    const dataAktif = data.filter(p => p.statusDapur !== 'selesai' && p.statusDapur !== 'dibatalkan');
+    const keyword = document.getElementById('input-pencarian').value.toLowerCase();
+
+    // Filter berdasarkan status aktif dan kata kunci pencarian (ID / Nama / Meja)
+    const dataAktif = data.filter(p => {
+        const notFinished = p.statusDapur !== 'selesai' && p.statusDapur !== 'dibatalkan';
+        if (!notFinished) return false;
+
+        if (!keyword) return true;
+
+        const idStr = String(p.id || '').toLowerCase();
+        const namaStr = String(p.nama || '').toLowerCase();
+        const mejaStr = String(p.meja || '').toLowerCase();
+
+        return idStr.includes(keyword) || namaStr.includes(keyword) || mejaStr.includes(keyword);
+    });
 
     if (dataAktif.length === 0) {
-        container.innerHTML = "<p>Belum ada pesanan aktif.</p>";
+        container.innerHTML = "<p style='color: var(--text-secondary); font-style: italic;'>Tidak ada pesanan aktif yang cocok dengan pencarian.</p>";
         return;
     }
 
@@ -192,7 +376,6 @@ function renderPesanan(data) {
         let metode = (p.metodePembayaran) ? p.metodePembayaran.toUpperCase() : 'TUNAI'; 
         let warnaMetode = (metode === 'DIGITAL') ? '#3498db' : '#f39c12';
         
-        // Pengelompokan Tombol Aksi agar tidak menumpuk
         let tombolAksi = '';
 
         if (status === 'menunggu') {
@@ -219,7 +402,6 @@ function renderPesanan(data) {
                     `;
                 }
             } else {
-                // Jika sudah disajikan dan sudah lunas, tampilkan tombol cetak struk & tombol Selesai/Arsip agar hilang dari monitor & masuk laporan
                 tombolAksi = `
                     <button onclick="cetakStruk(${p.id}, '${p.meja}', '${p.nama || 'Pelanggan'}', ${JSON.stringify(items).replace(/"/g, '&quot;')}, ${totalHarga}, '${metode}')" style="background:#27ae60;">🖨️ CETAK STRUK</button>
                     <button onclick="selesaikanPesanan(${p.id})" style="background:#8e44ad;">✅ SELESAI & MASUK LAPORAN</button>
@@ -229,21 +411,22 @@ function renderPesanan(data) {
 
         return `
             <div class="card status-${status}">
-                <div style="border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 10px;">
-                    <b>#${p.id} - ${p.nama || 'Pelanggan'}</b> | Meja: ${p.meja || '-'}
+                <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 10px; font-weight: 600;">
+                    <span style="color: var(--accent-primary);">#${p.id}</span> - ${p.nama || 'Pelanggan'} | Meja: ${p.meja || '-'}
                 </div>
                 <ul>${items.map(i => `<li>${i.nama} <b>x${i.jumlah}</b></li>`).join('')}</ul>
-                <div style="font-size: 0.9em;">
-                    <p>Total: <b>Rp ${totalHarga.toLocaleString('id-ID')}</b></p>
-                    <p>Bayar: <b style="color:${warnaMetode}">${metode}</b> | Status: <b>${isLunas ? 'LUNAS' : 'BELUM BAYAR'}</b></p>
+                <div style="font-size: 0.9em; margin-top: 12px; border-top: 1px solid var(--glass-border); padding-top: 10px;">
+                    <p style="margin: 4px 0;">Total: <b style="color: #34d399;">Rp ${totalHarga.toLocaleString('id-ID')}</b></p>
+                    <p style="margin: 4px 0;">Bayar: <b style="color:${warnaMetode}">${metode}</b> | Status: <b>${isLunas ? 'LUNAS' : 'BELUM BAYAR'}</b></p>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:5px; margin-top:10px;">
+                <div style="display:flex; flex-direction:column; gap:5px; margin-top:12px;">
                     <button onclick="cetakDapur(${p.id}, '${p.meja}', '${p.nama || 'Pelanggan'}', ${JSON.stringify(items).replace(/"/g, '&quot;')})" style="background:#e67e22; font-size:0.85em;">🖨️ CETAK RESEP DAPUR</button>
                     ${tombolAksi}
                 </div>
             </div>`;
     }).join('');
 }
+
 async function selesaikanPesanan(id) {
     const token = localStorage.getItem('authKey');
     try {
@@ -261,6 +444,7 @@ async function selesaikanPesanan(id) {
         console.error("Error penyelesaian:", err);
     }
 }
+
 async function batalkanPesanan(id) {
     if (!confirm("Yakin ingin membatalkan pesanan ini?")) return;
     const token = localStorage.getItem('authKey');
@@ -279,7 +463,7 @@ async function batalkanPesanan(id) {
         console.error("Error pembatalan:", err);
     }
 }
-// 4. Fungsi Modal & Aksi Tombol
+
 function bukaModal(id, total) {
     currentPesanan = { id, total };
     document.getElementById('total-harga-display').innerText = total.toLocaleString('id-ID');
@@ -326,7 +510,6 @@ async function updateStatus(id, statusDapur, pesananData, mejaPelanggan, namaPel
         });
 
         if (response.ok) {
-            // JIKA AUTO PRINT AKTIF (angka 1 di database) DAN status diubah ke 'diproses' (Proses Masak)
             if (restoPrinterConfig.auto_print == 1 && statusDapur === 'diproses') {
                 cetakDapur(id, mejaPelanggan, namaPelanggan, pesananData);
             }
@@ -339,18 +522,19 @@ async function updateStatus(id, statusDapur, pesananData, mejaPelanggan, namaPel
     }
 }
 
-// 5. Jalankan Auto-Refresh setiap 3 detik
 setInterval(loadPesanan, 3000);
 loadPesanan();
+loadPrinterConfig();
 </script>
-<div id="modal-bayar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000;">
-    <div style="background:#1e1e1e; width:300px; margin:100px auto; padding:20px; border-radius:10px; text-align:center;">
-        <h3>Konfirmasi Pembayaran</h3>
-        <p>Total: <span id="total-harga-display">0</span></p>
-        <input type="number" id="input-uang" placeholder="Masukkan jumlah uang (jika tunai)" style="width:90%; padding:8px; margin-bottom:10px;">
+
+<div id="modal-bayar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; backdrop-filter: blur(5px);">
+    <div style="background:#1e1e1e; width:320px; margin:120px auto; padding:25px; border-radius:18px; text-align:center; border: 1px solid var(--glass-border); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+        <h3 style="color: white; margin-top: 0;">Konfirmasi Pembayaran</h3>
+        <p style="color: var(--text-secondary);">Total: <span id="total-harga-display" style="color: #34d399; font-weight: bold;">0</span></p>
+        <input type="number" id="input-uang" placeholder="Masukkan jumlah uang (tunai)" style="width:100%; padding:10px; margin-bottom:15px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 10px; color: white;">
         <div style="display:flex; gap:10px;">
-            <button onclick="prosesBayar('tunai')" style="background:#f39c12;">TUNAI</button>
-            <button onclick="prosesBayar('digital')" style="background:#3498db;">DIGITAL</button>
+            <button onclick="prosesBayar('tunai')" style="background:#f39c12; margin:0;">TUNAI</button>
+            <button onclick="prosesBayar('digital')" style="background:#3498db; margin:0;">DIGITAL</button>
         </div>
         <button onclick="document.getElementById('modal-bayar').style.display='none'" style="background:#e74c3c; margin-top:10px;">BATAL</button>
     </div>

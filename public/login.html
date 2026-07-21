@@ -4,9 +4,84 @@
     <meta charset="UTF-8">
     <title>Login Resto</title>
     <style>
-        .login-box { margin: 50px auto; width: 300px; text-align: center; font-family: sans-serif; }
-        input { padding: 10px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
-        button { padding: 10px 20px; cursor: pointer; width: 100%; background: #764ba2; color: white; border: none; border-radius: 5px; }
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --glass-card: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-primary);
+        }
+
+        .login-box { 
+            margin: auto; 
+            width: 320px; 
+            text-align: center; 
+            background: var(--glass-card); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        } 
+
+        input { 
+            padding: 12px; 
+            width: 100%; 
+            margin-bottom: 15px; 
+            box-sizing: border-box; 
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            outline: none;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        button { 
+            padding: 12px 20px; 
+            cursor: pointer; 
+            width: 100%; 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: 600;
+            font-family: 'Segoe UI', sans-serif;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        h2 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .footer-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -16,50 +91,51 @@
         <input type="text" id="username" placeholder="Username Resto">
         <input type="password" id="password" placeholder="Password">
         <button onclick="login()">Masuk</button>
+        <div class="footer-text">kompas digital</div>
     </div>
 
     <script>
-  async function login() {
-    const user = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
+    async function login() {
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
 
-    try {
-        const response = await fetch('/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: user, password: pass })
-        });
+        try {
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            });
 
-        // Membaca hasil dari server
-        const data = await response.json();
+            // Membaca hasil dari server
+            const data = await response.json();
 
-    if (response.ok) {
-    // Simpan data jika berhasil
-    localStorage.setItem('authKey', data.token || "");
-    localStorage.setItem('token', data.token || "");
-    localStorage.setItem('userRole', data.role || 'admin');
+        if (response.ok) {
+            // Simpan data jika berhasil
+            localStorage.setItem('authKey', data.token || "");
+            localStorage.setItem('token', data.token || "");
+            localStorage.setItem('userRole', data.role || 'admin');
 
-    // Menyimpan restoId
-    if (data.restoId) {
-        localStorage.setItem('restoId', data.restoId);
-    }
-    
-    // TAMBAHKAN INI: Menyimpan nama resto dari backend
-    if (data.namaResto) {
-        localStorage.setItem('namaResto', data.namaResto);
-    }
-    
-    // Redirect ke dashboard
-    window.location.href = '/resto/page/dashboard';
-} else {
-            // Tampilkan error dari server jika login gagal
-            alert(data.message || "Login Gagal");
+            // Menyimpan restoId
+            if (data.restoId) {
+                localStorage.setItem('restoId', data.restoId);
+            }
+            
+            // TAMBAHKAN INI: Menyimpan nama resto dari backend
+            if (data.namaResto) {
+                localStorage.setItem('namaResto', data.namaResto);
+            }
+            
+            // Redirect ke dashboard
+            window.location.href = '/resto/page/dashboard';
+        } else {
+                // Tampilkan error dari server jika login gagal
+                alert(data.message || "Login Gagal");
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Terjadi kesalahan koneksi. Pastikan server aktif.');
         }
-    } catch (error) {
-        console.error(error);
-        alert('Terjadi kesalahan koneksi. Pastikan server aktif.');
     }
-}
    </script>
 </body>
 </html>

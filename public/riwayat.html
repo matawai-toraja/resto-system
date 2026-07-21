@@ -233,60 +233,74 @@
 
     <!-- Tombol Aksi Navigasi & Reset -->
     <div class="action-container">
-        <a href="kasir-monitor.html" class="btn btn-back">← Kembali ke Monitor Kasir</a>
+       
         <button class="btn btn-reset" onclick="konfirmasiReset()">🗑️ Bersihkan Database Riwayat</button>
     </div>
 </div>
 
 <script>
-    const restoId = localStorage.getItem('restoId');
-    const token = localStorage.getItem('token');
+    document.addEventListener("DOMContentLoaded", async () => {
+        const restoId = localStorage.getItem('restoId');
+        const token = localStorage.getItem('token');
 
-    // Fungsi Inisialisasi & Verifikasi Akses Karyawan
-    async function initRiwayat() {
         if (!restoId) {
             alert("Resto ID tidak ditemukan. Silakan login ulang.");
             window.location.href = '/resto/page/dashboard';
             return;
         }
 
-        if (sessionStorage.getItem('aksesRiwayat_' + restoId) === 'true') {
-            updateRiwayat(); 
-            return;
-        }
+        // Kunci session yang konsisten menggunakan ID restoran yang aktif
+        const sessionKey = 'sudahLoginRiwayat_' + restoId;
+        const statusLogin = sessionStorage.getItem(sessionKey);
 
-        const password = prompt("Masukkan Password Khusus Karyawan:");
-        if (!password) {
-            window.location.href = 'kasir-monitor.html';
-            return;
-        }
-
-        try {
-            const res = await fetch('/resto/verifikasi-karyawan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: password, restoId: restoId })
-            });
-
-            if (res.ok) {
-                sessionStorage.setItem('aksesRiwayat_' + restoId, 'true');
-                updateRiwayat();
-            } else {
-                alert("Password Salah!");
-                window.location.href = 'kasir-monitor.html';
+        // Jika belum terverifikasi di sesi ini, tanyakan password sekali saja
+        if (statusLogin !== 'true') {
+            const password = prompt("Masukkan Password Khusus Karyawan:");
+            
+            // Jika tombol Cancel / batal ditekan, kembalikan ke dashboard admin, bukan ke monitor kasir
+            if (!password) {
+                window.location.href = 'dashboard.html'; 
+                return;
             }
-        } catch (err) {
-            console.error("Gagal verifikasi:", err);
-            alert("Gagal terhubung ke server.");
-        }
-    }
 
-    // Fungsi Mengambil Data Riwayat dari Backend
-   function updateRiwayat() {
+            try {
+                const res = await fetch('/resto/verifikasi-karyawan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: password, restoId: restoId })
+                });
+
+                if (res.ok) {
+                    sessionStorage.setItem(sessionKey, 'true');
+                } else {
+                    alert("Password Salah!");
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+            } catch (err) {
+                console.error("Gagal verifikasi:", err);
+                alert("Gagal terhubung ke server.");
+                window.location.href = 'dashboard.html';
+                return;
+            }
+        }
+
+        // Jika sudah lolos, muat data riwayat
+        muatDataRiwayat(restoId, token);
+    });
+
+    function muatDataRiwayat(restoId, token) {
         fetch(`/resto/kasir/riwayat?restoId=${restoId}`, {
             headers: { 'Authorization': 'Bearer ' + token }
         })
-        .then(res => res.json())
+        .then(async res => {
+            const text = await res.text();
+            try {
+                return text ? JSON.parse(text) : [];
+            } catch (e) {
+                throw new Error("Format respons server tidak valid.");
+            }
+        })
         .then(data => {
             const tbody = document.getElementById('daftar-riwayat');
             const totalBox = document.getElementById('total-pendapatan');
@@ -316,9 +330,12 @@
             document.getElementById('daftar-riwayat').innerHTML = '<tr><td colspan="4" style="text-align:center; color: #fca5a5;">Gagal memuat data dari server.</td></tr>';
         });
     }
-    // Fungsi Tombol Bersihkan / Reset Data Agar Server Tidak Berat
+
     function konfirmasiReset() {
-        if (confirm("Peringatan: Yakin ingin menghapus SEMUA data riwayat transaksi resto ini dari database? Tindakan ini tidak dapat dibatalkan!")) {
+        const restoId = localStorage.getItem('restoId');
+        const token = localStorage.getItem('token');
+
+        if (confirm("Peringatan: Yakin ingin menghapus SEMUA data riwayat transaksi resto ini dari database?")) {
             fetch('/resto/kasir/reset-data', { 
                 method: 'POST',
                 headers: { 
@@ -338,9 +355,6 @@
             .catch(err => console.error("Error saat reset:", err));
         }
     }
-
-    // Jalankan inisialisasi
-    initRiwayat();
 </script>
 </body>
 </html>

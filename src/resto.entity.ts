@@ -17,7 +17,8 @@ export class Resto {
 
   @Column({ nullable: true })
   nomorWa: string;
-
+@Column({ nullable: true })
+tokenUnik: string;
 @Column({ type: 'decimal', precision: 10, scale: 8, nullable: true })
 latitude: number;
 

@@ -15,6 +15,7 @@ import { AuthGuard } from './auth.guard';
 import { PaymentService } from './PaymentService';
 import * as crypto from 'crypto';
 import { DataSource } from 'typeorm';
+import * as fs from 'fs';
 
 @Controller('resto')
 export class AppController {
@@ -34,7 +35,76 @@ export class AppController {
     if (!id || isNaN(restoId)) throw new BadRequestException("restoId wajib diisi dan harus berupa angka");
     return restoId;
   }
-  
+
+  @Get('by-token')
+  async getRestoByToken(@Query('token') token: string) {
+    if (!token) {
+      throw new HttpException('Token tidak ditemukan', HttpStatus.BAD_REQUEST);
+    }
+    
+    const resto = await this.restoRepo.findOne({ 
+      where: [
+        { tokenUnik: token },
+        { username: token }
+      ] 
+    });
+
+    if (!resto) {
+      throw new HttpException('Resto tidak ditemukan', HttpStatus.NOT_FOUND);
+    }
+    
+    return { restoId: resto.id, namaResto: resto.namaResto };
+  }
+  @Get('get-token-unik')
+  async getTokenUnikResto(@Query('restoId') restoId: number) {
+    const resto = await this.restoRepo.findOne({ where: { id: Number(restoId) } });
+    if (!resto) {
+      return { tokenUnik: null };
+    }
+    return { tokenUnik: resto.tokenUnik };
+  }
+
+  // --- LOGIKA MULTI-TENANT OTOMATIS PADA HALAMAN UTAMA ---
+ @Get()
+  async getMenuByToken(@Query('token') token: string, @Res() res: Response) {
+    if (!token) {
+      return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif;'>Link menu tidak valid atau kedaluwarsa.</h2>");
+    }
+    
+    const resto = await this.restoRepo.findOne({ 
+      where: [
+        { tokenUnik: token },
+        { username: token }
+      ] 
+    });
+
+    if (!resto) {
+      return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif;'>Link menu tidak valid atau kedaluwarsa.</h2>");
+    }
+    
+    const filePath = join(process.cwd(), 'public', 'index.html');
+    let htmlContent = fs.readFileSync(filePath, 'utf8');
+
+    const injectedScript = `
+      <script>
+        window.dynamicRestoId = ${resto.id};
+        window.dynamicNamaResto = "${resto.namaResto || 'Restoran'}";
+      </script>
+    `;
+    
+    htmlContent = htmlContent.replace('</head>', injectedScript + '</head>');
+    return res.send(htmlContent);
+  }
+
+  @Get('resto/detail-token')
+  async getRestoToken(@Query('restoId') restoId: number) {
+    const resto = await this.restoRepo.findOne({ where: { id: Number(restoId) } });
+    if (!resto) {
+      throw new HttpException('Resto tidak ditemukan', HttpStatus.NOT_FOUND);
+    }
+    return { tokenUnik: resto.tokenUnik };
+  }
+
   @Get('menu-pelanggan') getMenuPelanggan(@Res() res: Response) { return res.sendFile(join(process.cwd(), 'public', 'index.html')); }
   @Get('page/login') getLoginPage(@Res() res: Response) { return res.sendFile(join(process.cwd(), 'public', 'login.html')); }
   @Get('page/register') getRegisterPage(@Res() res: Response) { return res.sendFile(join(process.cwd(), 'public', 'register.html')); }
@@ -60,10 +130,12 @@ export class AppController {
     if (!file) throw new BadRequestException("Gambar harus diunggah!");
     return await this.menuRepo.save({ ...data, harga: parseInt(data.harga), stok: parseInt(data.stok), gambar: '/uploads/' + file.filename, restoId: this.validateRestoId(data.restoId) });
   }
-@Get('payment/notification')
+
+  @Get('payment/notification')
   testNotification() {
     return { status: 'OK', message: 'Webhook siap menerima notifikasi' };
   }
+
   @Post('hapus-menu')
   async hapusMenu(@Body() data: { id: number }) { await this.menuRepo.delete(data.id); return { status: "Menu Dihapus" }; }
 
@@ -118,18 +190,16 @@ export class AppController {
     });
   }
 
-@Post('notification')
-async receiveNotification(@Body() body: any) {
-  return await this.paymentService.handleNotification(body);
-}
-@Get('kasir/cek-status-pesanan')
+  @Post('notification')
+  async receiveNotification(@Body() body: any) {
+    return await this.paymentService.handleNotification(body);
+  }
+
+  @Get('kasir/cek-status-pesanan')
   async cekStatusPesanan(@Query('restoId') restoId: string) {
     const rId = this.validateRestoId(restoId);
     const semuaPesanan = await this.pesananRepo.find({ where: { restoId: rId } });
     
-    // Saat di-hosting, sistem menyaring secara otomatis:
-    // - Metode 'tunai' langsung masuk monitor.
-    // - Metode 'digital' HANYA masuk monitor jika status pembayarannya sudah 'lunas'.
     return semuaPesanan.filter(p => {
       if (p.metodePembayaran === 'tunai') return true;
       if (p.metodePembayaran === 'digital' && p.statusPembayaran === 'lunas') return true;
@@ -232,7 +302,7 @@ async receiveNotification(@Body() body: any) {
     return await this.restoRepo.update(Number(body.restoId), { nomorWa: body.nomor });
   }
 
-@Post('midtrans-callback')
+  @Post('midtrans-callback')
   async handleMidtransCallback(@Body() notification: any) {
     const { order_id, status_code, gross_amount, signature_key, transaction_status } = notification;
 
@@ -261,20 +331,20 @@ async receiveNotification(@Body() body: any) {
       throw new HttpException('Tanda tangan enkripsi tidak cocok! Akses ditolak.', HttpStatus.UNAUTHORIZED);
     }
 
-    // PASANG POTONGAN KODE TERSEBUT DI SINI:
     if (transaction_status === 'settlement' || transaction_status === 'capture') {
       await this.pesananRepo.update(pesanan.id, { 
         statusPembayaran: 'lunas',
-        status: 'pending' // Ubah status agar sah muncul di monitor kasir & dapur
+        status: 'pending' 
       }); 
       return { status: 'success', message: 'Pembayaran terverifikasi' };
     } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
       await this.pesananRepo.update(pesanan.id, { statusPembayaran: 'gagal' });
-      return { status: 'failed', mfessage: 'Transaksi dibatalkan/kadaluwarsa' };
+      return { status: 'failed', message: 'Transaksi dibatalkan/kadaluwarsa' };
     }
 
     return { status: 'pending' };
   }
+
   @Get('/menu/resto/wa')
   async getWa(@Query('restoId') restoId: number) {
     const resto = await this.restoRepo.findOne({ where: { id: restoId } });
