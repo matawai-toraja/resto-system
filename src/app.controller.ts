@@ -60,7 +60,10 @@ export class AppController {
     if (!file) throw new BadRequestException("Gambar harus diunggah!");
     return await this.menuRepo.save({ ...data, harga: parseInt(data.harga), stok: parseInt(data.stok), gambar: '/uploads/' + file.filename, restoId: this.validateRestoId(data.restoId) });
   }
-
+@Get('payment/notification')
+  testNotification() {
+    return { status: 'OK', message: 'Webhook siap menerima notifikasi' };
+  }
   @Post('hapus-menu')
   async hapusMenu(@Body() data: { id: number }) { await this.menuRepo.delete(data.id); return { status: "Menu Dihapus" }; }
 
