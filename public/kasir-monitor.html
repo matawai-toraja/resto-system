@@ -237,58 +237,108 @@ function cetakStruk(id, meja, nama, pesananStr, total, metode) {
     let items = [];
     try { items = typeof pesananStr === 'string' ? JSON.parse(pesananStr) : pesananStr; } catch(e) {}
     
-    let printWindow = window.open('', '_blank', 'width=400,height=600');
+    let printWindow = window.open('', '_blank', 'width=300,height=500');
     printWindow.document.write(`
         <html>
-        <head><title>Struk Pembayaran #${id}</title></head>
-        <body style="font-family: monospace; padding: 15px; font-size: 12px; color: #000;">
+        <head>
+            <title>Struk Pembayaran #${id}</title>
+            <style>
+                @page { size: 58mm auto; margin: 0; }
+                body {
+                    font-family: monospace;
+                    font-size: 11px;
+                    width: 54mm;
+                    margin: 0 auto;
+                    padding: 5px;
+                    color: #000;
+                }
+                h3 { text-align: center; margin-bottom: 2px; }
+                p { margin: 3px 0; }
+                hr { border: 0.5px dashed #000; margin: 6px 0; }
+                ul { padding-left: 0; list-style: none; margin: 5px 0; }
+                li { margin-bottom: 6px; }
+                .flex { display: flex; justify-content: space-between; }
+                .catatan { font-size: 10px; font-style: italic; color: #333; }
+            </style>
+        </head>
+        <body>
             <h3 style="text-align:center; margin-bottom:2px;">${displayNamaResto}</h3>
             <p style="text-align:center; margin-top:0; font-size: 10px;">Struk Pembayaran Resmi</p>
-            <hr style="border: 0.5px dashed #000;">
+            <hr>
             <p><b>Order ID:</b> #${id}<br><b>Meja:</b> ${meja}<br><b>Pelanggan:</b> ${nama}<br><b>Metode:</b> ${metode}</p>
-            <hr style="border: 0.5px dashed #000;">
-            <ul style="padding-left: 0; list-style: none;">
-                ${items.map(i => `<li style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                    <span>${i.nama} x${i.jumlah}</span>
-                    <span>Rp ${(Number(i.harga || 0) * Number(i.jumlah || 1)).toLocaleString('id-ID')}</span>
-                </li>`).join('')}
-            </ul>
-            <hr style="border: 0.5px dashed #000;">
-            <p style="font-size: 14px; text-align: right;"><b>Total: Rp ${Number(total).toLocaleString('id-ID')}</b></p>
-            <hr style="border: 0.5px dashed #000;">
-            <p style="text-align:center; margin-top:15px; font-size: 11px;">Terima Kasih Atas Kunjungan Anda!</p>
-            <script>window.print(); setTimeout(() => window.close(), 500);<\/script>
+            <hr>
+          <ul>
+    ${items.map(i => `
+        <li>
+            ${i.nama} x${i.jumlah} - Rp ${(i.harga * i.jumlah).toLocaleString('id-ID')}
+        </li>
+    `).join('')}
+</ul>
+            <hr>
+            <p style="font-size: 13px; text-align: right;"><b>Total: Rp ${Number(total).toLocaleString('id-ID')}</b></p>
+            <hr>
+            <p style="text-align:center; margin-top:10px; font-size: 10px;">Terima Kasih Atas Kunjungan Anda!</p>
+            <script>window.onload = function() { window.print(); setTimeout(() => window.close(), 500); };<\/script>
         </body>
         </html>
     `);
     printWindow.document.close();
 }
-
 function cetakDapur(id, meja, nama, pesananStr) {
     let items = [];
     try { items = typeof pesananStr === 'string' ? JSON.parse(pesananStr) : pesananStr; } catch(e) {}
     
-    let printWindow = window.open('', '_blank', 'width=400,height=600');
+    let printWindow = window.open('', '_blank', 'width=300,height=500');
     
     printWindow.document.write(`
         <html>
-        <head><title>Struk Dapur #${id}</title></head>
-        <body style="font-family: monospace; padding: 10px;">
-            <h3 style="text-align:center; margin-bottom:5px;">RESEP DAPUR</h3>
+        <head>
+            <title>Struk Dapur #${id}</title>
+            <style>
+                @page {
+                    size: 58mm auto; /* Ubah ke 80mm auto jika menggunakan kertas thermal 80mm */
+                    margin: 0;
+                }
+                body {
+                    font-family: 'Courier New', monospace;
+                    font-size: 11px;
+                    width: 54mm; /* Sesuaikan dengan lebar efektif kertas */
+                    margin: 0 auto;
+                    padding: 5px;
+                    color: #000;
+                }
+                h3 { text-align: center; margin: 0 0 5px 0; font-size: 13px; }
+                p { margin: 3px 0; }
+                ul { padding-left: 12px; margin: 5px 0; }
+                li { margin-bottom: 5px; }
+                hr { border: none; border-top: 1px dashed #000; margin: 5px 0; }
+            </style>
+        </head>
+        <body>
+            <h3>RESEP DAPUR</h3>
             <p><b>Order ID:</b> #${id}<br><b>Meja:</b> ${meja}<br><b>Pemesan:</b> ${nama}</p>
             <hr>
-            <ul style="padding-left: 15px;">
-                ${items.map(i => `<li><b>${i.nama}</b> (x${i.jumlah})</li>`).join('')}
+            <ul>
+                ${items.map(i => `
+                    <li>
+                        <b>${i.nama}</b> (x${i.jumlah})
+                        ${i.catatan ? `<br><span style="font-style: italic;">Catatan: ${i.catatan}</span>` : ''}
+                    </li>
+                `).join('')}
             </ul>
             <hr>
-            <p style="text-align:center; font-size:0.8em;">Harap Segera Disiapkan!</p>
-            <script>window.print(); setTimeout(() => window.close(), 500);<\/script>
+            <p style="text-align:center; font-size:10px;">Harap Segera Disiapkan!</p>
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(() => window.close(), 500);
+                }
+            <\/script>
         </body>
         </html>
     `);
     printWindow.document.close();
 }
-
 function loadPesanan() {
     const token = localStorage.getItem('authKey');
     const restoId = localStorage.getItem('restoId');
@@ -345,7 +395,6 @@ function renderPesanan(data) {
 
     const keyword = document.getElementById('input-pencarian').value.toLowerCase();
 
-    // Filter berdasarkan status aktif dan kata kunci pencarian (ID / Nama / Meja)
     const dataAktif = data.filter(p => {
         const notFinished = p.statusDapur !== 'selesai' && p.statusDapur !== 'dibatalkan';
         if (!notFinished) return false;
@@ -375,12 +424,47 @@ function renderPesanan(data) {
         let totalHarga = items.reduce((sum, i) => sum + (Number(i.harga || 0) * Number(i.jumlah || 1)), 0);
         let metode = (p.metodePembayaran) ? p.metodePembayaran.toUpperCase() : 'TUNAI'; 
         let warnaMetode = (metode === 'DIGITAL') ? '#3498db' : '#f39c12';
+
+        // --- PARSING DATA GABUNGAN DARI INDEX.HTML ---
+        let rawNama = p.nama || 'Pelanggan';
+        let namaBersih = rawNama;
+        let extractedWa = '';
+        let extractedArea = '';
+        let extractedTipe = '';
+
+        // Mengambil No WA dari format [WA: ...]
+        let matchWa = rawNama.match(/\[WA:\s*([^\]]+)\]/);
+        if (matchWa) {
+            extractedWa = matchWa[1].trim();
+        }
+
+        // Mengambil Area dari format [Area: ...]
+        let matchArea = rawNama.match(/\[Area:\s*([^\]]+)\]/);
+        if (matchArea) {
+            extractedArea = matchArea[1].trim();
+        }
+
+        // Mengambil Tipe Pesanan dari format [Makan Disini] atau [Bungkus]
+        let matchTipe = rawNama.match(/\[(Makan Disini|Bungkus)\]/i);
+        if (matchTipe) {
+            extractedTipe = matchTipe[1].trim();
+        }
+
+        // Membersihkan nama dari teks tambahan di belakangnya
+        namaBersih = rawNama.replace(/\[WA:.*?\]/g, '').replace(/\[Area:.*?\]/g, '').replace(/\[(Makan Disini|Bungkus)\]/gi, '').trim();
+       let cleanWaNum = extractedWa !== '-' ? extractedWa.replace(/[^0-9]/g, '') : '';
         
+        // Ubah format nomor dari 08... menjadi 628... agar langsung dibaca oleh WhatsApp Web
+        if (cleanWaNum.startsWith('0')) {
+            cleanWaNum = '62' + cleanWaNum.substring(1);
+        }
+        // ---------------------------------------------
+
         let tombolAksi = '';
 
         if (status === 'menunggu') {
             tombolAksi = `
-                <button onclick="updateStatus(${p.id}, 'diproses', ${JSON.stringify(items).replace(/"/g, '&quot;')}, '${p.meja}', '${p.nama || 'Pelanggan'}')" style="background:#3498db;">PROSES MASAK</button>
+                <button onclick="updateStatus(${p.id}, 'diproses', ${JSON.stringify(items).replace(/"/g, '&quot;')}, '${p.meja}', '${namaBersih}')" style="background:#3498db;">PROSES MASAK</button>
                 <button onclick="batalkanPesanan(${p.id})" style="background:#e74c3c;">BATALKAN</button>
             `;
         } else if (status === 'diproses') {
@@ -403,7 +487,7 @@ function renderPesanan(data) {
                 }
             } else {
                 tombolAksi = `
-                    <button onclick="cetakStruk(${p.id}, '${p.meja}', '${p.nama || 'Pelanggan'}', ${JSON.stringify(items).replace(/"/g, '&quot;')}, ${totalHarga}, '${metode}')" style="background:#27ae60;">🖨️ CETAK STRUK</button>
+                    <button onclick="cetakStruk(${p.id}, '${p.meja}', '${namaBersih}', ${JSON.stringify(items).replace(/"/g, '&quot;')}, ${totalHarga}, '${metode}')" style="background:#27ae60;">🖨️ CETAK STRUK</button>
                     <button onclick="selesaikanPesanan(${p.id})" style="background:#8e44ad;">✅ SELESAI & MASUK LAPORAN</button>
                 `;
             }
@@ -411,22 +495,33 @@ function renderPesanan(data) {
 
         return `
             <div class="card status-${status}">
-                <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 10px; font-weight: 600;">
-                    <span style="color: var(--accent-primary);">#${p.id}</span> - ${p.nama || 'Pelanggan'} | Meja: ${p.meja || '-'}
+                <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 10px; font-size: 13px; line-height: 1.4;">
+                    <span style="color: var(--accent-primary); font-weight: bold;">#${p.id}</span> - <span style="font-weight: 600;">${namaBersih}</span>
+                   ${cleanWaNum ? `(<a href="https://web.whatsapp.com/send?phone=${cleanWaNum}" target="_blank" style="color: #60a5fa; text-decoration: underline;" title="Chat WhatsApp">WA: ${extractedWa}</a>)` : ''}
+                    <br>
+                    <span style="font-size: 11px; opacity: 0.85;">
+                        Area: ${extractedArea || '-'} | Tipe: ${extractedTipe || '-'} | Meja: ${p.meja || '-'}
+                    </span>
                 </div>
-                <ul>${items.map(i => `<li>${i.nama} <b>x${i.jumlah}</b></li>`).join('')}</ul>
+                <ul>
+                    ${items.map(i => `
+                        <li>
+                            ${i.nama} <b>x${i.jumlah}</b>
+                            ${i.catatan ? `<br><small style="color:#f39c12; font-style:italic;">Catatan: ${i.catatan}</small>` : ''}
+                        </li>
+                    `).join('')}
+                </ul>
                 <div style="font-size: 0.9em; margin-top: 12px; border-top: 1px solid var(--glass-border); padding-top: 10px;">
                     <p style="margin: 4px 0;">Total: <b style="color: #34d399;">Rp ${totalHarga.toLocaleString('id-ID')}</b></p>
                     <p style="margin: 4px 0;">Bayar: <b style="color:${warnaMetode}">${metode}</b> | Status: <b>${isLunas ? 'LUNAS' : 'BELUM BAYAR'}</b></p>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:5px; margin-top:12px;">
-                    <button onclick="cetakDapur(${p.id}, '${p.meja}', '${p.nama || 'Pelanggan'}', ${JSON.stringify(items).replace(/"/g, '&quot;')})" style="background:#e67e22; font-size:0.85em;">🖨️ CETAK RESEP DAPUR</button>
+                   <button onclick="cetakDapur(${p.id}, '${p.meja}', '${p.nama.replace(/'/g, "\\'")}', ${JSON.stringify(items).replace(/"/g, '&quot;')})" style="background:#e67e22; font-size:0.85em;">🖨️ CETAK RESEP DAPUR</button>
                     ${tombolAksi}
                 </div>
             </div>`;
     }).join('');
 }
-
 async function selesaikanPesanan(id) {
     const token = localStorage.getItem('authKey');
     try {

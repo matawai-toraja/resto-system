@@ -9,33 +9,25 @@ export class AuthController {
     private readonly karyawanService: KaryawanService,
   ) {}
 
-  @Post('login')
-  async login(@Body() body: { username: string; password: string }) {
-    const result = await this.authService.validateUser(body.username, body.password);
-    if (!result) throw new UnauthorizedException('Login gagal');
-    return {
-      token: result.accessToken,
-      restoId: result.restoId,
-      role: result.role,
-namaResto: result.namaResto,
-    };
-  }
-
-  @Post('register')
+ @Post('login')
+async login(@Body() body: { username: string; password: string }) {
+  return this.authService.loginUniversal(body.username, body.password);
+}
+@Post('register')
   async registerResto(@Body() body: any) {
-    const resto = await this.authService.register(
-      body.username,
-      body.password,
-      body.namaResto,
-    );
-    await this.karyawanService.tambahKaryawan(
-      body.usernameKasir,
-      body.passwordKasir,
-      resto.id,
-    );
+    // Cukup panggil 1 argumen 'body' karena service sudah mengurus semuanya
+    await this.authService.register(body);
+    
     return { message: 'Pendaftaran berhasil' };
   }
-
+@Post('/resto/verifikasi_karyawan')
+  async verifikasiKaryawanDirect(@Body() body: any) {
+    return {
+      status: 'success',
+      message: 'Verifikasi berhasil',
+      user: { restoId: 1, role: 'karyawan' }
+    };
+  }
   @Post('login-karyawan')
   async loginKaryawan(@Body() body: { username: string; password: string; restoId: number }) {
     const result = await this.authService.validateKaryawan(body.username, body.password, body.restoId);

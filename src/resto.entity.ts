@@ -12,6 +12,8 @@ export class Resto {
   @Column({ type: 'varchar', length: 255, nullable: false, unique: true })
   username: string;
 
+@Column({ default: true })
+statusAktif: boolean;
   @Column({ type: 'varchar', length: 255, nullable: false })
   password: string;
 

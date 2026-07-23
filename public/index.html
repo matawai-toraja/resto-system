@@ -9,6 +9,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+@media (max-width: 768px) {
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr); /* Ini yang membuat jadi 2 kolom di HP */
+    }
+    
+    .menu-card img {
+        height: 140px; /* Ubah ke 140px atau 150px agar gambarnya memanjang ke bawah */
+        object-fit: cover;
+    }
+}
+
+.modal-content, #modal-keranjang > div, .modal-dialog {
+    max-height: 85vh;   /* Batasi tinggi maksimal jendela modal */
+    overflow-y: auto;   /* Memunculkan kembali scrollbar utama yang mulus */
+}
         :root {
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
             --glass-bg: rgba(255, 255, 255, 0.03);
@@ -235,12 +250,35 @@
 <div id="modal-keranjang">
     <div class="modal-content">
         <h3 style="margin-top:0; color:var(--text-primary);">Daftar Pesanan Anda</h3>
-        <input type="text" id="nama-modal" placeholder="Nama Anda" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
-        <input type="number" id="meja-modal" placeholder="Nomor Meja" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
+<p style="font-size: 11px; color: rgba(255, 255, 255, 0.65); margin-bottom: 15px; line-height: 1.4;">
+    Demi kelancaran pesanan, mohon isi No WA & Posisi Anda. Beri angka <strong>0</strong> pada nomor meja jika Anda tidak duduk di meja bernomor.
+</p>
+        
+        <!-- Input Nama & No WhatsApp Berjajar -->
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <input type="text" id="nama-modal" placeholder="Nama Anda" style="width:50%; box-sizing:border-box;">
+            <input type="text" id="wa-modal" placeholder="Nomor WhatsApp" style="width:50%; box-sizing:border-box;">
+        </div>
+
+        <!-- Input Nomor Meja & Posisi Area Berjajar -->
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <input type="number" id="meja-modal" placeholder="Nomor Meja" style="width:50%; box-sizing:border-box;">
+            <input type="text" id="posisi-modal" placeholder="Posisi/Area (Cth: Outdoor)" style="width:50%; box-sizing:border-box;">
+        </div>
+
+        <!-- Pilihan Tipe Pesanan (Makan Disini / Bungkus) -->
+        <div style="margin-bottom: 12px; color: var(--text-primary); font-size: 14px; text-align: left; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 12px; border: 1px solid var(--glass-border);">
+            <p style="margin: 0 0 5px 0; font-size: 13px; color: var(--text-secondary);">Tipe Pesanan:</p>
+            <div style="display: flex; gap: 15px;">
+                <label style="cursor:pointer;"><input type="radio" name="tipePesanan" value="Makan Disini" checked> Makan Disini</label>
+                <label style="cursor:pointer;"><input type="radio" name="tipePesanan" value="Bungkus"> Bungkus</label>
+            </div>
+        </div>
+
         <div id="keranjang-list"></div>
         <div id="total-harga" style="font-weight:bold; margin-top:10px; color:var(--text-primary);">Total: Rp 0</div>
         
-        <div id="pilihan-pembayaran" style="margin: 15px 0; color:var(--text-secondary); font-size: 14px;">
+        <div id="pilihan-pembayaran" style="margin: 15px 0; color:var(--text-secondary); font-size: 14px; text-align: left;">
             <p style="margin-bottom: 5px; color:var(--text-primary);">Pilih Metode Pembayaran:</p>
             <label style="cursor:pointer;"><input type="radio" name="metode" value="tunai" checked> Bayar Tunai (di Kasir)</label><br>
             <label style="cursor:pointer;"><input type="radio" name="metode" value="digital"> Bayar Digital (QRIS/Transfer)</label>
@@ -380,28 +418,30 @@ function tambahKeKeranjang(id) {
     renderKeranjang(); 
 }
 
-function renderKeranjang() { 
-    const list = document.getElementById('keranjang-list'); 
-    let total = 0; 
+function renderKeranjang() {  
+    const list = document.getElementById('keranjang-list');  
+    let total = 0;  
     
-    list.innerHTML = keranjang.map((c, idx) => { 
-        total += c.harga * c.jumlah; 
+    list.innerHTML = keranjang.map((c, idx) => {  
+        total += c.harga * c.jumlah;  
         return `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--glass-border); padding-bottom:5px;">
-                <span style="flex:1; color:var(--text-primary); text-align:left;">${c.nama} <br><small style="color:var(--text-secondary);">Rp ${c.harga.toLocaleString()} x ${c.jumlah}</small></span>
-                <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--glass-border); padding-bottom:5px; gap:8px;">
+                <span style="flex:1; color:var(--text-primary); text-align:left; min-width:90px;">${c.nama} <br><small style="color:var(--text-secondary);">Rp ${c.harga.toLocaleString()} x ${c.jumlah}</small></span>
+                
+                <input type="text" placeholder="Catatan..." value="${c.catatan || ''}" oninput="keranjang[${idx}].catatan = this.value" style="flex:1; padding:4px 6px; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:4px; color:var(--text-primary); font-size:11px; outline:none;">
+
+                <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
                     <button onclick="updateJumlah(${idx}, -1)" style="padding:2px 8px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px;">-</button>
                     <span style="color:var(--text-primary);">${c.jumlah}</span>
                     <button onclick="updateJumlah(${idx}, 1)" style="padding:2px 8px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px;">+</button>
                     <button onclick="hapusItem(${idx})" style="padding:2px 8px; cursor:pointer; background:#e74c3c; color:white; border:none; border-radius:4px;">✕</button>
                 </div>
             </div>`;
-    }).join(''); 
+    }).join('');  
     
-    document.getElementById('total-harga').innerText = `Total: Rp ${total.toLocaleString()}`; 
-    document.getElementById('cart-count').textContent = `Keranjang (${keranjang.reduce((a, b) => a + b.jumlah, 0)})`; 
+    document.getElementById('total-harga').innerText = `Total: Rp ${total.toLocaleString()}`;  
+    document.getElementById('cart-count').textContent = `Keranjang (${keranjang.reduce((a, b) => a + b.jumlah, 0)})`;  
 }
-
 function updateJumlah(index, perubahan) {
     keranjang[index].jumlah += perubahan;
     if (keranjang[index].jumlah <= 0) {
@@ -417,21 +457,30 @@ function hapusItem(index) {
 }
 
 function prosesKirimPesanan(event) {
-    const nama = document.getElementById('nama-modal').value;
-    const meja = document.getElementById('meja-modal').value;
+    const namaInput = document.getElementById('nama-modal').value;
+    const noWa = document.getElementById('wa-modal').value;
+    const mejaInput = document.getElementById('meja-modal').value;
+    const posisi = document.getElementById('posisi-modal').value;
+    const tipePesanan = document.querySelector('input[name="tipePesanan"]:checked').value;
     const metodePembayaran = document.querySelector('input[name="metode"]:checked').value;
 
-    if (!nama || !meja) return alert("Isi Nama & Meja!");
+    if (!namaInput || !mejaInput) return alert("Isi Nama & Nomor Meja terlebih dahulu!");
     if (keranjang.length === 0) return alert("Keranjang masih kosong!");
 
     const tombol = event.target;
     tombol.disabled = true;
     tombol.innerText = "Mengirim...";
 
+    // Format aman: Kolom nama di database membawa info tambahan selengkapnya
+    const namaLengkap = `${namaInput} [WA: ${noWa || '-'}] [Area: ${posisi || '-'}] [${tipePesanan}]`;
+    
+    // Pastikan meja dikirim sebagai angka murni agar tidak error di database
+    const nomorMejaBersih = Number(mejaInput);
+
     navigator.geolocation.getCurrentPosition((position) => {
         const payload = {
-            nama, 
-            meja, 
+            nama: namaLengkap, 
+            meja: nomorMejaBersih, 
             pesanan: keranjang, 
             restoId: Number(restoId),
             latPelanggan: position.coords.latitude,
@@ -446,24 +495,32 @@ function prosesKirimPesanan(event) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
-        .then(res => {
-            if (!res.ok) throw new Error("Gagal mengirim pesanan ke server!");
-            return res.json();
-        })
+       .then(async res => {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Gagal mengirim pesanan ke server!");
+    return data;
+})
         .then(data => {
             alert("Pesanan berhasil dibuat!");
             tutupModal();
 
             if (metodePembayaran === 'digital' && data.paymentUrl) {
-                window.location.href = data.paymentUrl; 
+                window.location.href = data.paymentUrl; // Logika Midtrans/QRIS kembali normal!
             } else {
                 const totalText = document.getElementById('total-harga').innerText;
-                const rincianHtml = document.getElementById('keranjang-list').innerHTML;
+                
+                // RENDER HTML KHUSUS HALAMAN SUKSES (Tanpa Kotak Input / Textbox)
+                const rincianHtml = keranjang.map(i => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid var(--glass-border); padding-bottom:4px; font-size:13px; text-align:left;">
+                        <span style="color:var(--text-primary); flex:1;">${i.nama} <br><small style="color:var(--text-secondary);">${i.catatan ? 'Catatan: ' + i.catatan : ''}</small></span>
+                        <span style="color:var(--text-primary); font-weight:bold;">${i.jumlah}</span>
+                    </div>
+                `).join('');
                 
                 const dataSukses = {
                     id: data.id,
-                    nama: nama,
-                    meja: meja,
+                    nama: namaInput,
+                    meja: mejaInput,
                     total: totalText,
                     rincianHtml: rincianHtml
                 };
@@ -488,7 +545,6 @@ function prosesKirimPesanan(event) {
         tombol.innerText = "Kirim Pesanan";
     });
 }
-
 function bukaModal() { document.getElementById('modal-keranjang').style.display = 'flex'; }
 function tutupModal() { document.getElementById('modal-keranjang').style.display = 'none'; }
 

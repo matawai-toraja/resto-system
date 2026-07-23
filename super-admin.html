@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin - Panel Kontrol Multi-Tenant Profesional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-800 pb-4 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                    🛡️ Super Admin Central SaaS
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">Pusat kendali global manajemen multi-tenant, kontrol status akses, dan database resto.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="bukaModalTambah()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg flex items-center gap-2">
+                    ➕ Tambah Resto Baru
+                </button>
+                <button onclick="location.reload()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    🔄 Muat Ulang
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistik Kartu -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
+                <p class="text-sm font-medium text-slate-400">Total Restoran Terdaftar</p>
+                <h3 id="totalTenant" class="text-4xl font-extrabold text-blue-400 mt-2">0</h3>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
+                <p class="text-sm font-medium text-slate-400">Status Infrastruktur Sistem</p>
+                <div class="flex items-center gap-2 mt-3">
+                    <span class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span class="text-emerald-400 font-semibold text-lg">Online & Stabil</span>
+                </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg flex flex-col justify-between">
+                <p class="text-sm font-medium text-slate-400">Keamanan Akses Global</p>
+                <span class="text-xs text-slate-400 mt-2">Super Admin memegang kendali penuh atas suspensi dan penghapusan data tenant.</span>
+            </div>
+        </div>
+
+        <!-- Tabel Daftar Tenant -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl shadow-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-white">Daftar Seluruh Restoran / Tenant</h2>
+                <span class="text-xs bg-blue-950 text-blue-300 px-3 py-1 rounded-full border border-blue-800">Active Database</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
+                            <th class="py-4 px-6">ID</th>
+                            <th class="py-4 px-6">Nama Restoran</th>
+                            <th class="py-4 px-6">Token / Username</th>
+                            <th class="py-4 px-6 text-center">Status Akses</th>
+                            <th class="py-4 px-6 text-center">Aksi Kontrol Super Admin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tenantTableBody" class="divide-y divide-slate-800 text-sm">
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-slate-500">Memuat data dari server...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<div id="modalTambah" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 px-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-4">Registrasi Tenant / Resto Baru</h3>
+            <form id="formTambahTenant" onsubmit="simpanTenantBaru(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Nama Restoran</label>
+                    <input type="text" id="inputNamaResto" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500" placeholder="Contoh: Resto Padang Sederhana">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Username Login Admin Resto</label>
+                    <input type="text" id="inputUsername" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500" placeholder="Contoh: padangsederhana">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Password Login</label>
+                    <input type="password" id="inputPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500" placeholder="••••••••">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Username Kasir</label>
+                    <input type="text" id="usernameKasir" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500" placeholder="Contoh: kasir1">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Password Kasir</label>
+                    <input type="password" id="passwordKasir" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500" placeholder="Password Kasir">
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="tutupModalTambah()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg text-sm font-semibold transition shadow">Simpan Resto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Logika Super Admin -->
+    <script>
+        async function fetchTenants() {
+            try {
+                const res = await fetch('/resto/super-admin/api/all-tenants');
+                const tenants = await res.json();
+                
+                document.getElementById('totalTenant').innerText = tenants.length;
+                const tbody = document.getElementById('tenantTableBody');
+                
+                if (tenants.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500">Belum ada restoran terdaftar.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = tenants.map(t => {
+                    const statusAktif = t.statusAktif !== false; // Default true jika undefined
+                    return `
+                        <tr class="hover:bg-slate-800/50 transition">
+                            <td class="py-4 px-6 font-mono text-slate-400">#${t.id}</td>
+                            <td class="py-4 px-6 font-semibold text-white">${t.namaResto || 'Tanpa Nama'}</td>
+                            <td class="py-4 px-6 font-mono text-xs text-blue-300 truncate max-w-xs">${t.username || t.tokenUnik || '-'}</td>
+                            <td class="py-4 px-6 text-center">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusAktif ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">
+                                    ${statusAktif ? 'Aktif' : 'Non-Aktif'}
+                                </span>
+                            </td>
+                            <td class="py-4 px-6 text-center space-x-1">
+                                <button onclick="masukDashboard(${t.id}, '${t.tokenUnik || ''}')" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow" title="Masuk ke Dashboard Resto">
+                                    🚀 Dashboard
+                                </button>
+                                <button onclick="toggleStatus(${t.id}, '${t.namaResto}')" class="bg-amber-600/80 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow" title="Ubah Status Aktif/Non-Aktif">
+                                    ⚡ ${statusAktif ? 'Nonaktifkan' : 'Aktifkan'}
+                                </button>
+                                <button onclick="hapusTenant(${t.id}, '${t.namaResto}')" class="bg-rose-600/80 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow" title="Hapus Permanen">
+                                    🗑️ Hapus
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error("Gagal memuat tenant:", err);
+                document.getElementById('tenantTableBody').innerHTML = `<tr><td colspan="5" class="text-center py-8 text-rose-500">Gagal terhubung ke database server.</td></tr>`;
+            }
+        }
+
+        function bukaModalTambah() {
+            document.getElementById('modalTambah').classList.remove('hidden');
+            document.getElementById('modalTambah').classList.add('flex');
+        }
+
+        function tutupModalTambah() {
+            document.getElementById('modalTambah').classList.remove('flex');
+            document.getElementById('modalTambah').classList.add('hidden');
+        }
+
+      async function simpanTenantBaru(e) {
+            e.preventDefault();
+            const body = {
+                namaResto: document.getElementById('inputNamaResto').value,
+                username: document.getElementById('inputUsername').value,
+                password: document.getElementById('inputPassword').value,
+                usernameKasir: document.getElementById('usernameKasir').value,
+                passwordKasir: document.getElementById('passwordKasir').value
+            };
+
+            try {
+                const res = await fetch('/resto/super-admin/api/tambah-tenant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const result = await res.json();
+                
+                // Mendukung response objek resto atau objek sukses berformat { success: true, resto: ... }
+                if (result.id || result.success) {
+                    alert('Restoran baru beserta akun kasirnya berhasil didaftarkan!');
+                    tutupModalTambah();
+                    document.getElementById('formTambahTenant').reset();
+                    fetchTenants();
+                } else {
+                    alert('Gagal mendaftarkan restoran.');
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan jaringan.');
+            }
+        }
+        async function toggleStatus(restoId, namaResto) {
+            try {
+                const res = await fetch('/resto/super-admin/api/toggle-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ restoId })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    fetchTenants();
+                }
+            } catch (err) {
+                alert('Gagal mengubah status restoran.');
+            }
+        }
+
+        function masukDashboard(restoId, token) {
+            localStorage.setItem('restoId', restoId);
+            localStorage.setItem('tokenUnik', token);
+            window.open('/resto/page/dashboard?restoId=' + restoId, '_blank');
+        }
+
+        async function hapusTenant(restoId, namaResto) {
+            if (!confirm(`PERINGATAN KERAS!\n\nApakah Anda yakin ingin menghapus resto "${namaResto}" (ID: ${restoId}) beserta seluruh menu, pesanan, dan riwayat transaksinya secara PERMANEN?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/resto/super-admin/api/hapus-tenant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ restoId: String(restoId) })
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    alert('Tenant dan seluruh datanya berhasil dihapus.');
+                    fetchTenants();
+                } else {
+                    alert('Gagal menghapus tenant.');
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan koneksi saat menghapus tenant.');
+            }
+        }
+
+        fetchTenants();
+    </script>
+</body>
+</html>

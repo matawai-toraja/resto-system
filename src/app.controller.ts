@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseInterceptors, UploadedFile, BadRequestException, Query, UseGuards, Res, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, UseInterceptors, UploadedFile, BadRequestException, Query, UseGuards, Res, HttpException, HttpStatus } from '@nestjs/common';
 import type { Response } from 'express';
 import { join, extname } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -15,7 +15,9 @@ import { AuthGuard } from './auth.guard';
 import { PaymentService } from './PaymentService';
 import * as crypto from 'crypto';
 import { DataSource } from 'typeorm';
+import { AuthService } from './auth.service';
 import * as fs from 'fs';
+import * as bcrypt from 'bcrypt';
 
 @Controller('resto')
 export class AppController {
@@ -28,6 +30,7 @@ export class AppController {
     @InjectRepository(Karyawan) private karyawanRepo: Repository<Karyawan>,
     private readonly paymentService: PaymentService,
     private readonly dataSource: DataSource,
+    private readonly authService: AuthService,
   ) {}
 
   private validateRestoId(id: any) {
@@ -36,25 +39,101 @@ export class AppController {
     return restoId;
   }
 
+  // --- HALAMAN & API SUPER ADMIN ---
+  @Get('super-admin')
+  getSuperAdminPage(@Res() res: Response) {
+    return res.sendFile(join(process.cwd(), 'super-admin.html'));
+  }
+
+  @Get('super-admin/api/all-tenants')
+  async getAllTenants() {
+    return await this.restoRepo.find();
+  }
+
+  @Post('super-admin/api/tambah-tenant')
+  async tambahTenantGlobal(@Body() body: { 
+    namaResto: string; 
+    username: string; 
+    password: string; 
+    usernameKasir?: string; 
+    passwordKasir?: string; 
+  }) {
+    try {
+      if (!body.namaResto || !body.username || !body.password) {
+        throw new BadRequestException("Data utama wajib diisi!");
+      }
+
+      // Hash password admin resto secara aman
+      const hashedAdminPassword = await bcrypt.hash(body.password, 10);
+
+      const restoBaru = this.restoRepo.create({
+        namaResto: body.namaResto,
+        username: body.username,
+        password: hashedAdminPassword,
+        statusAktif: true
+      });
+      const savedResto = await this.restoRepo.save(restoBaru);
+
+      // Jika kasir diisi, hash juga password kasirnya
+      if (body.usernameKasir && body.passwordKasir) {
+        const hashedKasirPassword = await bcrypt.hash(body.passwordKasir, 10);
+
+        const kasirBaru = this.karyawanRepo.create({
+          username: body.usernameKasir,
+          password: hashedKasirPassword,
+          restoId: savedResto.id
+        });
+        await this.karyawanRepo.save(kasirBaru);
+      }
+
+      return { success: true, message: "Resto dan kasir berhasil didaftarkan dengan aman" };
+    } catch (error) {
+      console.error("Gagal tambah tenant:", error.message);
+      throw new BadRequestException(error.message || "Gagal mendaftarkan restoran.");
+    }
+  }
+
+  @Post('super-admin/api/toggle-status')
+  async toggleStatusTenant(@Body() body: { restoId: number }) {
+    const rId = this.validateRestoId(body.restoId);
+    const resto = await this.restoRepo.findOne({ where: { id: rId } });
+    if (!resto) throw new HttpException('Resto tidak ditemukan', HttpStatus.NOT_FOUND);
+    
+    resto.statusAktif = resto.statusAktif === false ? true : false;
+    await this.restoRepo.save(resto);
+    return { success: true, statusAktif: resto.statusAktif };
+  }
+
+  @Post('super-admin/api/hapus-tenant')
+  async hapusTenantGlobal(@Body() body: { restoId: any }) {
+    try {
+      const restoId = Number(body.restoId);
+      await this.karyawanRepo.delete({ restoId: restoId });
+      await this.restoRepo.delete(restoId);
+      return { success: true, message: "Tenant berhasil dihapus" };
+    } catch (error) {
+      console.error("Gagal hapus tenant:", error.message);
+      throw new BadRequestException("Gagal menghapus tenant karena kendala relasi database.");
+    }
+  }
+
   @Get('by-token')
   async getRestoByToken(@Query('token') token: string) {
     if (!token) {
       throw new HttpException('Token tidak ditemukan', HttpStatus.BAD_REQUEST);
     }
-    
-    const resto = await this.restoRepo.findOne({ 
+    const resto = await this.restoRepo.findOne({
       where: [
         { tokenUnik: token },
         { username: token }
-      ] 
+      ]
     });
-
     if (!resto) {
       throw new HttpException('Resto tidak ditemukan', HttpStatus.NOT_FOUND);
     }
-    
     return { restoId: resto.id, namaResto: resto.namaResto };
   }
+
   @Get('get-token-unik')
   async getTokenUnikResto(@Query('restoId') restoId: number) {
     const resto = await this.restoRepo.findOne({ where: { id: Number(restoId) } });
@@ -65,7 +144,7 @@ export class AppController {
   }
 
   // --- LOGIKA MULTI-TENANT OTOMATIS PADA HALAMAN UTAMA ---
- @Get()
+  @Get()
   async getMenuByToken(@Query('token') token: string, @Res() res: Response) {
     if (!token) {
       return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif;'>Link menu tidak valid atau kedaluwarsa.</h2>");
@@ -80,6 +159,10 @@ export class AppController {
 
     if (!resto) {
       return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif;'>Link menu tidak valid atau kedaluwarsa.</h2>");
+    }
+
+    if (resto.statusAktif === false) {
+      return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif; color:red;'>Restoran ini sedang dinonaktifkan oleh Administrator.</h2>");
     }
     
     const filePath = join(process.cwd(), 'public', 'index.html');
@@ -149,7 +232,6 @@ export class AppController {
     if (!sessionStart || (waktuSekarang - Number(sessionStart) > 3600000)) {
         throw new HttpException("Sesi telah berakhir atau tidak valid!", HttpStatus.FORBIDDEN);
     }
-
     const restoId = this.validateRestoId(data.restoId);
     const totalBayar = Number(data.totalHarga) || Number(data.total) || 0;
 
@@ -284,13 +366,26 @@ export class AppController {
     return { data: d, totalOmzet: d.reduce((s, r) => s + Number(r.totalBayar), 0) };
   }
 
-  @Post('verifikasi-karyawan')
-  async verifikasiKaryawan(@Body() body: { password: string, restoId: string }) {
-    const karyawan = await this.karyawanRepo.findOne({ where: { password: body.password, restoId: this.validateRestoId(body.restoId) } });
-    if (karyawan) return { status: 'success' };
-    throw new HttpException('Akses Ditolak', HttpStatus.UNAUTHORIZED);
-  }
+@Post('verifikasi_karyawan')
+  async verifikasiKaryawan(@Body() body: { username: string; password: string; restoId: number }) {
+    try {
+      const result = await this.authService.validateKaryawan(body.username || 'kasir', body.password, body.restoId);
+      
+      // Jika validateKaryawan mengembalikan null/false/kosong (password salah)
+      if (!result) {
+        throw new HttpException('Password salah', HttpStatus.UNAUTHORIZED);
+      }
 
+      return {
+        status: 'success',
+        message: 'Verifikasi berhasil',
+        user: result,
+      };
+    } catch (error) {
+      // Wajib melempar status UNAUTHORIZED agar ditangkap oleh frontend sebagai error
+      throw new HttpException('Password salah atau akses ditolak', HttpStatus.UNAUTHORIZED);
+    }
+  }
   @Post('menu/update-location')
   async updateLocation(@Body() body: { restoId: number, lat: number, lon: number }) {
     await this.restoRepo.update(this.validateRestoId(body.restoId), { latitude: body.lat, longitude: body.lon });
@@ -360,6 +455,18 @@ export class AppController {
       return { success: true };
     }
     throw new HttpException('Password lama salah!', HttpStatus.BAD_REQUEST);
+  }
+
+  @Post('update-midtrans')
+  async updateMidtrans(@Body() body: { restoId: any, server_key: string, client_key: string }) {
+    const rId = this.validateRestoId(body.restoId);
+
+    await this.restoRepo.update(rId, {
+      midtransServerKey: body.server_key,
+      midtransClientKey: body.client_key
+    });
+
+    return { status: "Sukses", message: "Kunci Midtrans berhasil diperbarui" };
   }
 
   @UseGuards(AuthGuard) @Post('kasir/reset-data')

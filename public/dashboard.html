@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Resto</title>
+    <title>Dashboard Resto Admin - Profesional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        .hidden { display: none !important; }
         :root {
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
             --glass-card: rgba(255, 255, 255, 0.05);
@@ -13,209 +16,427 @@
             --text-secondary: #94a3b8;
         }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
         body { 
-            font-family: 'Segoe UI', sans-serif; 
             background: var(--bg-gradient); 
             background-attachment: fixed;
             min-height: 100vh; 
             margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            flex-wrap: wrap; 
-            gap: 20px; 
+            display: flex;
             color: var(--text-primary);
+            overflow: hidden;
         }
 
-        .container { 
-            background: var(--glass-card); 
-            padding: 30px; 
-            border-radius: 20px; 
-            backdrop-filter: blur(20px); 
-            border: 1px solid var(--glass-border);
-            text-align: center; 
-            color: var(--text-primary); 
-            width: 300px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        /* SIDEBAR KIRI (RINGKAS & RAPI) */
+        .sidebar {
+            width: 320px;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
         }
+
+        .sidebar-top {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .sidebar-top::-webkit-scrollbar { width: 4px; }
+        .sidebar-top::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        .container-box { 
+            background: var(--glass-card); 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px solid var(--glass-border);
+            margin-bottom: 15px;
+        }
+
+        .container-box h1, .container-box h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 5px;
+        }
+        .container-box h1 { font-size: 16px; text-align: center; }
 
         button { 
-            display: block; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             width: 100%; 
             color: white; 
-            padding: 12px; 
-            margin: 8px 0; 
-            background: rgba(255, 255, 255, 0.1); 
-            border: none; 
-            border-radius: 10px; 
+            padding: 10px 12px; 
+            margin: 6px 0; 
+            background: rgba(255, 255, 255, 0.08); 
+            border: 1px solid var(--glass-border);
+            border-radius: 8px; 
             cursor: pointer; 
             font-weight: 600;
-            transition: background 0.2s;
+            font-size: 13px;
+            transition: all 0.2s;
         }
-
-        button:hover {
-            opacity: 0.9;
-        }
+        button:hover { background: rgba(255, 255, 255, 0.15); }
 
         input { 
             width: 100%; 
-            padding: 10px; 
-            margin: 5px 0; 
-            border-radius: 5px; 
+            padding: 8px 10px; 
+            margin: 4px 0 8px 0; 
+            border-radius: 6px; 
             border: 1px solid var(--glass-border); 
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-primary);
-            box-sizing: border-box; 
+            font-size: 12px;
             outline: none;
         }
+        input[type="text"]#linkMenuSaya { color: #000 !important; font-weight: bold; background: #e2e8f0; }
 
-        input::placeholder {
+        label { color: var(--text-secondary); font-size: 11px; display: block; margin-bottom: 2px; }
+
+        .logout-btn { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3); }
+
+        /* KANAN (AREA KONTEN / IFRAME / HALAMAN PENGATURAN) */
+        .main-content {
+            flex: 1;
+            width: calc(100vw - 320px);
+            height: 100vh;
+            background: #090d16;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #090d16;
+        }
+
+        .welcome-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
             color: var(--text-secondary);
+            text-align: center;
+            padding: 40px;
+        }
+        .welcome-placeholder i { font-size: 64px; color: #334155; margin-bottom: 20px; }
+        .welcome-placeholder h2 { color: var(--text-primary); margin-bottom: 10px; font-size: 22px; }
+
+        /* KONTENEER PENGATURAN YANG AKAN MUNCUL DI SEBELAH KANAN */
+        .settings-container {
+            padding: 30px;
+            height: 100%;
+            overflow-y: auto;
+            background: #090d16;
+        }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .settings-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 14px;
+            backdrop-filter: blur(10px);
+        }
+        .settings-card h3 {
+            font-size: 15px;
+            color: #38bdf8;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 8px;
         }
 
-        input[type="text"]#linkMenuSaya {
-            color: black !important; 
-            font-weight: bold;
-        }
-
-        .logout-btn { background: rgba(255, 0, 0, 0.3); margin-top: 10px; }
-
-        h1, h3, label {
-            color: var(--text-primary);
-        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Resto Admin</h1>
-    <button onclick="verifikasiLaluBuka('/resto/page/kasir')">Buka Kasir</button>
-    <button onclick="verifikasiLaluBuka('/resto/page/kasir-monitor')">Monitor Kasir</button>
-    <button onclick="verifikasiLaluBuka('/resto/page/laporan-harian')">Laporan Harian</button>
-    <button onclick="verifikasiLaluBuka('/resto/page/analisa-menu')">Analisa Menu</button>
-    <button onclick="verifikasiLaluBuka('/resto/page/riwayat')">Riwayat Pembelian</button>
-    <button class="logout-btn" onclick="logout()">Keluar (Logout)</button>
+<!-- ================= SIDEBAR KIRI ================= -->
+<div class="sidebar">
+    <div class="sidebar-top">
+        
+        <!-- Menu Operasional -->
+        <div class="container-box">
+            <h1 id="panel-title">Resto Admin</h1>
+            <button onclick="bukaHalaman('/resto/page/kasir', true, this)"><i class="fa-solid fa-cash-register"></i> Buka Kasir</button>
+            <button onclick="bukaHalaman('/resto/page/kasir-monitor', false, this)"><i class="fa-solid fa-desktop"></i> Monitor Kasir</button>
+            <button class="admin-only" onclick="bukaHalaman('/resto/page/laporan-harian', true, this)"><i class="fa-solid fa-chart-line"></i> Laporan Harian</button>
+            <button class="admin-only" onclick="bukaHalaman('/resto/page/analisa-menu', true, this)"><i class="fa-solid fa-fire"></i> Analisa Menu</button>
+            <button class="admin-only" onclick="bukaHalaman('/resto/page/riwayat', true, this)"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pembelian</button>
+        </div>
+
+        <!-- Link Menu Pelanggan -->
+      <div class="container-box">
+            <h3>Link Menu Pelanggan</h3>
+            <input type="text" id="linkMenuSaya" readonly>
+            <button onclick="copyLink()" style="background: #d97706;"><i class="fa-solid fa-copy"></i> Salin Link</button>
+        </div>
+
+        <!-- Tombol Menu Pengaturan Utama -->
+        <div class="container-box admin-only">
+            <button onclick="tampilkanHalamanPengaturan()" style="background: #0284c7; padding: 12px; font-size: 14px;"><i class="fa-solid fa-gear"></i> Pengaturan Toko & Sistem</button>
+        </div>
+
+    </div>
+
+    <div style="padding: 15px; border-top: 1px solid var(--glass-border); background: rgba(15,23,42,0.9);">
+        <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)</button>
+    </div>
 </div>
 
-<div class="container">
-    <h3>Link Menu Pelanggan</h3>
-    <input type="text" id="linkMenuSaya" readonly style="color: black; font-weight: bold;">
-    <button onclick="copyLink()" style="background: #e67e22; margin-bottom: 20px;">Salin Link</button>
-    <button onclick="simpanLokasiResto()" style="background: #3498db; margin-top: 10px;">Update Titik GPS Resto</button>
-    <h3>Update Lokasi Resto</h3>
-    <input type="text" id="inputLat" placeholder="Latitude (Contoh: -6.123456)">
-    <input type="text" id="inputLon" placeholder="Longitude (Contoh: 106.123456)">
-    <button onclick="simpanLokasiManual()" style="background: #3498db;">Simpan GPS Manual</button>
-    <button onclick="simpanLokasiResto()" style="background: #2980b9; margin-top: 5px;">Gunakan GPS Otomatis</button>
-     
-    <h3>Atur Jarak Maksimal (KM)</h3>
-    <input type="number" id="inputRadius" placeholder="Contoh: 5" value="5">
-    <button onclick="simpanRadius()">Simpan Radius Jarak</button>
-
-    <h3>Pengaturan Kontak</h3>
-    <input type="text" id="nomorWaInput" placeholder="Masukkan nomor WhatsApp">
-    <button onclick="saveNomorWa()" style="background: #27ae60;">Simpan Nomor WhatsApp</button>
+<!-- ================= KANAN: AREA TAMPILAN UTAMA ================= -->
+<div class="main-content">
+    <div id="content-area" class="welcome-placeholder">
+        <i class="fa-solid fa-store"></i>
+        <h2>Selamat Datang di Panel Resto Admin</h2>
+        <p>Silakan pilih menu operasional atau buka Pengaturan Toko di sebelah kiri.</p>
+    </div>
 </div>
 
-<div class="container">
-    <h3>Ganti Password Akses</h3>
-    <input type="password" id="passLama" placeholder="Password Lama">
-    <input type="password" id="passBaru" placeholder="Password Baru">
-    <button onclick="prosesGantiPassword()" style="background:#27ae60;">Simpan Password Baru</button>
-</div>
+<!-- TEMPLATE FORM PENGATURAN LENGKAP (DIMUAT DI SEBELAH KANAN) -->
+<template id="template-pengaturan">
+    <div class="settings-container">
+        <h2 style="color: #fff; margin-bottom: 20px;"><i class="fa-solid fa-gear"></i> Pusat Pengaturan Toko & Sistem</h2>
+        <div class="settings-grid">
+            
+            <!-- Update Lokasi GPS -->
+            <div class="settings-card">
+                <h3><i class="fa-solid fa-location-dot"></i> Titik Lokasi GPS Resto</h3>
+                <button onclick="simpanLokasiResto()" style="background: #0284c7; margin-bottom: 15px;"><i class="fa-solid fa-location-crosshairs"></i> Ambil GPS Otomatis (Saat Ini)</button>
+                <label>Latitude</label>
+                <input type="text" id="inputLat" placeholder="Contoh: -6.123456">
+                <label>Longitude</label>
+                <input type="text" id="inputLon" placeholder="Contoh: 106.123456">
+                <button onclick="simpanLokasiManual()" style="background: #0369a1; margin-top: 8px;"><i class="fa-solid fa-floppy-disk"></i> Simpan GPS Manual</button>
+            </div>
 
-<div class="container">
-    <h3>Konfigurasi Dapur</h3>
-    <input type="checkbox" id="toggle-auto-print"> Auto Print
-    <button onclick="savePrinterSettings()">Simpan Pengaturan</button>
-</div>
+            <!-- Jangkauan Radius -->
+            <div class="settings-card">
+                <h3><i class="fa-solid fa-ruler"></i> Batas Radius Pesanan (KM)</h3>
+                <label>Jarak Maksimal Pelanggan Order</label>
+                <input type="number" id="inputRadius" placeholder="Contoh: 5" value="5">
+                <button onclick="simpanRadius()" style="background: #475569; margin-top: 10px;"><i class="fa-solid fa-check"></i> Simpan Radius Jarak</button>
+            </div>
+
+            <!-- Kontak WhatsApp -->
+            <div class="settings-card">
+                <h3><i class="fa-brands fa-whatsapp"></i> Kontak WhatsApp Resto</h3>
+                <label>Nomor WhatsApp Admin/Kasir</label>
+                <input type="text" id="nomorWaInput" placeholder="Contoh: 628123456789">
+                <button onclick="saveNomorWa()" style="background: #16a34a; margin-top: 10px;"><i class="fa-solid fa-floppy-disk"></i> Simpan Nomor WhatsApp</button>
+            </div>
+
+            <!-- Ganti Password -->
+            <div class="settings-card">
+                <h3><i class="fa-solid fa-key"></i> Ganti Password Kasir/Admin</h3>
+                <label>Password Lama</label>
+                <input type="password" id="passLama" placeholder="Password lama">
+                <label>Password Baru</label>
+                <input type="password" id="passBaru" placeholder="Password baru">
+                <button onclick="prosesGantiPassword()" style="background: #16a34a; margin-top: 10px;"><i class="fa-solid fa-shield-halved"></i> Simpan Password Baru</button>
+            </div>
+
+            <!-- Midtrans Payment -->
+            <div class="settings-card">
+                <h3><i class="fa-solid fa-credit-card"></i> Konfigurasi Midtrans</h3>
+                <form onsubmit="simpanMidtrans(event)">
+                    <label>Server Key</label>
+                    <input type="text" id="serverKeyInput" placeholder="SB-Mid-server-xxxxxx" required>
+                    <label>Client Key</label>
+                    <input type="text" id="clientKeyInput" placeholder="SB-Mid-client-xxxxxx" required>
+                    <button type="submit" style="background: linear-gradient(135deg, #10b981, #059669); margin-top: 10px;"><i class="fa-solid fa-floppy-disk"></i> Simpan Kunci Midtrans</button>
+                </form>
+            </div>
+
+            <!-- Konfigurasi Dapur -->
+            <div class="settings-card">
+                <h3><i class="fa-solid fa-print"></i> Konfigurasi Dapur</h3>
+                <div style="display: flex; align-items: center; gap: 10px; margin: 15px 0;">
+                    <input type="checkbox" id="toggle-auto-print" style="width: 20px; height: 20px; margin: 0;"> 
+                    <label for="toggle-auto-print" style="margin: 0; color: #fff; font-size: 13px; cursor: pointer;">Aktifkan Auto Print Dapur</label>
+                </div>
+                <button onclick="savePrinterSettings()" style="background: #475569;"><i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan Printer</button>
+            </div>
+
+        </div>
+    </div>
+</template>
 
 <script>
-    window.onload = async function() {
-        const restoId = localStorage.getItem('restoId');
-        if (restoId) {
-            try {
-                // Menggunakan endpoint baru yang bebas bentrok
-                const response = await fetch(`/resto/get-token-unik?restoId=${restoId}`);
-                const data = await response.json();
-                 
-                if (data && data.tokenUnik) {
-                    const link = `${window.location.origin}/resto?token=${data.tokenUnik}`;
-                    document.getElementById('linkMenuSaya').value = link;
-                } else {
-                    document.getElementById('linkMenuSaya').value = `${window.location.origin}/resto?restoId=${restoId}`;
-                }
-            } catch (e) {
-                console.error("Gagal memuat token unik", e);
-            }
-        }
-        loadDashboardSettings();
-    };
-
-    function copyLink() {
-        const copyText = document.getElementById("linkMenuSaya");
-        copyText.select();
-        document.execCommand("copy");
-        alert("Link berhasil disalin!");
-    }
-
-    async function prosesGantiPassword() {
-        const pLama = document.getElementById('passLama').value;
-        const pBaru = document.getElementById('passBaru').value;
-        const res = await fetch('/resto/kasir/ganti-password-karyawan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ passwordLama: pLama, passwordBaru: pBaru, restoId: localStorage.getItem('restoId') })
-        });
-        if (res.ok) { alert("Password berhasil diganti!"); sessionStorage.removeItem('aksesDiberikan'); }
-        else { alert("Gagal mengganti password"); }
-    }
-
-    async function verifikasiLaluBuka(url) {
-    const password = prompt("Masukkan Password Karyawan:");
-    if (!password) return;
-     
+window.onload = async function() {
     const restoId = localStorage.getItem('restoId');
-    const res = await fetch('/resto/verifikasi-karyawan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: password, restoId: restoId })
-    });
-     
-    if (res.ok) { 
-        // Jika tujuannya ke riwayat, set session khusus riwayat
+    const userRole = localStorage.getItem('userRole');
+
+    if (userRole === 'kasir') {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+        const titleEl = document.getElementById('panel-title');
+        if (titleEl) titleEl.innerText = 'Panel Kasir';
+    }
+
+    // Sekarang kasir juga bisa mengambil dan menampilkan link menu pelanggan
+    if (restoId) {
+        try {
+            const response = await fetch(`/resto/get-token-unik?restoId=${restoId}`);
+            const data = await response.json();
+            if (data && data.tokenUnik) {
+                document.getElementById('linkMenuSaya').value = `${window.location.origin}/resto?token=${data.tokenUnik}`;
+            } else {
+                document.getElementById('linkMenuSaya').value = `${window.location.origin}/resto?restoId=${restoId}`;
+            }
+        } catch (e) {
+            console.error("Gagal memuat token", e);
+        }
+    }
+};
+
+// Fungsi Membuka Halaman di Sisi Kanan (Iframe)
+async function bukaHalaman(url, butuhVerifikasi, elementBtn) {
+    const restoId = localStorage.getItem('restoId');
+
+    if (butuhVerifikasi) {
+        const password = prompt("Masukkan Password Karyawan:");
+        if (!password) return;
+         
+        try {
+            const res = await fetch('/resto/verifikasi_karyawan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username: 'kasir', 
+                    password: password, 
+                    restoId: restoId 
+                })
+            });
+
+            const data = await res.json();
+
+            // Ini penangkal utamanya agar password sembarangan diblokir
+            if (!res.ok || data.status === 'error' || data.success === false) {
+                alert("Password Salah! Akses ditolak.");
+                return;
+            }
+        } catch (err) {
+            console.error("Gagal verifikasi:", err);
+            alert("Terjadi kesalahan koneksi saat memverifikasi password.");
+            return;
+        }
+
         if (url.includes('riwayat')) {
             sessionStorage.setItem('sudahLoginRiwayat_' + restoId, 'true');
         } else {
-            sessionStorage.setItem('aksesDiberikan', 'true'); 
+            sessionStorage.setItem('aksesDiberikan', 'true');
         }
-        window.location.href = url; 
     }
-    else { 
-        alert("Password Salah!"); 
+
+    document.querySelectorAll('.sidebar-top button').forEach(b => b.style.borderColor = 'var(--glass-border)');
+    if(elementBtn) elementBtn.style.borderColor = '#38bdf8';
+
+    const targetUrl = `${url}?restoId=${restoId}`;
+    const contentArea = document.getElementById('content-area');
+    contentArea.innerHTML = `<iframe src="${targetUrl}" class="content-frame"></iframe>`;
+}
+// Fungsi Menampilkan Menu Pengaturan di Sebelah Kanan
+function tampilkanHalamanPengaturan() {
+    document.querySelectorAll('.sidebar-top button').forEach(b => b.style.borderColor = 'var(--glass-border)');
+    
+    const contentArea = document.getElementById('content-area');
+    const template = document.getElementById('template-pengaturan');
+    contentArea.innerHTML = '';
+    contentArea.appendChild(template.content.cloneNode(true));
+
+    // Muat data pengaturan saat halaman terbuka
+    loadDashboardSettings();
+}
+
+function copyLink() {
+    const copyText = document.getElementById("linkMenuSaya");
+    copyText.select();
+    document.execCommand("copy");
+    alert("Link berhasil disalin!");
+}
+
+async function simpanMidtrans(event) {
+    event.preventDefault();
+    const restoId = localStorage.getItem('restoId');
+    const server_key = document.getElementById('serverKeyInput').value;
+    const client_key = document.getElementById('clientKeyInput').value;
+
+    try {
+        const response = await fetch('/resto/update-midtrans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ restoId, server_key, client_key })
+        });
+        if (response.ok) alert('Kunci Midtrans berhasil disimpan!');
+        else alert('Gagal menyimpan kunci Midtrans.');
+    } catch (err) {
+        alert('Terjadi kesalahan jaringan.');
     }
 }
-    // FUNGSI WA: MURNI MENYIMPAN KE DATABASE SAJA
-    async function saveNomorWa() {
-        const restoId = localStorage.getItem('restoId');
-        const nomor = document.getElementById('nomorWaInput').value;
-        try {
-            const response = await fetch('/menu/resto/wa/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ restoId: restoId, nomor: nomor })
-            });
-            if (response.ok) alert("Nomor WhatsApp berhasil disimpan!");
-            else alert("Gagal menyimpan.");
-        } catch (error) {
-            alert("Terjadi kesalahan koneksi.");
-        }
+
+async function prosesGantiPassword() {
+    const pLama = document.getElementById('passLama').value;
+    const pBaru = document.getElementById('passBaru').value;
+    const res = await fetch('/resto/kasir/ganti-password-karyawan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passwordLama: pLama, passwordBaru: pBaru, restoId: localStorage.getItem('restoId') })
+    });
+    if (res.ok) { 
+        alert("Password berhasil diganti!"); 
+        document.getElementById('passLama').value = '';
+        document.getElementById('passBaru').value = '';
+    } else { 
+        alert("Gagal mengganti password"); 
     }
+}
 
-    function logout() { localStorage.clear(); sessionStorage.clear(); window.location.href = '/resto/page/login'; }
+async function saveNomorWa() {
+    const restoId = localStorage.getItem('restoId');
+    const nomor = document.getElementById('nomorWaInput').value;
+    try {
+        const response = await fetch('/menu/resto/wa/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ restoId: restoId, nomor: nomor })
+        });
+        if (response.ok) alert("Nomor WhatsApp berhasil disimpan!");
+        else alert("Gagal menyimpan.");
+    } catch (error) {
+        alert("Terjadi kesalahan koneksi.");
+    }
+}
 
-    async function simpanLokasiResto() {
+function logout() { 
+    localStorage.clear(); 
+    sessionStorage.clear(); 
+    window.location.href = '/resto/page/login'; 
+}
+
+async function simpanLokasiResto() {
     if (!navigator.geolocation) return alert("Browser tidak mendukung GPS.");
      
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -229,26 +450,20 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ restoId, lat: lat, lon: lng })
             });
-
-            if (response.ok) {
-                alert("Lokasi Resto berhasil disimpan!");
-            } else {
-                alert("Gagal menyimpan lokasi.");
-            }
+            if (response.ok) alert("Lokasi GPS otomatis berhasil disimpan!");
+            else alert("Gagal menyimpan lokasi.");
         } catch (error) {
             alert("Gagal mengirim data lokasi.");
         }
     }, () => alert("Harap izinkan akses lokasi!"));
-}// 1. Fungsi untuk Simpan GPS Manual
+}
+
 async function simpanLokasiManual() {
-    const lat = document.getElementById('inputLat').value; // Pastikan ID input di HTML adalah 'inputLat'
-    const lon = document.getElementById('inputLon').value; // Pastikan ID input di HTML adalah 'inputLon'
+    const lat = document.getElementById('inputLat').value; 
+    const lon = document.getElementById('inputLon').value; 
     const restoId = localStorage.getItem('restoId');
 
-    if (!lat || !lon) {
-        alert("Harap masukkan Latitude dan Longitude!");
-        return;
-    }
+    if (!lat || !lon) return alert("Harap masukkan Latitude dan Longitude!");
 
     try {
         const response = await fetch('/menu/update-location', {
@@ -256,44 +471,47 @@ async function simpanLokasiManual() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ restoId, lat: parseFloat(lat), lon: parseFloat(lon) })
         });
-
-        if (response.ok) {
-            alert("Lokasi manual berhasil disimpan!");
-        } else {
-            alert("Gagal menyimpan lokasi manual.");
-        }
+        if (response.ok) alert("Lokasi manual berhasil disimpan!");
+        else alert("Gagal menyimpan lokasi manual.");
     } catch (error) {
-        alert("Terjadi kesalahan koneksi ke server.");
+        alert("Terjadi kesalahan koneksi.");
     }
 }
-    async function simpanRadius() {
-        const radius = document.getElementById('inputRadius').value;
-        const restoId = localStorage.getItem('restoId');
-        const res = await fetch('/menu/resto/radius/update', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ restoId, radius })
-        });
-        if (res.ok) alert("Radius jangkauan berhasil diperbarui!");
-    }
 
-    async function loadDashboardSettings() {
-        const restoId = localStorage.getItem('restoId') || 1;
+async function simpanRadius() {
+    const radius = document.getElementById('inputRadius').value;
+    const restoId = localStorage.getItem('restoId');
+    const res = await fetch('/menu/resto/radius/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restoId, radius })
+    });
+    if (res.ok) alert("Radius jangkauan berhasil diperbarui!");
+}
+
+async function loadDashboardSettings() {
+    const restoId = localStorage.getItem('restoId') || 1;
+    try {
         const response = await fetch(`/api/printer/settings?resto_id=${restoId}`);
         const data = await response.json();
-        if (data) document.getElementById('toggle-auto-print').checked = data.auto_print;
+        if (data && document.getElementById('toggle-auto-print')) {
+            document.getElementById('toggle-auto-print').checked = data.auto_print;
+        }
+    } catch(e) {
+        console.error("Gagal load setting printer");
     }
+}
 
-    async function savePrinterSettings() {
-        const isAutoPrint = document.getElementById('toggle-auto-print').checked;
-        const restoId = localStorage.getItem('restoId') || 1;
-        const res = await fetch('/api/printer/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ resto_id: restoId, auto_print: isAutoPrint })
-        });
-        if (res.ok) alert('Pengaturan berhasil disimpan!');
-    }
+async function savePrinterSettings() {
+    const isAutoPrint = document.getElementById('toggle-auto-print').checked;
+    const restoId = localStorage.getItem('restoId') || 1;
+    const res = await fetch('/api/printer/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resto_id: restoId, auto_print: isAutoPrint })
+    });
+    if (res.ok) alert('Pengaturan printer berhasil disimpan!');
+}
 </script>
 </body>
 </html>
