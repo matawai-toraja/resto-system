@@ -353,7 +353,6 @@ window.onload = async function() {
         if (titleEl) titleEl.innerText = 'Panel Kasir';
     }
 
-    // Sekarang kasir juga bisa mengambil dan menampilkan link menu pelanggan
     if (restoId) {
         try {
             const response = await fetch(`/resto/get-token-unik?restoId=${restoId}`);
@@ -367,7 +366,23 @@ window.onload = async function() {
             console.error("Gagal memuat token", e);
         }
     }
+    
+    // Jalankan pengecekan status toko saat halaman siap
+    cekStatusToko();
 };
+
+// --- TAMBAHKAN FUNGSI INI AGAR TOMBOL PENGATURAN TIDAK ERROR ---
+function tampilkanHalamanPengaturan() {
+    const template = document.getElementById('template-pengaturan');
+    if (!template) return;
+    
+    const contentArea = document.getElementById('content-area');
+    contentArea.innerHTML = '';
+    contentArea.className = ''; // Hapus kelas placeholder agar layout pengaturan tampil rapi
+    contentArea.appendChild(template.content.cloneNode(true));
+    
+    loadDashboardSettings();
+}
 
 // Fungsi Membuka Halaman di Sisi Kanan (Iframe)
 async function bukaHalaman(url, butuhVerifikasi, elementBtn) {
@@ -409,44 +424,19 @@ async function bukaHalaman(url, butuhVerifikasi, elementBtn) {
 
     const targetUrl = `${url}?restoId=${restoId}`;
 
-    // CEK PERANGKAT: Jika di HP (lebar layar <= 768px), buka tab baru!
     if (window.innerWidth <= 768) {
         window.open(targetUrl, '_blank');
-        return; // Berhenti di sini agar tidak memuat iframe di dashboard
+        return; 
     }
 
-    // Jika di Desktop, jalankan normal menggunakan iframe di sebelah kanan
     document.querySelectorAll('.sidebar-top button').forEach(b => b.style.borderColor = 'var(--glass-border)');
     if(elementBtn) elementBtn.style.borderColor = '#38bdf8';
 
     const contentArea = document.getElementById('content-area');
+    contentArea.className = "main-content"; // kembalikan kelas utama
     contentArea.innerHTML = `<iframe src="${targetUrl}" class="content-frame"></iframe>`;
 }
-// Fungsi Menampilkan Menu Pengaturan (Aman untuk Desktop & HP)
-function bukaWaPelanggan(nomorHP) {
-    // Bersihkan nomor dari spasi atau karakter non-angka
-    let nomor = nomorHP.replace(/\D/g, ''); 
-    
-    // Ubah awalan 0 menjadi 62 jika ada
-    if (nomor.startsWith('0')) {
-        nomor = '62' + nomor.slice(1);
-    }
 
-    // Deteksi apakah perangkat yang digunakan adalah HP (Mobile)
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    let url = "";
-    if (isMobile) {
-        // Skema khusus agar di HP LANGSUNG membuka aplikasi WhatsApp
-        url = `whatsapp://send?phone=${nomor}&text=Halo,%20terkait%20pesanan%20Anda...`;
-    } else {
-        // Di komputer/desktop tetap menggunakan web API
-        url = `https://api.whatsapp.com/send?phone=${nomor}&text=Halo,%20terkait%20pesanan%20Anda...`;
-    }
-
-    // Buka URL
-    window.open(url, '_blank');
-}
 function copyLink() {
     const copyText = document.getElementById("linkMenuSaya");
     copyText.select();
@@ -577,6 +567,37 @@ async function loadDashboardSettings() {
         console.error("Gagal load setting printer");
     }
 }
+
+let isTokoBuka = true;
+
+// Ambil status toko menggunakan token unik agar aman
+async function cekStatusToko() {
+    try {
+        const restoId = localStorage.getItem('restoId');
+        if (!restoId) return;
+
+        // Ambil tokenUnik terlebih dahulu agar endpoint public-status tidak error HTML
+        const tokenRes = await fetch(`/resto/get-token-unik?restoId=${restoId}`);
+        const tokenData = await tokenRes.json();
+        const identifier = tokenData.tokenUnik || restoId;
+
+        const response = await fetch(`/resto/public-status?token=${identifier}`);
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            return; // Lewati jika bukan JSON
+        }
+
+        const data = await response.json();
+        if (data && typeof data.is_buka !== 'undefined') {
+            isTokoBuka = data.is_buka;
+            updateTombolUI();
+        }
+    } catch (e) {
+        console.error("Gagal memuat status toko:", e);
+    }
+}
+
+
 
 async function savePrinterSettings() {
     const isAutoPrint = document.getElementById('toggle-auto-print').checked;

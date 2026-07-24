@@ -592,19 +592,7 @@ function bukaModal(id, total) {
     document.getElementById('total-harga-display').innerText = total.toLocaleString('id-ID');
     document.getElementById('modal-bayar').style.display = 'block';
 }
-function bukaWhatsApp(nomorHP) {
-    let nomor = nomorHP.replace(/\D/g, ''); 
-    if (nomor.startsWith('0')) {
-        nomor = '62' + nomor.slice(1);
-    }
 
-    const pesan = "Halo, terkait pesanan Anda di resto kami...";
-    
-    // Format langsung tanpa syarat pembatas perangkat agar sistem HP otomatis menangkapnya
-    const url = `https://api.whatsapp.com/send?phone=${nomor}&text=${encodeURIComponent(pesan)}`;
-    
-    window.open(url, '_blank');
-}
 async function prosesBayar(metode) {
     const token = localStorage.getItem('authKey');
     const uangInput = document.getElementById('input-uang').value;

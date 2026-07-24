@@ -361,6 +361,7 @@
             </div>
         `).join('');
     }
+
 function bukaWhatsApp() {
     if (!waNumber) {
         alert("Nomor belum disetting.");
@@ -371,7 +372,6 @@ function bukaWhatsApp() {
         cleanNomor = '62' + cleanNomor.substring(1);
     }
     
-    // Deteksi perangkat agar aman di HP maupun Desktop
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const url = isMobile 
         ? `https://api.whatsapp.com/send?phone=${cleanNomor}` 
@@ -379,6 +379,7 @@ function bukaWhatsApp() {
         
     window.open(url, '_blank');
 }
+
 function renderHalamanSukses(data) {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = data.rincianHtml;
@@ -449,6 +450,7 @@ function renderKeranjang() {
     document.getElementById('total-harga').innerText = `Total: Rp ${total.toLocaleString()}`;  
     document.getElementById('cart-count').textContent = `Keranjang (${keranjang.reduce((a, b) => a + b.jumlah, 0)})`;  
 }
+
 function updateJumlah(index, perubahan) {
     keranjang[index].jumlah += perubahan;
     if (keranjang[index].jumlah <= 0) {
@@ -478,10 +480,7 @@ function prosesKirimPesanan(event) {
     tombol.disabled = true;
     tombol.innerText = "Mengirim...";
 
-    // Format aman: Kolom nama di database membawa info tambahan selengkapnya
     const namaLengkap = `${namaInput} [WA: ${noWa || '-'}] [Area: ${posisi || '-'}] [${tipePesanan}]`;
-    
-    // Pastikan meja dikirim sebagai angka murni agar tidak error di database
     const nomorMejaBersih = Number(mejaInput);
 
     navigator.geolocation.getCurrentPosition((position) => {
@@ -503,20 +502,19 @@ function prosesKirimPesanan(event) {
             body: JSON.stringify(payload)
         })
        .then(async res => {
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Gagal mengirim pesanan ke server!");
-    return data;
-})
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Gagal mengirim pesanan ke server!");
+            return data;
+        })
         .then(data => {
             alert("Pesanan berhasil dibuat!");
             tutupModal();
 
             if (metodePembayaran === 'digital' && data.paymentUrl) {
-                window.location.href = data.paymentUrl; // Logika Midtrans/QRIS kembali normal!
+                window.location.href = data.paymentUrl;
             } else {
                 const totalText = document.getElementById('total-harga').innerText;
                 
-                // RENDER HTML KHUSUS HALAMAN SUKSES (Tanpa Kotak Input / Textbox)
                 const rincianHtml = keranjang.map(i => `
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid var(--glass-border); padding-bottom:4px; font-size:13px; text-align:left;">
                         <span style="color:var(--text-primary); flex:1;">${i.nama} <br><small style="color:var(--text-secondary);">${i.catatan ? 'Catatan: ' + i.catatan : ''}</small></span>
@@ -552,6 +550,7 @@ function prosesKirimPesanan(event) {
         tombol.innerText = "Kirim Pesanan";
     });
 }
+
 function bukaModal() { document.getElementById('modal-keranjang').style.display = 'flex'; }
 function tutupModal() { document.getElementById('modal-keranjang').style.display = 'none'; }
 
@@ -576,7 +575,6 @@ window.onload = async function() {
         }
     }
 
-
     refreshData();
 
     setInterval(function() {
@@ -591,6 +589,6 @@ window.onload = async function() {
     const dataTersimpan = localStorage.getItem('pesananSukses');
     if (dataTersimpan) renderHalamanSukses(JSON.parse(dataTersimpan));
 };
- </script>
+</script>
 </body>
 </html>

@@ -456,7 +456,52 @@ export class AppController {
     }
     throw new HttpException('Password lama salah!', HttpStatus.BAD_REQUEST);
   }
+@Get(['api/resto/public-status', 'resto/api/resto/public-status'])
+  async getPublicStatus(@Query('token') token: string) {
+    if (!token) {
+      return { is_buka: true };
+    }
+    
+    const resto = await this.restoRepo.findOne({ 
+      where: [
+        { tokenUnik: token },
+        { username: token }
+      ] 
+    });
 
+    if (!resto) {
+      return { is_buka: true };
+    }
+
+    return { is_buka: resto.statusAktif !== false };
+  }
+@Post(['update-status', '/resto/update-status', 'resto/update-status'])
+  async updateStatus(@Body() body: { status: boolean; restoId?: number; token?: string }) {
+    try {
+      let resto = null;
+      
+      // Cari berdasarkan restoId jika ada, atau ambil data pertama/terakhir di database
+      if (body.restoId) {
+        resto = await this.restoRepo.findOne({ where: { id: Number(body.restoId) } });
+      } else {
+        resto = await this.restoRepo.findOne({ order: { id: 'DESC' } });
+      }
+
+      if (!resto) {
+        return { success: false, message: 'Resto tidak ditemukan' };
+      }
+
+      // Pastikan nama kolom di database Anda sesuai (misal: statusAktif, is_buka, atau status)
+      // Jika kolom di database bernama 'statusAktif':
+      resto.statusAktif = body.status;
+      
+      await this.restoRepo.save(resto);
+      return { success: true, message: 'Status toko berhasil diperbarui' };
+    } catch (error) {
+      console.error('Error update status:', error);
+      return { success: false, message: error.message };
+    }
+  }
   @Post('update-midtrans')
   async updateMidtrans(@Body() body: { restoId: any, server_key: string, client_key: string }) {
     const rId = this.validateRestoId(body.restoId);
