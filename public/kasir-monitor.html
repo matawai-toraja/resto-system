@@ -592,7 +592,28 @@ function bukaModal(id, total) {
     document.getElementById('total-harga-display').innerText = total.toLocaleString('id-ID');
     document.getElementById('modal-bayar').style.display = 'block';
 }
+function bukaWhatsApp(nomorHP, pesan = "") {
+    // Bersihkan nomor dari karakter non-angka
+    let nomor = nomorHP.replace(/\D/g, ''); 
+    if (nomor.startsWith('0')) {
+        nomor = '62' + nomor.slice(1); // Ubah awalan 0 menjadi 62
+    }
 
+    // Deteksi apakah perangkat mobile (HP/Tablet)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    let url = "";
+    if (isMobile) {
+        // Format khusus untuk memicu aplikasi WhatsApp di HP
+        url = `whatsapp://send?phone=${nomor}&text=${encodeURIComponent(pesan)}`;
+    } else {
+        // Format untuk komputer/laptop (membuka WhatsApp Web)
+        url = `https://web.whatsapp.com/send?phone=${nomor}&text=${encodeURIComponent(pesan)}`;
+    }
+
+    // Buka tautan
+    window.open(url, '_blank');
+}
 async function prosesBayar(metode) {
     const token = localStorage.getItem('authKey');
     const uangInput = document.getElementById('input-uang').value;
