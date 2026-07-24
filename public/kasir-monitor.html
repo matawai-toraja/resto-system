@@ -525,7 +525,7 @@ function renderPesanan(data) {
             <div class="card status-${status}">
                 <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 10px; font-size: 13px; line-height: 1.4;">
                     <span style="color: var(--accent-primary); font-weight: bold;">#${p.id}</span> - <span style="font-weight: 600;">${namaBersih}</span>
-                   ${cleanWaNum ? `(<a href="https://web.whatsapp.com/send?phone=${cleanWaNum}" target="_blank" style="color: #60a5fa; text-decoration: underline;" title="Chat WhatsApp">WA: ${extractedWa}</a>)` : ''}
+            ${cleanWaNum ? `<a href="#" onclick="bukaWhatsApp('${cleanWaNum}')" style="color: #60a5fa; text-decoration: underline;" title="Chat WhatsApp">WA: ${extractedwa}</a>` : ''}
                     <br>
                     <span style="font-size: 11px; opacity: 0.85;">
                         Area: ${extractedArea || '-'} | Tipe: ${extractedTipe || '-'} | Meja: ${p.meja || '-'}

@@ -7,6 +7,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+.settings-active-wrapper {
+    padding: 30px;
+    height: 100%;
+    overflow-y: auto;
+    background: #090d16;
+}
+
+/* Penyesuaian khusus saat dibuka di HP / Layar Kecil (max-width: 768px) */
+@media screen and (max-width: 768px) {
+    body {
+        flex-direction: column;
+        overflow: auto !important;
+    }
+
+    .main-content {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100vh;
+        overflow-y: visible !important;
+    }
+
+    /* Membuat tampilan pengaturan langsung turun ke bawah berjejer 1 kolom */
+    .settings-active-wrapper {
+        padding: 15px !important;
+        height: auto !important;
+        overflow-y: visible !important;
+    }
+
+    .settings-grid {
+        grid-template-columns: 1fr !important; /* Kartu pengaturan jadi 1 kolom ke bawah di HP */
+        gap: 15px;
+    }
+}
 /* --- RESPONSIF UNTUK HP / LAYAR KECIL --- */
 @media screen and (max-width: 768px) {
     body {
@@ -389,19 +422,31 @@ async function bukaHalaman(url, butuhVerifikasi, elementBtn) {
     const contentArea = document.getElementById('content-area');
     contentArea.innerHTML = `<iframe src="${targetUrl}" class="content-frame"></iframe>`;
 }
-// Fungsi Menampilkan Menu Pengaturan di Sebelah Kanan
-function tampilkanHalamanPengaturan() {
-    document.querySelectorAll('.sidebar-top button').forEach(b => b.style.borderColor = 'var(--glass-border)');
+// Fungsi Menampilkan Menu Pengaturan (Aman untuk Desktop & HP)
+function bukaWaPelanggan(nomorHP) {
+    // Bersihkan nomor dari spasi atau karakter non-angka
+    let nomor = nomorHP.replace(/\D/g, ''); 
     
-    const contentArea = document.getElementById('content-area');
-    const template = document.getElementById('template-pengaturan');
-    contentArea.innerHTML = '';
-    contentArea.appendChild(template.content.cloneNode(true));
+    // Ubah awalan 0 menjadi 62 jika ada
+    if (nomor.startsWith('0')) {
+        nomor = '62' + nomor.slice(1);
+    }
 
-    // Muat data pengaturan saat halaman terbuka
-    loadDashboardSettings();
+    // Deteksi apakah perangkat yang digunakan adalah HP (Mobile)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    let url = "";
+    if (isMobile) {
+        // Skema khusus agar di HP LANGSUNG membuka aplikasi WhatsApp
+        url = `whatsapp://send?phone=${nomor}&text=Halo,%20terkait%20pesanan%20Anda...`;
+    } else {
+        // Di komputer/desktop tetap menggunakan web API
+        url = `https://api.whatsapp.com/send?phone=${nomor}&text=Halo,%20terkait%20pesanan%20Anda...`;
+    }
+
+    // Buka URL
+    window.open(url, '_blank');
 }
-
 function copyLink() {
     const copyText = document.getElementById("linkMenuSaya");
     copyText.select();
