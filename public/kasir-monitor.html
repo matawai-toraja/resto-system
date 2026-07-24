@@ -525,7 +525,7 @@ function renderPesanan(data) {
             <div class="card status-${status}">
                 <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 10px; font-size: 13px; line-height: 1.4;">
                     <span style="color: var(--accent-primary); font-weight: bold;">#${p.id}</span> - <span style="font-weight: 600;">${namaBersih}</span>
-            ${cleanWaNum ? `<a href="#" onclick="bukaWhatsApp('${cleanWaNum}')" style="color: #60a5fa; text-decoration: underline;" title="Chat WhatsApp">WA: ${extractedwa}</a>` : ''}
+                   ${cleanWaNum ? `(<a href="https://web.whatsapp.com/send?phone=${cleanWaNum}" target="_blank" style="color: #60a5fa; text-decoration: underline;" title="Chat WhatsApp">WA: ${extractedWa}</a>)` : ''}
                     <br>
                     <span style="font-size: 11px; opacity: 0.85;">
                         Area: ${extractedArea || '-'} | Tipe: ${extractedTipe || '-'} | Meja: ${p.meja || '-'}
@@ -592,26 +592,21 @@ function bukaModal(id, total) {
     document.getElementById('total-harga-display').innerText = total.toLocaleString('id-ID');
     document.getElementById('modal-bayar').style.display = 'block';
 }
-function bukaWhatsApp(nomorHP, pesan = "") {
-    // Bersihkan nomor dari karakter non-angka
+function bukaWhatsApp(nomorHP) {
     let nomor = nomorHP.replace(/\D/g, ''); 
     if (nomor.startsWith('0')) {
-        nomor = '62' + nomor.slice(1); // Ubah awalan 0 menjadi 62
+        nomor = '62' + nomor.slice(1);
     }
 
-    // Deteksi apakah perangkat mobile (HP/Tablet)
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     let url = "";
     if (isMobile) {
-        // Format khusus untuk memicu aplikasi WhatsApp di HP
-        url = `whatsapp://send?phone=${nomor}&text=${encodeURIComponent(pesan)}`;
+        url = `whatsapp://send?phone=${nomor}&text=Halo,%20terkait%20pesanan%20Anda...`;
     } else {
-        // Format untuk komputer/laptop (membuka WhatsApp Web)
-        url = `https://web.whatsapp.com/send?phone=${nomor}&text=${encodeURIComponent(pesan)}`;
+        url = `https://api.whatsapp.com/send?phone=${nomor}&text=Halo,%20terkait%20pesanan%20Anda...`;
     }
 
-    // Buka tautan
     window.open(url, '_blank');
 }
 async function prosesBayar(metode) {
