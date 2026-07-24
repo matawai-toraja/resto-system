@@ -80,9 +80,12 @@
             gap: 15px; 
         }
 
-        @media (max-width: 480px) { 
-            .menu-grid { grid-template-columns: 1fr; } 
-        }
+      @media (max-width: 768px) {
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr) !important; /* Paksa tetap 2 kolom di HP */
+        gap: 10px; /* Jarak antar kartu sedikit dipersempit agar pas di layar HP */
+    }
+}
 
         .menu-card { 
             padding: 12px; 
@@ -358,7 +361,6 @@
             </div>
         `).join('');
     }
-
 function bukaWhatsApp() {
     if (!waNumber) {
         alert("Nomor belum disetting.");
@@ -368,10 +370,15 @@ function bukaWhatsApp() {
     if (cleanNomor.startsWith('0')) {
         cleanNomor = '62' + cleanNomor.substring(1);
     }
-    const url = 'https://wa.me/' + cleanNomor;
+    
+    // Deteksi perangkat agar aman di HP maupun Desktop
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const url = isMobile 
+        ? `https://api.whatsapp.com/send?phone=${cleanNomor}` 
+        : `https://wa.me/${cleanNomor}`;
+        
     window.open(url, '_blank');
 }
-
 function renderHalamanSukses(data) {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = data.rincianHtml;

@@ -7,6 +7,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+/* --- RESPONSIF UNTUK HP / LAYAR KECIL --- */
+@media screen and (max-width: 768px) {
+    body {
+        flex-direction: column; /* Ubah layout dari samping-sampingan menjadi atas-bawah di HP */
+        overflow: auto;         /* Izinkan halaman bisa di-scroll secara vertikal */
+    }
+
+    .sidebar {
+        width: 100% !important;  /* Sidebar memenuhi lebar layar HP */
+        height: auto !important; /* Tinggi menyesuaikan isi kontennya */
+        position: relative;
+    }
+
+    .main-content {
+        width: 100% !important;  /* Area konten utama memenuhi lebar layar */
+        height: auto !important;
+        min-height: 80vh;
+        overflow: visible;
+    }
+
+    .sidebar-top {
+        max-height: none;        /* Hilangkan batasan scroll sidebar di HP */
+    }
+}
         .hidden { display: none !important; }
         :root {
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
@@ -333,7 +357,6 @@ async function bukaHalaman(url, butuhVerifikasi, elementBtn) {
 
             const data = await res.json();
 
-            // Ini penangkal utamanya agar password sembarangan diblokir
             if (!res.ok || data.status === 'error' || data.success === false) {
                 alert("Password Salah! Akses ditolak.");
                 return;
@@ -351,10 +374,18 @@ async function bukaHalaman(url, butuhVerifikasi, elementBtn) {
         }
     }
 
+    const targetUrl = `${url}?restoId=${restoId}`;
+
+    // CEK PERANGKAT: Jika di HP (lebar layar <= 768px), buka tab baru!
+    if (window.innerWidth <= 768) {
+        window.open(targetUrl, '_blank');
+        return; // Berhenti di sini agar tidak memuat iframe di dashboard
+    }
+
+    // Jika di Desktop, jalankan normal menggunakan iframe di sebelah kanan
     document.querySelectorAll('.sidebar-top button').forEach(b => b.style.borderColor = 'var(--glass-border)');
     if(elementBtn) elementBtn.style.borderColor = '#38bdf8';
 
-    const targetUrl = `${url}?restoId=${restoId}`;
     const contentArea = document.getElementById('content-area');
     contentArea.innerHTML = `<iframe src="${targetUrl}" class="content-frame"></iframe>`;
 }
