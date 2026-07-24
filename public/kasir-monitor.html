@@ -598,16 +598,19 @@ function bukaWhatsApp(nomorHP) {
         nomor = '62' + nomor.slice(1);
     }
 
+    const pesan = "Halo, terkait pesanan Anda di resto kami...";
+    
+    // Deteksi apakah ini perangkat mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-    let url = "";
     if (isMobile) {
-        url = `whatsapp://send?phone=${nomor}&text=Halo,%20terkait%20pesanan%20Anda...`;
+        // Menggunakan format intent/deep link agar memaksa buka aplikasi WhatsApp di HP
+        window.location.href = `https://api.whatsapp.com/send?phone=${nomor}&text=${encodeURIComponent(pesan)}`;
     } else {
-        url = `https://api.whatsapp.com/send?phone=${nomor}&text=Halo,%20terkait%20pesanan%20Anda...`;
+        // Di komputer tetap buka web
+        const url = `https://web.whatsapp.com/send?phone=${nomor}&text=${encodeURIComponent(pesan)}`;
+        window.open(url, '_blank');
     }
-
-    window.open(url, '_blank');
 }
 async function prosesBayar(metode) {
     const token = localStorage.getItem('authKey');
