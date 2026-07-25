@@ -3,6 +3,23 @@ HTML
 <html>
 <head>
     <style>
+.menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.menu-actions button {
+  width: 90px;
+  padding: 6px 0;
+  text-align: center;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
         :root {
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
             --glass-card: rgba(255, 255, 255, 0.05);
@@ -11,8 +28,13 @@ HTML
             --text-secondary: #94a3b8;
         }
 
-        #daftar-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; max-height: 70vh; overflow-y: auto; padding: 10px; }
-        
+       #daftar-menu {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Menu otomatis tersusun rapi ke samping & turun ke bawah */
+  gap: 15px;
+  width: 100%;
+  overflow-x: hidden; /* Hilangkan scrollbar samping */
+}
         .menu-card { 
             display: flex; 
             align-items: center; 
@@ -139,6 +161,7 @@ HTML
                 <select id="kategori">
                     <option value="Makanan">Makanan</option>
                     <option value="Minuman">Minuman</option>
+                    <option value="Lain-lain">Lain-lain</option>
                 </select>
             </div>
             <div class="form-item">
@@ -157,6 +180,7 @@ HTML
                 <option value="Semua">Semua</option>
                 <option value="Makanan">Makanan</option>
                 <option value="Minuman">Minuman</option>
+                <option value="Lain-lain">Lain-lain</option>
             </select>
             <input type="text" id="search-admin" placeholder="Cari menu..." onkeyup="loadMenu()">
         </div>
@@ -222,17 +246,20 @@ HTML
                 return matchKategori && matchSearch;
             });
 
-            document.getElementById('daftar-menu').innerHTML = filtered.map(m => `
-                <div class="menu-card">
-                   <img src="${m.gambarUrl || m.gambar}">
-                    <div class="menu-info">
-                        <strong>${m.nama}</strong><br>
-                        <span>Rp ${formatRupiah(m.harga)}</span> | <span>${m.stok == 1 ? 'Ada' : 'Habis'}</span>
-                    </div>
-                    <button onclick="toggleStatus(${m.id}, ${m.stok})">Status</button>
-                    <button class="btn-hapus" onclick="hapusMenu(${m.id})">Hapus</button>
-                </div>
-            `).join('');
+        document.getElementById('daftar-menu').innerHTML = filtered.map(m => `
+    <div class="menu-card">
+        <img src="${m.gambarUrl || m.gambar}">
+        <div class="menu-info">
+            <strong>${m.nama}</strong><br>
+            <span>Rp ${formatRupiah(m.harga)}</span> | <span>${m.stok == 1 ? 'Ada' : 'Habis'}</span>
+        </div>
+        <div class="menu-actions">
+            <button onclick="toggleStatus(${m.id}, ${m.stok})">Status</button>
+            <button class="btn-edit" onclick="editHarga(${m.id}, ${m.harga})" style="background-color: #3b82f6; color: white;">Edit Harga</button>
+            <button class="btn-hapus" onclick="hapusMenu(${m.id})">Hapus</button>
+        </div>
+    </div>
+`).join('');
         } catch (e) { console.error(e); }
     }
 
@@ -271,6 +298,30 @@ HTML
         await fetch('/resto/hapus-menu', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({id, restoId: localStorage.getItem('restoId')}) });
         loadMenu();
     }
+async function editHarga(id, hargaLama) {
+    const hargaBaru = prompt("Masukkan harga baru:", hargaLama);
+    if (hargaBaru === null || hargaBaru.trim() === "") return;
+
+    try {
+        const res = await fetch('/resto/edit-harga', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                id: Number(id), 
+                harga: Number(hargaBaru) 
+            })
+        });
+        
+        if (res.ok) {
+            loadMenu(); // Refresh daftar menu setelah berhasil
+        } else {
+            alert('Gagal mengupdate harga');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Terjadi kesalahan koneksi');
+    }
+}
 
     // Fungsi Status
     async function toggleStatus(id, stokLama) {

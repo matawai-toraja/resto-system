@@ -553,6 +553,11 @@ getGantiPasswordPage(@Res() res: Response) {
     await this.restoRepo.save(resto);
     return { success: true, is_buka: body.status };
   }
+@Post('edit-harga')
+  async editHarga(@Body() data: { id: number; harga: number }) {
+    await this.menuRepo.update(data.id, { harga: data.harga });
+    return { status: "Harga Diperbarui" };
+  }
 
   @Post('update-midtrans')
   async updateMidtrans(@Body() body: { restoId: any, server_key: string, client_key: string }) {
