@@ -58,13 +58,14 @@
                             <th class="py-4 px-6">ID</th>
                             <th class="py-4 px-6">Nama Restoran</th>
                             <th class="py-4 px-6">Token / Username</th>
+                            <th class="py-4 px-6">Kontak Admin (WA)</th> <!-- KOLOM WA DITAMBAHKAN DI SINI -->
                             <th class="py-4 px-6 text-center">Status Akses</th>
                             <th class="py-4 px-6 text-center">Aksi Kontrol Super Admin</th>
                         </tr>
                     </thead>
                     <tbody id="tenantTableBody" class="divide-y divide-slate-800 text-sm">
                         <tr>
-                            <td colspan="5" class="text-center py-8 text-slate-500">Memuat data dari server...</td>
+                            <td colspan="6" class="text-center py-8 text-slate-500">Memuat data dari server...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -72,7 +73,8 @@
         </div>
     </div>
 
-<div id="modalTambah" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 px-4">
+    <!-- Modal Tambah Resto -->
+    <div id="modalTambah" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 px-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
             <h3 class="text-xl font-bold text-white mb-4">Registrasi Tenant / Resto Baru</h3>
             <form id="formTambahTenant" onsubmit="simpanTenantBaru(event)" class="space-y-4">
@@ -87,6 +89,10 @@
                 <div>
                     <label class="block text-xs font-medium text-slate-400 mb-1">Password Login</label>
                     <input type="password" id="inputPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500" placeholder="••••••••">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">No. WhatsApp Admin</label>
+                    <input type="text" id="inputNoHp" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500" placeholder="Contoh: 082275798587"> <!-- INPUT WA DITAMBAHKAN -->
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-400 mb-1">Username Kasir</label>
@@ -115,17 +121,18 @@
                 const tbody = document.getElementById('tenantTableBody');
                 
                 if (tenants.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500">Belum ada restoran terdaftar.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-500">Belum ada restoran terdaftar.</td></tr>`;
                     return;
                 }
 
                 tbody.innerHTML = tenants.map(t => {
-                    const statusAktif = t.statusAktif !== false; // Default true jika undefined
+                    const statusAktif = t.statusAktif !== false;
                     return `
                         <tr class="hover:bg-slate-800/50 transition">
                             <td class="py-4 px-6 font-mono text-slate-400">#${t.id}</td>
                             <td class="py-4 px-6 font-semibold text-white">${t.namaResto || 'Tanpa Nama'}</td>
                             <td class="py-4 px-6 font-mono text-xs text-blue-300 truncate max-w-xs">${t.username || t.tokenUnik || '-'}</td>
+                            <td class="py-4 px-6 font-mono text-xs text-emerald-400">${t.wa_admin ? t.wa_admin : '-'}</td> <!-- MERENDER NO WA ADMIN -->
                             <td class="py-4 px-6 text-center">
                                 <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusAktif ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">
                                     ${statusAktif ? 'Aktif' : 'Non-Aktif'}
@@ -147,7 +154,7 @@
                 }).join('');
             } catch (err) {
                 console.error("Gagal memuat tenant:", err);
-                document.getElementById('tenantTableBody').innerHTML = `<tr><td colspan="5" class="text-center py-8 text-rose-500">Gagal terhubung ke database server.</td></tr>`;
+                document.getElementById('tenantTableBody').innerHTML = `<tr><td colspan="6" class="text-center py-8 text-rose-500">Gagal terhubung ke database server.</td></tr>`;
             }
         }
 
@@ -161,12 +168,13 @@
             document.getElementById('modalTambah').classList.add('hidden');
         }
 
-      async function simpanTenantBaru(e) {
+        async function simpanTenantBaru(e) {
             e.preventDefault();
             const body = {
                 namaResto: document.getElementById('inputNamaResto').value,
                 username: document.getElementById('inputUsername').value,
                 password: document.getElementById('inputPassword').value,
+                noHp: document.getElementById('inputNoHp').value, // MENGAMBIL DATA NO HP
                 usernameKasir: document.getElementById('usernameKasir').value,
                 passwordKasir: document.getElementById('passwordKasir').value
             };
@@ -179,7 +187,6 @@
                 });
                 const result = await res.json();
                 
-                // Mendukung response objek resto atau objek sukses berformat { success: true, resto: ... }
                 if (result.id || result.success) {
                     alert('Restoran baru beserta akun kasirnya berhasil didaftarkan!');
                     tutupModalTambah();
@@ -192,6 +199,7 @@
                 alert('Terjadi kesalahan jaringan.');
             }
         }
+
         async function toggleStatus(restoId, namaResto) {
             try {
                 const res = await fetch('/resto/super-admin/api/toggle-status', {

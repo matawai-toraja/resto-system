@@ -50,11 +50,12 @@ export class AppController {
     return await this.restoRepo.find();
   }
 
-  @Post('super-admin/api/tambah-tenant')
+@Post('super-admin/api/tambah-tenant')
   async tambahTenantGlobal(@Body() body: { 
     namaResto: string; 
     username: string; 
     password: string; 
+    noHp?: string; // Tambahkan parameter noHp
     usernameKasir?: string; 
     passwordKasir?: string; 
   }) {
@@ -63,18 +64,17 @@ export class AppController {
         throw new BadRequestException("Data utama wajib diisi!");
       }
 
-      // Hash password admin resto secara aman
       const hashedAdminPassword = await bcrypt.hash(body.password, 10);
 
       const restoBaru = this.restoRepo.create({
         namaResto: body.namaResto,
         username: body.username,
         password: hashedAdminPassword,
+        wa_admin: body.noHp || null, // Masukkan nomor HP ke kolom wa_admin
         statusAktif: true
       });
       const savedResto = await this.restoRepo.save(restoBaru);
 
-      // Jika kasir diisi, hash juga password kasirnya
       if (body.usernameKasir && body.passwordKasir) {
         const hashedKasirPassword = await bcrypt.hash(body.passwordKasir, 10);
 
@@ -92,7 +92,6 @@ export class AppController {
       throw new BadRequestException(error.message || "Gagal mendaftarkan restoran.");
     }
   }
-
   @Post('super-admin/api/toggle-status')
   async toggleStatusTenant(@Body() body: { restoId: number }) {
     const rId = this.validateRestoId(body.restoId);
@@ -103,7 +102,57 @@ export class AppController {
     await this.restoRepo.save(resto);
     return { success: true, statusAktif: resto.statusAktif };
   }
+@Get('page/ganti-password')
+getGantiPasswordPage(@Res() res: Response) {
+    return res.sendFile(join(process.cwd(), 'public', 'ganti-password.html'));
+}
 
+  // === PINDAHKAN DUA FUNGSI INI KE SINI (DI LUAR FUNGSI LAIN, DI DALAM CLASS) ===
+@Post('api/ganti-password-mandiri')
+  async gantiPasswordMandiri(@Body() body: any) {
+      const { username, passwordLama, passwordBaru } = body;
+      
+      const resto = await this.restoRepo.findOne({ where: { username } });
+      if (!resto) {
+          return { success: false, message: 'Username restoran tidak ditemukan!' };
+      }
+
+      // Cocokkan password lama menggunakan bcrypt.compare
+      const isPasswordValid = await bcrypt.compare(passwordLama, resto.password);
+      if (!isPasswordValid) {
+          return { success: false, message: 'Password lama salah!' };
+      }
+
+      // Enkripsi password baru sebelum disimpan ke database
+      resto.password = await bcrypt.hash(passwordBaru, 10);
+      await this.restoRepo.save(resto);
+
+      return { success: true, message: 'Password berhasil diubah' };
+  }
+@Post('api/update-password-baru')
+  async updatePasswordBaru(@Body() body: any) {
+      const { username, passwordBaru } = body;
+
+      const resto = await this.restoRepo.findOne({ where: { username } });
+      if (!resto) {
+          return { success: false, message: 'Username restoran tidak ditemukan!' };
+      }
+
+      // 🔴 VALIDASI KETAT: Cek apakah password di database masih ada / belum di-reset oleh Super Admin
+      if (resto.password && resto.password.trim() !== '') {
+          return { 
+              success: false, 
+              message: 'Gagal! Akun Anda belum di-reset oleh Super Admin. Silakan hubungi Super Admin terlebih dahulu.' 
+          };
+      }
+
+      // Jika password di database sudah kosong/direset, baru enkripsi dan simpan password baru
+      const hashedPassword = await bcrypt.hash(passwordBaru, 10);
+      resto.password = hashedPassword;
+      await this.restoRepo.save(resto);
+
+      return { success: true, message: 'Password baru berhasil disimpan' };
+  }
   @Post('super-admin/api/hapus-tenant')
   async hapusTenantGlobal(@Body() body: { restoId: any }) {
     try {
@@ -144,7 +193,7 @@ export class AppController {
   }
 
   // --- LOGIKA MULTI-TENANT OTOMATIS PADA HALAMAN UTAMA ---
-  @Get()
+@Get()
   async getMenuByToken(@Query('token') token: string, @Res() res: Response) {
     if (!token) {
       return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif;'>Link menu tidak valid atau kedaluwarsa.</h2>");
@@ -161,8 +210,19 @@ export class AppController {
       return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif;'>Link menu tidak valid atau kedaluwarsa.</h2>");
     }
 
-    if (resto.statusAktif === false) {
+    // 1. Cek jika resto dinonaktifkan oleh admin
+    if (resto.statusAktif === false || Number(resto.statusAktif) === 0) {
       return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif; color:red;'>Restoran ini sedang dinonaktifkan oleh Administrator.</h2>");
+    }
+
+    // 2. Cek jika toko sedang dalam mode Maintenance (isMaintenance == true / 1)
+    if (resto.isMaintenance === true || Number(resto.isMaintenance) === 1) {
+      return res.send(`
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #111; color: #ff4d4d; font-family: sans-serif; text-align: center; padding: 20px;">
+            <h1 style="font-size: 28px; margin-bottom: 10px;">⚠️ Mohon Maaf, Toko Sedang Maintenance</h1>
+            <p style="color: #aaa; font-size: 16px;">Silakan kunjungi kembali beberapa saat lagi.</p>
+        </div>
+      `);
     }
     
     const filePath = join(process.cwd(), 'public', 'index.html');
@@ -178,7 +238,6 @@ export class AppController {
     htmlContent = htmlContent.replace('</head>', injectedScript + '</head>');
     return res.send(htmlContent);
   }
-
   @Get('resto/detail-token')
   async getRestoToken(@Query('restoId') restoId: number) {
     const resto = await this.restoRepo.findOne({ where: { id: Number(restoId) } });
@@ -366,12 +425,11 @@ export class AppController {
     return { data: d, totalOmzet: d.reduce((s, r) => s + Number(r.totalBayar), 0) };
   }
 
-@Post('verifikasi_karyawan')
+  @Post('verifikasi_karyawan')
   async verifikasiKaryawan(@Body() body: { username: string; password: string; restoId: number }) {
     try {
       const result = await this.authService.validateKaryawan(body.username || 'kasir', body.password, body.restoId);
       
-      // Jika validateKaryawan mengembalikan null/false/kosong (password salah)
       if (!result) {
         throw new HttpException('Password salah', HttpStatus.UNAUTHORIZED);
       }
@@ -382,10 +440,10 @@ export class AppController {
         user: result,
       };
     } catch (error) {
-      // Wajib melempar status UNAUTHORIZED agar ditangkap oleh frontend sebagai error
       throw new HttpException('Password salah atau akses ditolak', HttpStatus.UNAUTHORIZED);
     }
   }
+
   @Post('menu/update-location')
   async updateLocation(@Body() body: { restoId: number, lat: number, lon: number }) {
     await this.restoRepo.update(this.validateRestoId(body.restoId), { latitude: body.lat, longitude: body.lon });
@@ -456,7 +514,8 @@ export class AppController {
     }
     throw new HttpException('Password lama salah!', HttpStatus.BAD_REQUEST);
   }
-@Get(['api/resto/public-status', 'resto/api/resto/public-status'])
+
+  @Get(['api/resto/public-status', 'resto/api/resto/public-status'])
   async getPublicStatus(@Query('token') token: string) {
     if (!token) {
       return { is_buka: true };
@@ -473,35 +532,28 @@ export class AppController {
       return { is_buka: true };
     }
 
-    return { is_buka: resto.statusAktif !== false };
-  }
-@Post(['update-status', '/resto/update-status', 'resto/update-status'])
-  async updateStatus(@Body() body: { status: boolean; restoId?: number; token?: string }) {
-    try {
-      let resto = null;
-      
-      // Cari berdasarkan restoId jika ada, atau ambil data pertama/terakhir di database
-      if (body.restoId) {
-        resto = await this.restoRepo.findOne({ where: { id: Number(body.restoId) } });
-      } else {
-        resto = await this.restoRepo.findOne({ order: { id: 'DESC' } });
-      }
-
-      if (!resto) {
-        return { success: false, message: 'Resto tidak ditemukan' };
-      }
-
-      // Pastikan nama kolom di database Anda sesuai (misal: statusAktif, is_buka, atau status)
-      // Jika kolom di database bernama 'statusAktif':
-      resto.statusAktif = body.status;
-      
-      await this.restoRepo.save(resto);
-      return { success: true, message: 'Status toko berhasil diperbarui' };
-    } catch (error) {
-      console.error('Error update status:', error);
-      return { success: false, message: error.message };
+    if (resto.statusAktif === false || Number(resto.statusAktif) === 0) {
+      return { is_buka: false, message: 'Restoran dinonaktifkan oleh Administrator' };
     }
+
+    if (resto.isMaintenance === true || Number(resto.isMaintenance) === 1) {
+      return { is_buka: false, message: 'Restoran sedang maintenance' };
+    }
+
+    return { is_buka: true };
   }
+
+  @Post('update-status')
+  async updateStatus(@Body() body: { restoId: number, status: boolean }) {
+    const restoId = this.validateRestoId(body.restoId);
+    const resto = await this.restoRepo.findOne({ where: { id: restoId } });
+    if (!resto) throw new HttpException('Resto tidak ditemukan', HttpStatus.NOT_FOUND);
+
+    resto.isMaintenance = !body.status; 
+    await this.restoRepo.save(resto);
+    return { success: true, is_buka: body.status };
+  }
+
   @Post('update-midtrans')
   async updateMidtrans(@Body() body: { restoId: any, server_key: string, client_key: string }) {
     const rId = this.validateRestoId(body.restoId);

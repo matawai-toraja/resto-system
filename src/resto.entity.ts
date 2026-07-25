@@ -12,20 +12,28 @@ export class Resto {
   @Column({ type: 'varchar', length: 255, nullable: false, unique: true })
   username: string;
 
+@Column({ type: 'boolean', default: false, nullable: true })
+isMaintenance: boolean;
+
 @Column({ default: true })
 statusAktif: boolean;
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  
+@Column({ type: 'varchar', length: 255, nullable: false })
   password: string;
 
   @Column({ nullable: true })
   nomorWa: string;
 @Column({ nullable: true })
+wa_admin: string;
+@Column({ nullable: true })
 tokenUnik: string;
+
 @Column({ type: 'decimal', precision: 10, scale: 8, nullable: true })
 latitude: number;
 
 @Column({ type: 'decimal', precision: 10, scale: 8, nullable: true })
 longitude: number;
+
 @Column({ type: 'varchar', length: 255, nullable: true })
   midtransServerKey: string;
 

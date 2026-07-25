@@ -2,102 +2,101 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Login Resto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Resto - Sistem Kasir & Manajemen</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
-            --glass-card: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-        }
-
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--bg-gradient);
-            background-attachment: fixed;
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-
-        .login-box { 
-            margin: auto; 
-            width: 320px; 
-            text-align: center; 
-            background: var(--glass-card); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        } 
-
-        input { 
-            padding: 12px; 
-            width: 100%; 
-            margin-bottom: 15px; 
-            box-sizing: border-box; 
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            color: var(--text-primary);
-            outline: none;
-            font-family: 'Segoe UI', sans-serif;
+        /* Animasi pergerakan latar belakang estetik */
+        @keyframes blob1 {
+            0%, 100% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.2); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
         }
-
-        input::placeholder {
-            color: var(--text-secondary);
+        @keyframes blob2 {
+            0%, 100% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(-40px, 30px) scale(1.1); }
+            66% { transform: translate(20px, -30px) scale(0.95); }
         }
-
-        button { 
-            padding: 12px 20px; 
-            cursor: pointer; 
-            width: 100%; 
-            background: linear-gradient(135deg, #667eea, #764ba2); 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            font-weight: 600;
-            font-family: 'Segoe UI', sans-serif;
-            transition: opacity 0.2s;
+        .animate-blob1 {
+            animation: blob1 8s infinite ease-in-out;
         }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        h2 {
-            color: var(--text-primary);
-            margin-bottom: 20px;
-        }
-
-        .footer-text {
-            margin-top: 20px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            letter-spacing: 0.5px;
+        .animate-blob2 {
+            animation: blob2 10s infinite ease-in-out;
         }
     </style>
 </head>
-<body>
-    <div class="login-box">
-        <h2>Login Akses</h2>
-        <!-- Tambahkan input username -->
-        <input type="text" id="username" placeholder="Username Resto">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Masuk</button>
-        <div class="footer-text">kompas digital</div>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+
+    <!-- Latar Belakang Estetik dengan Efek Cahaya Gradasi Bergerak (Tidak Monoton) -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-indigo-600/30 rounded-full blur-[120px] animate-blob1"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fuchsia-600/20 rounded-full blur-[140px] animate-blob2"></div>
+        <div class="absolute top-1/2 right-10 w-60 h-60 bg-blue-500/20 rounded-full blur-[100px]"></div>
+    </div>
+
+    <!-- Kotak Form Utama -->
+    <div class="w-full max-w-sm bg-slate-900/60 backdrop-blur-2xl border border-white/10 p-6 sm:p-8 rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] relative z-10">
+        
+        <!-- Header / Logo Area -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/30 mb-3 text-white text-2xl">
+                🍽️
+            </div>
+            <h1 class="text-xl font-bold text-white tracking-tight">Login Akses Resto</h1>
+            <p class="text-xs text-slate-400 mt-1">Kelola restoran dan pesanan dengan mudah & modern</p>
+        </div>
+
+        <!-- Form Input -->
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Username Resto</label>
+                <input type="text" id="username" placeholder="Masukkan username resto" 
+                    class="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition placeholder:text-slate-600">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Kata Sandi</label>
+                <input type="password" id="password" placeholder="••••••••" 
+                    class="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition placeholder:text-slate-600">
+            </div>
+
+            <!-- Tautan Tambahan -->
+            <div class="flex items-center justify-between text-xs pt-1">
+                <a href="/resto/page/register" class="text-slate-400 hover:text-indigo-400 transition">
+                    Belum punya akun? <span class="text-indigo-400 font-semibold">Daftar</span>
+                </a>
+                <a href="/resto/page/ganti-password" class="text-indigo-400 hover:underline font-medium">
+                    Ganti / Lupa Password?
+                </a>
+            </div>
+
+            <!-- Tombol Masuk -->
+            <button onclick="login()" 
+                class="w-full mt-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold py-3.5 rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 active:scale-[0.98]">
+                Masuk ke Sistem
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-6 text-center border-t border-slate-800/60 pt-4">
+            <p class="text-[10px] text-slate-500 tracking-widest uppercase">Kompas Digital</p>
+        </div>
     </div>
 
     <script>
     async function login() {
         const user = document.getElementById('username').value;
         const pass = document.getElementById('password').value;
+
+        if (!user || !pass) {
+            alert('Username dan password wajib diisi!');
+            return;
+        }
 
         try {
             const response = await fetch('/auth/login', {
@@ -106,29 +105,23 @@
                 body: JSON.stringify({ username: user, password: pass })
             });
 
-            // Membaca hasil dari server
             const data = await response.json();
 
-        if (response.ok) {
-            // Simpan data jika berhasil
-            localStorage.setItem('authKey', data.token || "");
-            localStorage.setItem('token', data.token || "");
-            localStorage.setItem('userRole', data.role || 'admin');
+            if (response.ok) {
+                localStorage.setItem('authKey', data.token || "");
+                localStorage.setItem('token', data.token || "");
+                localStorage.setItem('userRole', data.role || 'admin');
 
-            // Menyimpan restoId
-            if (data.restoId) {
-                localStorage.setItem('restoId', data.restoId);
-            }
-            
-            // TAMBAHKAN INI: Menyimpan nama resto dari backend
-            if (data.namaResto) {
-                localStorage.setItem('namaResto', data.namaResto);
-            }
-            
-            // Redirect ke dashboard
-            window.location.href = '/resto/page/dashboard';
-        } else {
-                // Tampilkan error dari server jika login gagal
+                if (data.restoId) {
+                    localStorage.setItem('restoId', data.restoId);
+                }
+                
+                if (data.namaResto) {
+                    localStorage.setItem('namaResto', data.namaResto);
+                }
+                
+                window.location.href = '/resto/page/dashboard';
+            } else {
                 alert(data.message || "Login Gagal");
             }
         } catch (error) {
@@ -136,6 +129,6 @@
             alert('Terjadi kesalahan koneksi. Pastikan server aktif.');
         }
     }
-   </script>
+    </script>
 </body>
 </html>
