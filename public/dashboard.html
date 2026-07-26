@@ -389,8 +389,26 @@
                 <button onclick="savePrinterSettings()" style="background: #475569;"><i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan Printer</button>
             </div>
 
-        </div>
+         <div class="settings-card">
+    <h3><i class="fas fa-key"></i> Token Unik Akses Menu</h3>
+    <label>Buat atau Ubah Token Akses Menu</label>
+    
+    <div style="display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap;">
+        <!-- Input murni untuk diketik user sendiri dengan contoh di placeholder -->
+        <input type="text" id="input-token-unik" placeholder="Contoh: kedai-kopi-maju" 
+               style="flex: 1; min-width: 200px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); padding: 10px; border-radius: 6px; color: var(--text-primary);">
+        
+        <!-- Tombol Simpan Token Saja -->
+        <button type="button" onclick="konfirmasiSimpanTokenCustom()" 
+                style="background: #10b981; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; width: auto;">
+            <i class="fa-solid fa-save"></i> Simpan Token
+        </button>
     </div>
+    
+    <small style="display: block; margin-top: 8px; color: #f59e0b; font-size: 11px;">
+        ⚠️ Perhatian: buat token baru jika link di menu pelanggan blm ada atau mau megganti token lama⚠️  Mengubah token akan membuat QR Code atau link menu lama yang sudah dicetak menjadi tidak aktif!
+    </small>
+</div>
 </template>
 
 <script>
@@ -431,6 +449,7 @@ function tampilkanHalamanPengaturan() {
     contentArea.appendChild(template.content.cloneNode(true));
     
     loadDashboardSettings();
+    loadTokenUnikSetting();
 }
 
 async function bukaHalaman(url, butuhVerifikasi, elementBtn) {
@@ -649,7 +668,60 @@ async function cekStatusToko() {
         console.error("Gagal sinkronisasi status toko:", e);
     }
 }
+function konfirmasiSimpanTokenCustom() {
+    const tokenInput = document.getElementById('input-token-unik');
+    const tokenBaru = tokenInput.value.trim();
 
+    if (!tokenBaru) {
+      alert("Token tidak boleh kosong! Silakan ketik nama token yang Anda inginkan.");
+      tokenInput.focus();
+      return;
+    }
+
+    // ⚠️ PERINGATAN KERAS UNTUK USER
+    const warningPesan = 
+      "⚠️ PERINGATAN KERAS!\n\n" +
+      "Anda akan mengubah token akses menu resto Anda menjadi: [" + tokenBaru + "].\n\n" +
+      "Jika Anda mengubah token ini, SEMUA QR Code, stiker meja, atau link lama yang sudah dibagikan kepada pelanggan atau dicetak AKAN MATI / TIDAK BISA DIAKSES LAGI.\n\n" +
+      "Apakah Anda benar-benar yakin ingin melanjutkan?";
+
+    if (confirm(warningPesan)) {
+      kirimTokenBaruKeBackend(tokenBaru);
+    }
+  }
+
+  // Fungsi Komunikasi ke Backend NestJS
+  async function kirimTokenBaruKeBackend(tokenBaru) {
+    try {
+      const restoId = window.currentRestoId || localStorage.getItem('restoId'); 
+
+      if (!restoId) {
+        alert("Sesi restoran tidak ditemukan. Silakan login ulang.");
+        return;
+      }
+
+      const response = await fetch('/resto/simpan-custom-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restoId: Number(restoId),
+          customToken: tokenBaru
+        })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        alert("Berhasil! Token akses menu baru Anda sudah aktif.");
+        location.reload(); // Refresh halaman untuk memperbarui link/QR code pelanggan
+      } else {
+        alert("Gagal mengubah token: " + (result.message || "Token sudah digunakan oleh restoran lain."));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan jaringan saat menyimpan token.");
+    }
+  }
 async function toggleStatusMaintenance() {
     const restoId = localStorage.getItem('restoId');
     if (!restoId) return alert("Resto ID tidak ditemukan!");
@@ -735,6 +807,80 @@ async function savePrinterSettings() {
         body: JSON.stringify({ resto_id: restoId, auto_print: isAutoPrint })
     });
     if (res.ok) alert('Pengaturan printer berhasil disimpan!');
+}
+
+async function loadTokenUnikSetting() {
+    const restoId = localStorage.getItem('restoId');
+    if (!restoId) return;
+    try {
+        const response = await fetch(`/resto/get-token-unik?restoId=${restoId}`);
+        const data = await response.json();
+        if (data && data.tokenUnik && document.getElementById('input-token-unik')) {
+            document.getElementById('input-token-unik').value = data.tokenUnik;
+        }
+    } catch (e) {
+        console.error("Gagal memuat token unik untuk pengaturan", e);
+    }
+}
+window.onload = async function() {
+    const restoId = localStorage.getItem('restoId');
+    const userRole = localStorage.getItem('userRole');
+
+    if (userRole === 'kasir') {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+        const titleEl = document.getElementById('panel-title');
+        if (titleEl) titleEl.innerText = 'Panel Kasir';
+    }
+
+    if (restoId) {
+        try {
+            const response = await fetch(`/resto/get-token-unik?restoId=${restoId}`);
+            const data = await response.json();
+            
+            const linkMenuInput = document.getElementById('linkMenuSaya');
+            const inputTokenUnik = document.getElementById('input-token-unik');
+
+            if (data && data.tokenUnik) {
+                if (inputTokenUnik) inputTokenUnik.value = data.tokenUnik;
+                if (linkMenuInput) linkMenuInput.value = `${window.location.origin}/resto?token=${data.tokenUnik}`;
+            } else {
+                if (inputTokenUnik) inputTokenUnik.value = '';
+                if (linkMenuInput) linkMenuInput.value = 'Silakan buat token unik di Pengaturan terlebih dahulu!';
+            }
+        } catch (e) {
+            console.error("Gagal memuat token:", e);
+            const linkMenuInput = document.getElementById('linkMenuSaya');
+            if (linkMenuInput) linkMenuInput.value = 'Silakan buat token unik di Pengaturan terlebih dahulu!';
+        }
+    }
+
+    if (typeof cekStatusToko === 'function') {
+        cekStatusToko();
+    }
+};
+function generateTokenUnik() {
+    const restoId = localStorage.getItem('restoId');
+    if (!restoId) return alert("Resto ID tidak ditemukan!");
+    
+    fetch('/resto/generate-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restoId: Number(restoId) })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.tokenUnik) {
+            document.getElementById('input-token-unik').value = data.tokenUnik;
+            alert("Token unik berhasil dibuat!");
+            location.reload(); 
+        } else {
+            alert("Gagal membuat token.");
+        }
+    })
+    .catch(err => {
+        console.error("Error:", err);
+        alert("Terjadi kesalahan jaringan.");
+    });
 }
 </script>
 </body>

@@ -37,13 +37,13 @@
     <!-- Teks Sambutan di Luar Form -->
    <div class="text-center mb-6 relative z-10 max-w-lg px-4">
     <span class="px-3.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-full tracking-wider inline-block mb-2 shadow-sm">
-        tingkatkan dan mudahkan sistem kerja kita dengan jalur kompas
+        tingkatkan dan mudahkan sistem kerja kita dengan jalur KOMPAS
     </span>
         </span>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 tracking-tight">
             SELAMAT DATANG DI <p> KOMPAS DIGITAL</p>
         </h1>
-        <p class="text-xs sm:text-sm text-slate-400 mt-1.5">Daftarkan resto cafe Anda dan nikmati langsung kemudahan manajemen kasir modern ini </p>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1.5">Daftarkan resto cafe Anda dan nikmati langsung kemudahan manajemen menu digital  terintegrasi real time yang  modern ini </p>
     </div>
 
     <!-- Kotak Form Registrasi Utama -->
@@ -59,7 +59,7 @@
             </div>
         </div>
 
-        <!-- Form Input (Tanpa Kolom No HP) -->
+
         <div class="space-y-3.5">
             <div>
                 <label class="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">Nama Restoran</label>
@@ -78,6 +78,11 @@
                 <input type="password" id="password" placeholder="Password" 
                     class="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition placeholder:text-slate-600">
             </div>
+<div style="margin-bottom: 15px;">
+    <label style="display: block; font-size: 12px; margin-bottom: 5px; color: var(--text-secondary);">Nomor WhatsApp Admin</label>
+    <input type="text" id="registerNoHp" placeholder="Contoh: 081234567890" 
+           style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 6px; color: white;">
+</div>
 
             <div class="pt-2 border-t border-slate-800/80">
                 <h4 class="text-xs font-bold text-emerald-400 mb-2 uppercase tracking-wide">Akun Kasir (Karyawan)</h4>
@@ -117,26 +122,84 @@
     </div>
 
     <script>
-        async function register() {
-            const data = {
-                namaResto: document.getElementById('namaResto').value,
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value,
-                usernameKasir: document.getElementById('usernameKasir').value,
-                passwordKasir: document.getElementById('passwordKasir').value
-            };
+async function handleRegister() {
+    // Ambil nilai dari setiap input form
+    const namaResto = document.getElementById('registerNamaResto').value;
+    const username = document.getElementById('registerUsername').value;
+    const password = document.getElementById('registerPassword').value;
+    const noHp = document.getElementById('registerNoHp').value; // Ambil nilai No HP
+    const usernameKasir = document.getElementById('registerUsernameKasir').value;
+    const passwordKasir = document.getElementById('registerPasswordKasir').value;
 
-           const response = await fetch('/resto/super-admin/api/tambah-tenant', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            if (response.ok) {
-                alert("Pendaftaran berhasil! Silakan login.");
-                window.location.href = '/resto/page/login';
-            } else {
-                const err = await response.json();
-                alert("Gagal: " + (err.message || "Terjadi kesalahan"));
+    // 🔍 CETAK KE CONSOLE BROWSER UNTUK MEMASTIKAN ISINYA TIDAK KOSONG
+    console.log("Data yang akan dikirim:", { namaResto, username, noHp, usernameKasir });
+
+    try {
+        const response = await fetch('/resto/super-admin/api/tambah-tenant', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                namaResto,
+                username,
+                password,
+                noHp,
+                usernameKasir,
+                passwordKasir
+            })
+        });
+
+        const result = await response.json();
+        console.log("Respon dari server:", result);
+
+        if (response.ok && result.success) {
+            alert("Registrasi berhasil!");
+            window.location.href = '/resto/page/login';
+        } else {
+            alert("Gagal: " + (result.message || "Terjadi kesalahan"));
+        }
+    } catch (err) {
+        console.error("Error jaringan:", err);
+        alert("Terjadi kesalahan jaringan.");
+    }
+}
+        async function register() {
+            // Ambil nilai dari setiap input form dengan ID yang benar sesuai HTML
+            const namaResto = document.getElementById('namaResto').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const noHp = document.getElementById('registerNoHp').value; // <-- Ambil No HP Admin dengan benar
+            const usernameKasir = document.getElementById('usernameKasir').value;
+            const passwordKasir = document.getElementById('passwordKasir').value;
+
+            // 🔍 Cetak ke console untuk memastikan datanya terbaca lengkap
+            console.log("Data yang akan dikirim:", { namaResto, username, password, noHp, usernameKasir });
+
+            try {
+                const response = await fetch('/resto/super-admin/api/tambah-tenant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        namaResto,
+                        username,
+                        password,
+                        noHp, // <-- Terkirim ke backend dengan aman!
+                        usernameKasir,
+                        passwordKasir
+                    })
+                });
+
+                const result = await response.json();
+                console.log("Respon dari server:", result);
+
+                if (response.ok && result.success) {
+                    alert("Registrasi berhasil! Silakan login.");
+                    window.location.href = '/resto/page/login';
+                } else {
+                    alert("Gagal: " + (result.message || "Terjadi kesalahan"));
+                }
+            } catch (err) {
+                console.error("Error jaringan:", err);
+                alert("Terjadi kesalahan jaringan.");
             }
         }
     </script>

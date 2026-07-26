@@ -6,42 +6,44 @@ export class Resto {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @Column({ name: 'namaResto', type: 'varchar', length: 255, nullable: false })
   namaResto: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: false, unique: true })
+  @Column({ name: 'username', type: 'varchar', length: 255, nullable: false, unique: true })
   username: string;
 
-@Column({ type: 'boolean', default: false, nullable: true })
-isMaintenance: boolean;
-
-@Column({ default: true })
-statusAktif: boolean;
-  
-@Column({ type: 'varchar', length: 255, nullable: false })
+  @Column({ name: 'password', type: 'varchar', length: 255, nullable: false })
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ name: 'wa_admin', nullable: true })
+  wa_admin: string;
+
+  @Column({ name: 'nomorWa', nullable: true })
   nomorWa: string;
-@Column({ nullable: true })
-wa_admin: string;
-@Column({ nullable: true })
-tokenUnik: string;
 
-@Column({ type: 'decimal', precision: 10, scale: 8, nullable: true })
-latitude: number;
+  @Column({ name: 'latitude', type: 'decimal', precision: 10, scale: 8, nullable: true })
+  latitude: number;
 
-@Column({ type: 'decimal', precision: 10, scale: 8, nullable: true })
-longitude: number;
+  @Column({ name: 'longitude', type: 'decimal', precision: 10, scale: 8, nullable: true })
+  longitude: number;
 
-@Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ name: 'midtransServerKey', type: 'varchar', length: 255, nullable: true })
   midtransServerKey: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ name: 'midtransClientKey', type: 'varchar', length: 255, nullable: true })
   midtransClientKey: string;
 
-@Column({ type: 'int', default: 5 }) // default 5 km
-radiusJarak: number;
+  @Column({ name: 'radiusJarak', type: 'int', default: 5 })
+  radiusJarak: number;
+
+  @Column({ name: 'tokenUnik', nullable: true })
+  tokenUnik: string;
+
+  @Column({ name: 'statusAktif', default: true })
+  statusAktif: boolean;
+
+  @Column({ name: 'isMaintenance', type: 'boolean', default: false, nullable: true })
+  isMaintenance: boolean;
 
   @OneToMany(() => Menu, (menu) => menu.resto)
   menus: Menu[];

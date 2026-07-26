@@ -55,7 +55,7 @@ export class AppController {
     namaResto: string; 
     username: string; 
     password: string; 
-    noHp?: string; // Tambahkan parameter noHp
+    noHp?: string;           // 1. Tangkap parameter ini dari frontend
     usernameKasir?: string; 
     passwordKasir?: string; 
   }) {
@@ -70,9 +70,11 @@ export class AppController {
         namaResto: body.namaResto,
         username: body.username,
         password: hashedAdminPassword,
-        wa_admin: body.noHp || null, // Masukkan nomor HP ke kolom wa_admin
+        wa_admin: body.noHp || null, // 2. Masukkan langsung ke kolom wa_admin
         statusAktif: true
       });
+      
+      // 3. Simpan dan tangkap hasilnya ke variabel 'savedResto' agar ID-nya bisa dipakai
       const savedResto = await this.restoRepo.save(restoBaru);
 
       if (body.usernameKasir && body.passwordKasir) {
@@ -81,7 +83,7 @@ export class AppController {
         const kasirBaru = this.karyawanRepo.create({
           username: body.usernameKasir,
           password: hashedKasirPassword,
-          restoId: savedResto.id
+          restoId: savedResto.id // Sekarang aman, savedResto sudah didefinisikan!
         });
         await this.karyawanRepo.save(kasirBaru);
       }
@@ -102,13 +104,13 @@ export class AppController {
     await this.restoRepo.save(resto);
     return { success: true, statusAktif: resto.statusAktif };
   }
-@Get('page/ganti-password')
-getGantiPasswordPage(@Res() res: Response) {
-    return res.sendFile(join(process.cwd(), 'public', 'ganti-password.html'));
-}
 
-  // === PINDAHKAN DUA FUNGSI INI KE SINI (DI LUAR FUNGSI LAIN, DI DALAM CLASS) ===
-@Post('api/ganti-password-mandiri')
+  @Get('page/ganti-password')
+  getGantiPasswordPage(@Res() res: Response) {
+    return res.sendFile(join(process.cwd(), 'public', 'ganti-password.html'));
+  }
+
+  @Post('api/ganti-password-mandiri')
   async gantiPasswordMandiri(@Body() body: any) {
       const { username, passwordLama, passwordBaru } = body;
       
@@ -117,19 +119,18 @@ getGantiPasswordPage(@Res() res: Response) {
           return { success: false, message: 'Username restoran tidak ditemukan!' };
       }
 
-      // Cocokkan password lama menggunakan bcrypt.compare
       const isPasswordValid = await bcrypt.compare(passwordLama, resto.password);
       if (!isPasswordValid) {
           return { success: false, message: 'Password lama salah!' };
       }
 
-      // Enkripsi password baru sebelum disimpan ke database
       resto.password = await bcrypt.hash(passwordBaru, 10);
       await this.restoRepo.save(resto);
 
       return { success: true, message: 'Password berhasil diubah' };
   }
-@Post('api/update-password-baru')
+
+  @Post('api/update-password-baru')
   async updatePasswordBaru(@Body() body: any) {
       const { username, passwordBaru } = body;
 
@@ -138,7 +139,6 @@ getGantiPasswordPage(@Res() res: Response) {
           return { success: false, message: 'Username restoran tidak ditemukan!' };
       }
 
-      // 🔴 VALIDASI KETAT: Cek apakah password di database masih ada / belum di-reset oleh Super Admin
       if (resto.password && resto.password.trim() !== '') {
           return { 
               success: false, 
@@ -146,13 +146,13 @@ getGantiPasswordPage(@Res() res: Response) {
           };
       }
 
-      // Jika password di database sudah kosong/direset, baru enkripsi dan simpan password baru
       const hashedPassword = await bcrypt.hash(passwordBaru, 10);
       resto.password = hashedPassword;
       await this.restoRepo.save(resto);
 
       return { success: true, message: 'Password baru berhasil disimpan' };
   }
+
   @Post('super-admin/api/hapus-tenant')
   async hapusTenantGlobal(@Body() body: { restoId: any }) {
     try {
@@ -192,13 +192,23 @@ getGantiPasswordPage(@Res() res: Response) {
     return { tokenUnik: resto.tokenUnik };
   }
 
+  // --- API GENERATE TOKEN UNIK ---
+  @Post('generate-token')
+  async generateToken(@Body('restoId') restoId: number) {
+    const rId = this.validateRestoId(restoId);
+    const tokenUnik = 'token-' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    await this.restoRepo.update(rId, { tokenUnik });
+    return { tokenUnik };
+  }
+
   // --- LOGIKA MULTI-TENANT OTOMATIS PADA HALAMAN UTAMA ---
-@Get()
+ @Get()
   async getMenuByToken(@Query('token') token: string, @Res() res: Response) {
+    // Hapus total parameter restoid atau query ID angka untuk keamanan!
     if (!token) {
-      return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif;'>Link menu tidak valid atau kedaluwarsa.</h2>");
+      return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif;'>Akses ditolak: Link menu wajib menggunakan Token Unik yang sah.</h2>");
     }
-    
+
     const resto = await this.restoRepo.findOne({ 
       where: [
         { tokenUnik: token },
@@ -210,12 +220,10 @@ getGantiPasswordPage(@Res() res: Response) {
       return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif;'>Link menu tidak valid atau kedaluwarsa.</h2>");
     }
 
-    // 1. Cek jika resto dinonaktifkan oleh admin
     if (resto.statusAktif === false || Number(resto.statusAktif) === 0) {
       return res.send("<h2 style='text-align:center; margin-top:50px; font-family:sans-serif; color:red;'>Restoran ini sedang dinonaktifkan oleh Administrator.</h2>");
     }
 
-    // 2. Cek jika toko sedang dalam mode Maintenance (isMaintenance == true / 1)
     if (resto.isMaintenance === true || Number(resto.isMaintenance) === 1) {
       return res.send(`
         <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #111; color: #ff4d4d; font-family: sans-serif; text-align: center; padding: 20px;">
@@ -237,6 +245,28 @@ getGantiPasswordPage(@Res() res: Response) {
     
     htmlContent = htmlContent.replace('</head>', injectedScript + '</head>');
     return res.send(htmlContent);
+  }
+@Post('simpan-custom-token')
+  async simpanCustomToken(@Body() body: { restoId: number; customToken: string }) {
+    const rId = this.validateRestoId(body.restoId);
+    let tokenBaru = body.customToken ? body.customToken.trim() : '';
+
+    if (!tokenBaru) {
+      throw new BadRequestException("Token tidak boleh kosong!");
+    }
+
+    // Bersihkan karakter spasi atau simbol berbahaya agar aman jadi URL query
+    tokenBaru = tokenBaru.replace(/[^a-zA-Z0-9-_]/g, '-').toLowerCase();
+
+    // Cek apakah token custom tersebut sudah dipakai oleh resto lain
+    const existingResto = await this.restoRepo.findOne({ where: { tokenUnik: tokenBaru } });
+    if (existingResto && existingResto.id !== rId) {
+      throw new BadRequestException("Token ini sudah digunakan oleh restoran lain. Silakan gunakan nama lain!");
+    }
+
+    // Simpan token baru ke database
+    await this.restoRepo.update(rId, { tokenUnik: tokenBaru });
+    return { success: true, tokenUnik: tokenBaru };
   }
   @Get('resto/detail-token')
   async getRestoToken(@Query('restoId') restoId: number) {
@@ -553,7 +583,8 @@ getGantiPasswordPage(@Res() res: Response) {
     await this.restoRepo.save(resto);
     return { success: true, is_buka: body.status };
   }
-@Post('edit-harga')
+
+  @Post('edit-harga')
   async editHarga(@Body() data: { id: number; harga: number }) {
     await this.menuRepo.update(data.id, { harga: data.harga });
     return { status: "Harga Diperbarui" };
