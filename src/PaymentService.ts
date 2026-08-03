@@ -62,17 +62,22 @@ export class PaymentService {
         },
       };
 
-      const authString = Buffer.from(cleanServerKey + ':').toString('base64');
+    const isProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true';
+const midtransUrl = isProduction 
+  ? 'https://app.midtrans.com/snap/v1/transactions' 
+  : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
 
-      const responseMidtrans = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Basic ${authString}`
-        },
-        body: JSON.stringify(parameter)
-      });
+const authString = Buffer.from(cleanServerKey + ':').toString('base64');
+
+const responseMidtrans = await fetch(midtransUrl, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `Basic ${authString}`
+  },
+  body: JSON.stringify(parameter)
+});
 
       const hasilTransaksi = await responseMidtrans.json();
 

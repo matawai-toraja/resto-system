@@ -3,33 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Digital Resto</title>
+    <title>Menu Digital Resto - Desktop Display</title>
     <!-- Google Fonts & FontAwesome untuk ikon modern -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-@media (max-width: 768px) {
-    .menu-grid {
-        grid-template-columns: repeat(2, 1fr); /* Ini yang membuat jadi 2 kolom di HP */
-    }
-    
-    .menu-card img {
-        height: 140px; /* Ubah ke 140px atau 150px agar gambarnya memanjang ke bawah */
-        object-fit: cover;
-    }
-}
-
-.modal-content, #modal-keranjang > div, .modal-dialog {
-    max-height: 85vh;   /* Batasi tinggi maksimal jendela modal */
-    overflow-y: auto;   /* Memunculkan kembali scrollbar utama yang mulus */
-}
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --bg-gradient: linear-gradient(135deg, #090d16 0%, #17153a 50%, #261138 100%);
             --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.08);
             --glass-card: rgba(255, 255, 255, 0.05);
-            --glass-card-hover: rgba(255, 255, 255, 0.08);
+            --glass-card-hover: rgba(255, 255, 255, 0.09);
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --accent-primary: #8b5cf6;
@@ -40,104 +25,188 @@
             background: var(--bg-gradient) !important; 
             background-attachment: fixed !important;
             margin: 0; 
-            padding: 20px; 
+            padding: 30px; 
             color: var(--text-primary) !important; 
             min-height: 100vh;
+            box-sizing: border-box;
         }
 
-        .container-utama { max-width: 500px; margin: auto; }
+        .container-utama { 
+            max-width: 1350px; 
+            margin: auto; 
+        }
 
-        /* Kartu Resto & Header dengan Efek Glassmorphism Elegan */
-        .resto-card, .modal-content, .menu-card { 
-            background: var(--glass-card) !important; 
+        /* HEADER DIKEMBALIKAN KE TENGAH SEPERTI SEMULA, TAPI LEBAR */
+        #header-container {
+            background: var(--glass-bg) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
             border: 1px solid var(--glass-border) !important;
-            color: var(--text-primary) !important;
-            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3) !important; 
+            border-radius: 24px;
+            padding: 25px;
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            margin-bottom: 30px;
+            box-shadow: 0 12px 40px 0 rgba(0,0,0,0.4);
+            text-align: center;
         }
 
-        .resto-card { 
-            padding: 25px; 
-            border-radius: 24px !important; 
-            text-align: center; 
-            margin-bottom: 20px; 
+        #nama-restoran {
+            color: var(--text-primary) !important;
+            font-size: 32px;
+            margin: 8px 0;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .btn-wa-elegan { 
-            background: linear-gradient(135deg, #27ae60, #2ecc71); 
-            color: white; 
-            border: none; 
-            padding: 12px 25px; 
+            background: rgba(37, 211, 102, 0.15); 
+            color: #4ade80; 
+            border: 1px solid rgba(37, 211, 102, 0.3); 
+            padding: 8px 22px; 
             border-radius: 50px; 
             font-weight: 600; 
             cursor: pointer; 
+            transition: 0.2s;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .btn-wa-elegan:hover {
+            background: rgba(37, 211, 102, 0.25);
         }
 
+        /* Input & Filter Form Tengah */
+        .filter-search-box {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        #filter, #searchInput {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--glass-border) !important;
+            padding: 10px 16px !important;
+            border-radius: 12px !important;
+            font-size: 14px !important;
+            outline: none;
+        }
+
+        #filter {
+            cursor: pointer;
+        }
+
+        #filter option {
+            background-color: #17153a !important;
+            color: var(--text-primary) !important;
+        }
+
+        #searchInput {
+            width: 220px;
+        }
+
+        #searchInput::placeholder {
+            color: var(--text-secondary) !important;
+        }
+
+        /* GRID MENU UTAMA: Lebar penuh, 5 Kolom di Desktop */
         .menu-grid { 
             display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 22px; 
+            max-width: 1350px; 
+            margin: auto; 
+            width: 100%; 
+            box-sizing: border-box;
         }
 
-      @media (max-width: 768px) {
-    .menu-grid {
-        grid-template-columns: repeat(2, 1fr) !important; /* Paksa tetap 2 kolom di HP */
-        gap: 10px; /* Jarak antar kartu sedikit dipersempit agar pas di layar HP */
-    }
-}
+        @media (max-width: 1200px) {
+            .menu-grid { grid-template-columns: repeat(4, 1fr); }
+        }
 
+        @media (max-width: 900px) {
+            .menu-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            body { padding: 15px; }
+        }
+
+        /* Kartu Menu Lebar & Proporsional */
         .menu-card { 
-            padding: 12px; 
-            border-radius: 20px !important; 
+            background: var(--glass-card) !important; 
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 10px 30px 0 rgba(0,0,0,0.25) !important; 
+            padding: 16px; 
+            border-radius: 22px !important; 
             text-align: center; 
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .menu-card:hover {
             background: var(--glass-card-hover) !important;
-            transform: translateY(-4px);
-            border-color: rgba(139, 92, 246, 0.3) !important;
+            transform: translateY(-6px);
+            border-color: rgba(139, 92, 246, 0.4) !important;
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.15) !important;
         }
 
         .menu-card img { 
             width: 100%; 
-            aspect-ratio: 1 / 1; 
+            height: 180px; 
             object-fit: cover; 
             border-radius: 16px; 
-            margin-bottom: 8px; 
+            margin-bottom: 12px; 
             display: block; 
         }
 
         .menu-card h3 { 
-            font-size: 1em; 
-            margin: 6px 0; 
+            font-size: 1.1em; 
+            margin: 6px 0 4px 0; 
             color: var(--text-primary) !important; 
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .menu-card p { 
-            font-size: 0.9em; 
+            font-size: 1.05em; 
             color: #4ade80 !important; 
-            font-weight: 700; 
-            margin: 0 0 10px 0; 
+            font-weight: 800; 
+            margin: 0 0 12px 0; 
         }
 
         .menu-card button { 
-            width: 90%; 
-            padding: 9px; 
+            width: 100%; 
+            padding: 11px; 
             border: none; 
             border-radius: 12px; 
-            font-weight: 600; 
+            font-weight: 700; 
+            font-size: 14px;
             background: #27ae60; 
             color: white; 
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
         }
 
         .menu-card button:hover {
-            opacity: 0.9;
+            filter: brightness(1.1);
+            transform: scale(1.02);
         }
 
+        /* Modal & Cart Overlay */
         #modal-keranjang, #modal-qris { 
             display: none; 
             position: fixed; 
@@ -145,161 +214,124 @@
             left: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(15, 23, 42, 0.8) !important; 
-            backdrop-filter: blur(10px);
-            z-index: 1000; 
+            background: rgba(9, 13, 22, 0.85) !important; 
+            backdrop-filter: blur(12px);
+            z-index: 2000; 
             justify-content: center; 
             align-items: center; 
         }
 
         .modal-content { 
-            padding: 25px; 
-            border-radius: 24px !important; 
+            background: #17153a !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5) !important;
+            padding: 30px; 
+            border-radius: 28px !important; 
             width: 90%; 
-            max-width: 400px; 
+            max-width: 450px; 
+            max-height: 85vh;
+            overflow-y: auto;
         }
 
-        /* Penyesuaian Header Kontainer */
-        #header-container {
-            background: var(--glass-bg) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid var(--glass-border) !important;
-            border-radius: 24px;
-            padding: 20px 15px;
-            position: sticky;
-            top: 10px;
-            z-index: 1000;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3);
-        }
-
-        #nama-restoran {
-            color: var(--text-primary) !important;
-            font-size: 25px;
-            margin: 5px 0;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        /* Input & Filter Form Styling */
-        #filter, #searchInput, input[type="text"], input[type="number"] {
-            background: rgba(255, 255, 255, 0.05) !important;
-            color: var(--text-primary) !important;
-            border: 1px solid var(--glass-border) !important;
-            padding: 10px 12px !important;
-            border-radius: 12px !important;
-            font-size: 14px !important;
-            outline: none;
-        }
-
-        #filter option {
-            background-color: #1e1b4b !important;
-            color: var(--text-primary) !important;
-        }
-
-        #searchInput::placeholder, input::placeholder {
-            color: var(--text-secondary) !important;
-        }
-
+        /* Floating Cart Button */
         #tombol-keranjang-container {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             background: linear-gradient(135deg, #27ae60, #2ecc71);
             color: white;
-            padding: 14px 20px;
+            padding: 16px 26px;
             border-radius: 50px;
             cursor: pointer;
-            z-index: 999;
-            box-shadow: 0 10px 25px rgba(39, 174, 96, 0.4);
-            font-weight: 600;
+            z-index: 1500;
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.5);
+            font-weight: 700;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        #tombol-keranjang-container:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
 
-<div id="header-container">
-    <div class="container-utama" id="container-utama">
-        
-        <!-- Info Resto -->
-        <div style="text-align: center; margin-bottom: 15px;">
-            <p style="font-size: 0.8em; color: var(--text-secondary); margin: 0;">Selamat Datang di</p>
-            <h1 id="nama-restoran">Memuat...</h1>
-            <button onclick="bukaWhatsApp()" style="background: rgba(37, 211, 102, 0.2); color: #4ade80; border: 1px solid rgba(37, 211, 102, 0.4); padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 5px;">
-                <i class="fab fa-whatsapp"></i> Konfirmasi via WhatsApp
-            </button>
-            <p style="margin-top: 10px; color: var(--text-secondary); font-size: 14px;">
-                Silahkan pilih menu favorit anda
-            </p>
-        </div>
+<div class="container-utama">
+    <!-- Header Resto Model Tengah Asli -->
+    <div id="header-container">
+        <p style="font-size: 0.85em; color: var(--text-secondary); margin: 0;">Selamat Datang di</p>
+        <h1 id="nama-restoran">Memuat...</h1>
+        <button class="btn-wa-elegan" onclick="bukaWhatsApp()">
+            <i class="fab fa-whatsapp"></i> Konfirmasi via WhatsApp
+        </button>
+        <p style="margin-top: 10px; color: var(--text-secondary); font-size: 14px;">
+            Silahkan pilih menu favorit anda
+        </p>
 
-        <!-- Filter & Search -->
-        <div style="display: flex; gap: 8px; justify-content: center; margin: 10px auto; max-width: 350px;">
+        <!-- Filter & Search di Tengah -->
+        <div class="filter-search-box">
             <select id="filter" onchange="tampilkanMenu()">
                 <option value="Semua">Semua</option>
                 <option value="Makanan">Makanan</option>
                 <option value="Minuman">Minuman</option>
                 <option value="Lain-lain">Lain-lain</option>
             </select>
-            <input type="text" id="searchInput" placeholder="Cari..." onkeyup="tampilkanMenu()" style="width: 150px;">
+            <input type="text" id="searchInput" placeholder="Cari..." onkeyup="tampilkanMenu()">
         </div>
     </div>
+
+    <!-- AREA GRID MENU -->
+    <div id="menu-list" class="menu-grid"></div>
 </div>
 
-<!-- AREA MENU -->
-<div id="menu-list" class="menu-grid" style="max-width: 500px; margin: auto; width: 100%; box-sizing: border-box;">
-</div>
-
+<!-- Modal Keranjang & Checkout -->
 <div id="modal-keranjang">
     <div class="modal-content">
-        <h3 style="margin-top:0; color:var(--text-primary);">Daftar Pesanan Anda</h3>
-<p style="font-size: 11px; color: rgba(255, 255, 255, 0.65); margin-bottom: 15px; line-height: 1.4;">
-    Demi kelancaran pesanan, mohon isi No WA & Posisi Anda. Beri angka <strong>0</strong> pada nomor meja jika Anda tidak duduk di meja bernomor.
-</p>
+        <h2 style="margin-top:0; color:var(--text-primary); font-size: 22px;">Daftar Pesanan Anda</h2>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">
+            Silakan lengkapi data diri Anda. Masukkan angka <strong>0</strong> pada nomor meja jika tidak membawa nomor meja fisik.
+        </p>
         
-        <!-- Input Nama & No WhatsApp Berjajar -->
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-            <input type="text" id="nama-modal" placeholder="Nama Anda" style="width:50%; box-sizing:border-box;">
-            <input type="text" id="wa-modal" placeholder="Nomor WhatsApp" style="width:50%; box-sizing:border-box;">
+        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+            <input type="text" id="nama-modal" placeholder="Nama Anda" style="width:50%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white; outline:none;">
+            <input type="text" id="wa-modal" placeholder="Nomor WhatsApp" style="width:50%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white; outline:none;">
         </div>
 
-        <!-- Input Nomor Meja & Posisi Area Berjajar -->
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-            <input type="number" id="meja-modal" placeholder="Nomor Meja" style="width:50%; box-sizing:border-box;">
-            <input type="text" id="posisi-modal" placeholder="Posisi/Area (Cth: Outdoor)" style="width:50%; box-sizing:border-box;">
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <input type="number" id="meja-modal" placeholder="Nomor Meja" style="width:50%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white; outline:none;">
+            <input type="text" id="posisi-modal" placeholder="Area (Cth: Indoor/Outdoor)" style="width:50%; padding:10px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white; outline:none;">
         </div>
 
-        <!-- Pilihan Tipe Pesanan (Makan Disini / Bungkus) -->
-        <div style="margin-bottom: 12px; color: var(--text-primary); font-size: 14px; text-align: left; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 12px; border: 1px solid var(--glass-border);">
-            <p style="margin: 0 0 5px 0; font-size: 13px; color: var(--text-secondary);">Tipe Pesanan:</p>
-            <div style="display: flex; gap: 15px;">
+        <div style="margin-bottom: 15px; color: var(--text-primary); font-size: 14px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 12px; border: 1px solid var(--glass-border);">
+            <p style="margin: 0 0 6px 0; font-size: 13px; color: var(--text-secondary);">Tipe Pesanan:</p>
+            <div style="display: flex; gap: 20px;">
                 <label style="cursor:pointer;"><input type="radio" name="tipePesanan" value="Makan Disini" checked> Makan Disini</label>
                 <label style="cursor:pointer;"><input type="radio" name="tipePesanan" value="Bungkus"> Bungkus</label>
             </div>
         </div>
 
-        <div id="keranjang-list"></div>
-        <div id="total-harga" style="font-weight:bold; margin-top:10px; color:var(--text-primary);">Total: Rp 0</div>
+        <div id="keranjang-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px;"></div>
+        <div id="total-harga" style="font-weight:bold; font-size: 1.1em; margin: 15px 0; color:var(--text-primary);">Total: Rp 0</div>
         
-        <div id="pilihan-pembayaran" style="margin: 15px 0; color:var(--text-secondary); font-size: 14px; text-align: left;">
-            <p style="margin-bottom: 5px; color:var(--text-primary);">Pilih Metode Pembayaran:</p>
+        <div id="pilihan-pembayaran" style="margin: 15px 0; color:var(--text-secondary); font-size: 14px;">
+            <p style="margin-bottom: 6px; color:var(--text-primary); font-weight:600;">Metode Pembayaran:</p>
             <label style="cursor:pointer;"><input type="radio" name="metode" value="tunai" checked> Bayar Tunai (di Kasir)</label><br>
             <label style="cursor:pointer;"><input type="radio" name="metode" value="digital"> Bayar Digital (QRIS/Transfer)</label>
         </div>
 
         <div id="modal-qris">
             <div class="modal-content" style="text-align:center;">
-                <h3>Scan QRIS untuk Bayar</h3>
-                <img src="URL_GAMBAR_QRIS_ANDA.jpg" style="width:100%; max-width:250px; margin:10px 0; border-radius: 12px;">
-                <p style="color:var(--text-secondary); font-size:13px;">Setelah transfer, klik tombol di bawah untuk verifikasi pesanan.</p>
+                <h3>Scan QRIS untuk Pembayaran</h3>
+                <img src="URL_GAMBAR_QRIS_ANDA.jpg" style="width:100%; max-width:220px; margin:10px 0; border-radius: 12px;">
+                <p style="color:var(--text-secondary); font-size:13px;">Klik tombol verifikasi di bawah setelah melakukan pembayaran.</p>
                 <button onclick="lanjutKirimKeServer()" style="width:100%; padding:12px; background:#27ae60; color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer;">Saya Sudah Bayar</button>
                 <button onclick="document.getElementById('modal-qris').style.display='none'" style="width:100%; margin-top:10px; padding:10px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:12px; cursor:pointer;">Batal</button>
             </div>
         </div>
 
-        <button onclick="prosesKirimPesanan(event)" style="width:100%; margin-top:10px; padding:12px; background:#2980b9; color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer;">Kirim Pesanan</button>
-        <button onclick="tutupModal()" style="width:100%; margin-top:8px; padding:10px; background:rgba(255,255,255,0.08); color:white; border:none; border-radius:12px; cursor:pointer;">Tambah Menu Lain</button>
+        <button onclick="prosesKirimPesanan(event)" style="width:100%; margin-top:10px; padding:13px; background:#2980b9; color:white; border:none; border-radius:12px; font-weight:700; cursor:pointer;">Kirim Pesanan</button>
+        <button onclick="tutupModal()" style="width:100%; margin-top:8px; padding:11px; background:rgba(255,255,255,0.08); color:white; border:none; border-radius:12px; cursor:pointer;">Tutup</button>
     </div>
 </div>
 
@@ -309,14 +341,13 @@
 
 <script>
 (function() {
-    const DURASI_SESI = 3600000; // 1 jam dalam milidetik
+    const DURASI_SESI = 3600000; // 1 jam
     let sessionStart = localStorage.getItem('session_start');
-
     if (!sessionStart) {
         localStorage.setItem('session_start', new Date().getTime());
     } else {
         if (new Date().getTime() - Number(sessionStart) > DURASI_SESI) {
-            alert("Waktu sesi Anda telah berakhir. Silakan scan ulang QR untuk memesan kembali.");
+            alert("Sesi Anda telah berakhir. Silakan muat ulang halaman.");
             localStorage.clear();
             location.reload();
         }
@@ -353,11 +384,13 @@
         
         list.innerHTML = filtered.map(m => `
             <div class="menu-card">
-                <img src="${m.gambar || m.gambarUrl || 'https://via.placeholder.com/200'}">
-                <h3>${m.nama}</h3>
-                <p>Rp ${Number(m.harga).toLocaleString()}</p>
-                <button onclick="tambahKeKeranjang(${m.id})" ${m.stok <= 0 ? 'disabled style="background:#475569; cursor:not-allowed;"' : 'style="background:#27ae60;"'}>
-                    ${m.stok > 0 ? 'Tambah' : 'Habis'}
+                <div>
+                    <img src="${m.gambar || m.gambarUrl || 'https://via.placeholder.com/200'}">
+                    <h3>${m.nama}</h3>
+                    <p>Rp ${Number(m.harga).toLocaleString()}</p>
+                </div>
+                <button onclick="tambahKeKeranjang(${m.id})" ${m.stok <= 0 ? 'disabled style="background:#475569; cursor:not-allowed;"' : ''}>
+                    ${m.stok > 0 ? '+ Tambah' : 'Habis'}
                 </button>
             </div>
         `).join('');
@@ -372,13 +405,7 @@ function bukaWhatsApp() {
     if (cleanNomor.startsWith('0')) {
         cleanNomor = '62' + cleanNomor.substring(1);
     }
-    
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const url = isMobile 
-        ? `https://api.whatsapp.com/send?phone=${cleanNomor}` 
-        : `https://wa.me/${cleanNomor}`;
-        
-    window.open(url, '_blank');
+    window.open(`https://wa.me/${cleanNomor}`, '_blank');
 }
 
 function renderHalamanSukses(data) {
@@ -394,22 +421,19 @@ function renderHalamanSukses(data) {
     
     const rincianBersih = tempDiv.innerHTML;
 
-    document.getElementById('container-utama').innerHTML = `
-        <div class="resto-card" style="text-align: center; padding: 20px;">
-            <h2 style="color:#4ade80; margin: 0 0 5px 0;">Terima Kasih, ${data.nama}!</h2>
-            <p style="font-size: 0.9em; color: var(--text-secondary); margin: 0 0 5px 0; font-weight: bold;">
+    document.querySelector('.container-utama').innerHTML = `
+        <div style="max-width: 600px; margin: 50px auto; background: var(--glass-card); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 40px; border-radius: 28px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4);">
+            <h2 style="color:#4ade80; margin-top: 0; font-size: 28px;">Terima Kasih, ${data.nama}!</h2>
+            <p style="font-size: 1.05em; color: var(--text-secondary); font-weight: bold; margin-bottom: 5px;">
                 ID Pesanan: #${data.id || '-'}
             </p>
-            <p style="margin: 0 0 10px 0; color: var(--text-primary);">Pesanan untuk Meja ${data.meja} telah diterima.</p>
-            <div style="text-align:left; margin: 5px 0; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); padding: 8px 0; line-height: 1.4; color: var(--text-secondary);">
+            <p style="color: var(--text-primary); margin-bottom: 20px;">Pesanan untuk Meja ${data.meja} berhasil diproses.</p>
+            <div style="text-align:left; margin: 15px 0; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); padding: 15px 0; color: var(--text-secondary);">
                 ${rincianBersih}
             </div>
-            <div style="font-weight:bold; font-size: 1.2em; margin: 10px 0; color: var(--text-primary);">${data.total}</div>
-            <button onclick="bukaWhatsApp()" style="width:100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">Konfirmasi via WA</button>
-            <button onclick="kembaliKeMenu()" style="width:100%; margin-top:8px; padding:12px; background: rgba(243, 156, 18, 0.9); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">Pesan Lagi</button>
-            <div style="margin-top: 15px; color: var(--text-secondary); font-size: 0.75em; font-style: italic;">
-                <p style="margin: 0;">* Pesanan tidak bisa diBATALKAN, silahkan konfirmasi WA jika ingin membatalkan pesanan.</p>
-            </div>
+            <div style="font-weight:bold; font-size: 1.4em; margin: 20px 0; color: var(--text-primary);">${data.total}</div>
+            <button onclick="bukaWhatsApp()" style="width:100%; padding: 14px; background: #27ae60; color: white; border: none; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 15px; margin-bottom: 10px;">Konfirmasi via WhatsApp</button>
+            <button onclick="kembaliKeMenu()" style="width:100%; padding: 14px; background: rgba(243, 156, 18, 0.9); color: white; border: none; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 15px;">Pesan Menu Lain</button>
         </div>
     `;
     document.getElementById('tombol-keranjang-container').style.display = 'none';
@@ -434,16 +458,16 @@ function renderKeranjang() {
     list.innerHTML = keranjang.map((c, idx) => {  
         total += c.harga * c.jumlah;  
         return `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--glass-border); padding-bottom:5px; gap:8px;">
-                <span style="flex:1; color:var(--text-primary); text-align:left; min-width:90px;">${c.nama} <br><small style="color:var(--text-secondary);">Rp ${c.harga.toLocaleString()} x ${c.jumlah}</small></span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--glass-border); padding-bottom:8px; gap:10px;">
+                <span style="flex:1; color:var(--text-primary); text-align:left; font-size:14px;">${c.nama} <br><small style="color:var(--text-secondary);">Rp ${c.harga.toLocaleString()} x ${c.jumlah}</small></span>
                 
-                <input type="text" placeholder="Catatan..." value="${c.catatan || ''}" oninput="keranjang[${idx}].catatan = this.value" style="flex:1; padding:4px 6px; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:4px; color:var(--text-primary); font-size:11px; outline:none;">
+                <input type="text" placeholder="Catatan..." value="${c.catatan || ''}" oninput="keranjang[${idx}].catatan = this.value" style="flex:1; padding:6px 10px; background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:6px; color:var(--text-primary); font-size:12px; outline:none;">
 
                 <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                    <button onclick="updateJumlah(${idx}, -1)" style="padding:2px 8px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px;">-</button>
-                    <span style="color:var(--text-primary);">${c.jumlah}</span>
-                    <button onclick="updateJumlah(${idx}, 1)" style="padding:2px 8px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px;">+</button>
-                    <button onclick="hapusItem(${idx})" style="padding:2px 8px; cursor:pointer; background:#e74c3c; color:white; border:none; border-radius:4px;">✕</button>
+                    <button onclick="updateJumlah(${idx}, -1)" style="padding:4px 10px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:6px;">-</button>
+                    <span style="color:var(--text-primary); font-weight:bold;">${c.jumlah}</span>
+                    <button onclick="updateJumlah(${idx}, 1)" style="padding:4px 10px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:6px;">+</button>
+                    <button onclick="hapusItem(${idx})" style="padding:4px 10px; cursor:pointer; background:#e74c3c; color:white; border:none; border-radius:6px;">✕</button>
                 </div>
             </div>`;
     }).join('');  
@@ -504,7 +528,7 @@ function prosesKirimPesanan(event) {
         })
        .then(async res => {
             const data = await res.json();
-            if (!res.ok) throw new Error(data.message || "Gagal mengirim pesanan ke server!");
+            if (!res.ok) throw new Error(data.message || "Gagal mengirim pesanan!");
             return data;
         })
         .then(data => {
@@ -515,9 +539,8 @@ function prosesKirimPesanan(event) {
                 window.location.href = data.paymentUrl;
             } else {
                 const totalText = document.getElementById('total-harga').innerText;
-                
                 const rincianHtml = keranjang.map(i => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid var(--glass-border); padding-bottom:4px; font-size:13px; text-align:left;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid var(--glass-border); padding-bottom:6px; font-size:14px; text-align:left;">
                         <span style="color:var(--text-primary); flex:1;">${i.nama} <br><small style="color:var(--text-secondary);">${i.catatan ? 'Catatan: ' + i.catatan : ''}</small></span>
                         <span style="color:var(--text-primary); font-weight:bold;">${i.jumlah}</span>
                     </div>
@@ -545,7 +568,7 @@ function prosesKirimPesanan(event) {
             tombol.innerText = "Kirim Pesanan";
         });
 
-    }, (error) => {
+    }, () => {
         alert("GPS diperlukan untuk validasi keamanan pemesanan di area restoran.");
         tombol.disabled = false;
         tombol.innerText = "Kirim Pesanan";
